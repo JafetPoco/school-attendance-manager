@@ -1,0 +1,69 @@
+package com.IEASmart.sistemaAsistencias.domain.model;
+
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.UserType;
+
+public class User {
+    private int userId;
+    private String names;
+    private String firstLastName;
+    private String secondLastName;
+    private String email;
+    private UserType userType;
+
+    public User(int userId, String names, String firstLastName, String secondLastName, String email, UserType userType) {
+        this.userId = userId;
+        this.names = names;
+        this.firstLastName = firstLastName;
+        this.secondLastName = secondLastName;
+        this.email = email;
+        this.userType = userType;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public String getNames() {
+        return names;
+    }
+
+    public void setNames(String names) {
+        this.names = names;
+    }
+
+    public String getFirstLastName() {
+        return firstLastName;
+    }
+
+    public void setFirstLastName(String firstLastName) {
+        this.firstLastName = firstLastName;
+    }
+
+    public String getSecondLastName() {
+        return secondLastName;
+    }
+
+    public void setSecondLastName(String secondLastName) {
+        this.secondLastName = secondLastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public UserType getUserType() {
+        return userType;
+    }
+
+    public void setUserType(UserType userType) {
+        this.userType = userType;
+    }
+}
