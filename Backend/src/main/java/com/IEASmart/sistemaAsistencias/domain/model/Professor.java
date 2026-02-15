@@ -8,4 +8,8 @@ public class Professor extends User {
     public Professor(Long userId, String names, String firstLastName, String secondLastName, String email) {
         super(userId, names, firstLastName, secondLastName, email);
     }
+
+    public UserType getUserType() {
+        return userType;
+    }
 }

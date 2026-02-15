@@ -9,4 +9,7 @@ public class Admin extends User {
         super(userId, names, firstLastName, secondLastName, email);
     }
 
+    public UserType getUserType() {
+        return userType;
+    }
 }

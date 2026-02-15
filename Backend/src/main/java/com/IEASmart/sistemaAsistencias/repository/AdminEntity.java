@@ -8,6 +8,11 @@ import jakarta.persistence.Table;
 @DiscriminatorValue("ADMIN")
 @Table(name = "admin")
 public class AdminEntity extends UserEntity {
+
+    public AdminEntity() {
+        super();
+    }
+
     public AdminEntity(String names, String firstLastName, String secondLastName, String email) {
         super(names, firstLastName, secondLastName, email);
     }

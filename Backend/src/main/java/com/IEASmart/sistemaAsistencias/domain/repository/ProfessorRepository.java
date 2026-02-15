@@ -3,10 +3,12 @@ package com.IEASmart.sistemaAsistencias.domain.repository;
 import com.IEASmart.sistemaAsistencias.domain.model.Professor;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProfessorRepository {
-    public List<Professor> findAll();
-    public boolean existsByEmail(String email);
-    public Professor save(Professor professor);
-    public Professor findById(Long id);
+    List<Professor> findAll();
+    Boolean existsByEmail(String email);
+    Optional<Professor> findById(Long id);
+    Optional<Professor> findByEmail(String email);
+    Professor save(Professor professor);
 }

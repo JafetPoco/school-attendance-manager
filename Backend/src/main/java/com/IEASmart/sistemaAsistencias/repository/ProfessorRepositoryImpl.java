@@ -5,6 +5,7 @@ import com.IEASmart.sistemaAsistencias.domain.repository.ProfessorRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class ProfessorRepositoryImpl implements ProfessorRepository {
@@ -22,22 +23,20 @@ public class ProfessorRepositoryImpl implements ProfessorRepository {
     }
 
     @Override
-    public boolean existsByEmail(String email){
+    public Boolean existsByEmail(String email){
         return jpaRepository.existsByEmail(email);
     }
 
     @Override
-    public Professor save(Professor professor){
-        ProfessorEntity entity = toEntity(professor);
-        ProfessorEntity saved = jpaRepository.save(entity);
-        return toDomain(saved);
+    public Optional<Professor> findById(Long id) {
+        return jpaRepository.findById(id)
+                .map(this::toDomain);
     }
 
     @Override
-    public Professor findById(Long id){
-        return jpaRepository.findById(id)
-                .map(this::toDomain)
-                .orElse(null);
+    public Optional<Professor> findByEmail(String email){
+        return jpaRepository.findByEmail(email)
+                .map(this::toDomain);
     }
 
     private Professor toDomain(ProfessorEntity entity) {
@@ -48,6 +47,13 @@ public class ProfessorRepositoryImpl implements ProfessorRepository {
                 entity.getSecondLastName(),
                 entity.getEmail()
         );
+    }
+
+    @Override
+    public Professor save(Professor professor) {
+        ProfessorEntity entity = toEntity(professor);
+        ProfessorEntity savedEntity = jpaRepository.save(entity);
+        return toDomain(savedEntity);
     }
 
     private ProfessorEntity toEntity(Professor professor) {

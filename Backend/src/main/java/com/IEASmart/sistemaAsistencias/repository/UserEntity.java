@@ -24,6 +24,10 @@ public class UserEntity {
     @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
+    // Constructor sin argumentos necesario para JPA
+    public UserEntity() {
+    }
+
     public UserEntity(String names, String firstLastName, String secondLastName, String email) {
         this.names = names;
         this.firstLastName = firstLastName;

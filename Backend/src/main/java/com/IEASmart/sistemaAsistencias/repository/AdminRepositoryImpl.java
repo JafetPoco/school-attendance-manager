@@ -5,6 +5,7 @@ import com.IEASmart.sistemaAsistencias.domain.repository.AdminRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class AdminRepositoryImpl implements AdminRepository {
@@ -20,8 +21,18 @@ public class AdminRepositoryImpl implements AdminRepository {
     }
 
     @Override
-    public Admin findById(Long id){
-        return jpaRepository.findById(id).map(this::toDomain).orElse(null);
+    public Optional<Admin> findById(Long id){
+        return jpaRepository.findById(id).map(this::toDomain);
+    }
+
+    @Override
+    public Optional<Admin> findByEmail(String email){
+        return jpaRepository.findByEmail(email).map(this::toDomain);
+    }
+
+    @Override
+    public Boolean existsByEmail(String email){
+        return jpaRepository.existsByEmail(email);
     }
 
     private Admin toDomain(AdminEntity entity) {
