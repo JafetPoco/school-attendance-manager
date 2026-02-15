@@ -1,16 +1,30 @@
-package com.IEASmart.sistemaAsistencias.domain.model;
+package com.IEASmart.sistemaAsistencias.repository;
 
-import com.IEASmart.sistemaAsistencias.domain.model.valueObject.UserType;
+import jakarta.persistence.*;
 
-public class User {
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
+@Table(name = "users")
+public class UserEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id", nullable = false)
     private Long userId;
+
+    @Column(name = "names", nullable = false, length = 100)
     private String names;
+
+    @Column(name = "first_last_name", nullable = false, length = 50)
     private String firstLastName;
+
+    @Column(name = "second_last_name", nullable = false, length = 50)
     private String secondLastName;
+
+    @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
-    public User(Long userId, String names, String firstLastName, String secondLastName, String email) {
-        this.userId = userId;
+    public UserEntity(String names, String firstLastName, String secondLastName, String email) {
         this.names = names;
         this.firstLastName = firstLastName;
         this.secondLastName = secondLastName;
@@ -56,5 +70,4 @@ public class User {
     public void setEmail(String email) {
         this.email = email;
     }
-
 }
