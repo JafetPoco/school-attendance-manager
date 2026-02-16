@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8081'
+const BASE_URL = 'http://localhost:8081/api'
 
 export async function http<T>(
   endpoint: string,

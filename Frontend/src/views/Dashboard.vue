@@ -45,7 +45,7 @@
               <div class="relative">
                 <img class="h-10 w-10 rounded-xl border-2 border-slate-200 group-hover:border-slate-400 transition-all duration-300" 
                      :src="auth.user?.picture" 
-                     :alt="auth.user?.name">
+                     :alt="auth.user?.name" @error="useFallback">
                 <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
               </div>
             </div>
