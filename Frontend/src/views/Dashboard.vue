@@ -10,7 +10,7 @@
               <GraduationCap class="w-6 h-6 text-white" />
             </div>
             <div>
-              <span class="text-lg font-semibold text-slate-800">Colegio San José</span>
+              <span class="text-lg font-semibold text-slate-800">Colegio Gral. José de San Martín</span>
               <p class="text-xs text-slate-500">Portal Docente</p>
             </div>
           </div>
@@ -39,13 +39,13 @@
             <!-- Perfil docente -->
             <div class="flex items-center space-x-3 cursor-pointer group relative">
               <div class="text-right hidden sm:block">
-                <p class="text-sm font-semibold text-slate-800">{{ teacherName }}</p>
+                <p class="text-sm font-semibold text-slate-800">{{ auth.user?.name }}</p>
                 <p class="text-xs text-slate-500">{{ teacherSubject }}</p>
               </div>
               <div class="relative">
                 <img class="h-10 w-10 rounded-xl border-2 border-slate-200 group-hover:border-slate-400 transition-all duration-300" 
-                     :src="teacherAvatar" 
-                     :alt="teacherName">
+                     :src="auth.user?.picture" 
+                     :alt="auth.user?.name">
                 <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
               </div>
             </div>
@@ -60,7 +60,7 @@
       <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8 animate-fade-in-down">
         <div>
           <h1 class="text-2xl font-bold text-slate-800 mb-1">
-            ¡Hola, {{ teacherName }}!
+            ¡Hola, {{ auth.user?.name }}!
           </h1>
           <p class="text-slate-500 flex items-center">
             <Calendar class="w-4 h-4 mr-2" />
@@ -240,15 +240,15 @@
             <div class="text-center">
               <div class="relative inline-block">
                 <img class="h-24 w-24 rounded-xl border-2 border-slate-200" 
-                     :src="teacherAvatar" 
-                     :alt="teacherName">
+                     :src="auth.user?.picture" 
+                     :alt="auth.user?.name" @error="useFallback">
                 <button class="absolute -bottom-2 -right-2 bg-slate-800 text-white p-2 rounded-lg hover:bg-slate-700 transition-all duration-300 transform hover:scale-110 shadow-md">
                   <Camera class="w-4 h-4" />
                 </button>
               </div>
-              <h2 class="mt-4 text-xl font-bold text-slate-800">{{ teacherName }}</h2>
+              <h2 class="mt-4 text-xl font-bold text-slate-800">{{ auth.user?.name }}</h2>
               <p class="text-slate-500">{{ teacherSubject }}</p>
-              <p class="text-sm text-slate-400 mt-1">{{ teacherEmail }}</p>
+              <p class="text-sm text-slate-400 mt-1">{{ auth.user?.email }}</p>
               
               <div class="flex justify-center space-x-2 mt-4">
                 <span class="px-3 py-1 bg-slate-100 text-slate-700 text-xs rounded-full">Docente</span>
@@ -360,8 +360,9 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useAuthStore } from '../stores/authStore'
 import {
   GraduationCap,
   Bell,
@@ -389,12 +390,25 @@ import {
   MapPin
 } from 'lucide-vue-next'
 
-// Datos del docente
-const teacherName = ref('Prof. Ana Martínez')
-const teacherEmail = ref('ana.martinez@colegiosanjose.edu')
+const auth = useAuthStore()
+
+onMounted(() => {
+  if (!auth.user) {
+    auth.fetchUser()
+  }
+})
+
+const useFallback = (event: Event) => {
+  const img = (event.currentTarget ?? event.target) as HTMLImageElement | null
+  const username = auth.user?.name ?? 'Usuario'
+  const name = username.replace(/\s+/g, '+')
+  if (img) {
+    img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=334155&color=fff&size=128`
+  }
+};
+
 const teacherSubject = ref('Matemáticas - Ciencias')
 const teacherId = ref('4582')
-const teacherAvatar = ref('https://ui-avatars.com/api/?name=Ana+Martinez&background=334155&color=fff&size=128')
 
 // Fecha actual
 const currentDate = ref(new Date().toLocaleDateString('es-ES', { 
@@ -404,21 +418,6 @@ const currentDate = ref(new Date().toLocaleDateString('es-ES', {
   day: 'numeric' 
 }))
 const currentDay = ref(new Date().toLocaleDateString('es-ES', { weekday: 'long' }))
-
-// Al montarse, solicitar los datos del usuario desde el backend (/me)
-onMounted(async () => {
-  try {
-    const res = await fetch('/me', { credentials: 'include' })
-    if (!res.ok) return
-    const data = await res.json()
-    if (data.name) teacherName.value = data.name
-    if (data.email) teacherEmail.value = data.email
-    // Google suele devolver picture en attributes.picture
-    if (data.attributes && data.attributes.picture) teacherAvatar.value = data.attributes.picture
-  } catch (e) {
-    // ignore
-  }
-})
 
 // Estadísticas académicas
 const academicStats = ref([
