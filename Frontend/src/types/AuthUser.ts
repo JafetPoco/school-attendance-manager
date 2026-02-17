@@ -1,5 +1,8 @@
 export interface AuthUser {
-    name: string
+    userId: bigint
+    names: string
+    firstLastName: string
+    secondLastName: string
     email: string
-    picture: string
+    pictureUrl: string
 }

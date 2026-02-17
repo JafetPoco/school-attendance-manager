@@ -36,16 +36,25 @@
               </span>
             </button>
 
-            <!-- Perfil docente -->
-            <div class="flex items-center space-x-3 cursor-pointer group relative">
+            <!-- Perfil docente (muestra skeletons mientras carga) -->
+            <div v-if="auth.loading && !auth.user" class="flex items-center space-x-3">
               <div class="text-right hidden sm:block">
-                <p class="text-sm font-semibold text-slate-800">{{ auth.user?.name }}</p>
-                <p class="text-xs text-slate-500">{{ teacherSubject }}</p>
+                <div class="w-32 h-4 bg-slate-200 rounded mb-1 animate-pulse"></div>
+                <div class="w-20 h-3 bg-slate-200 rounded animate-pulse"></div>
+              </div>
+              <div class="relative">
+                <div class="h-10 w-10 rounded-xl bg-slate-200 animate-pulse"></div>
+              </div>
+            </div>
+            <div v-else class="flex items-center space-x-3 cursor-pointer group relative">
+              <div class="text-right hidden sm:block">
+                <p class="text-sm font-semibold text-slate-800">{{ auth.user?.names }}</p>
+                <p class="text-xs text-slate-500">ADMIN - ROLE</p>
               </div>
               <div class="relative">
                 <img class="h-10 w-10 rounded-xl border-2 border-slate-200 group-hover:border-slate-400 transition-all duration-300" 
-                     :src="auth.user?.picture" 
-                     :alt="auth.user?.name" @error="useFallback">
+                     :src="auth.user?.pictureUrl" 
+                     :alt="auth.user?.names" @error="useFallback">
                 <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
               </div>
             </div>
@@ -58,14 +67,18 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Header con bienvenida y fecha -->
       <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8 animate-fade-in-down">
-        <div>
+        <div v-if="!auth.loading && auth.user">
           <h1 class="text-2xl font-bold text-slate-800 mb-1">
-            ¡Hola, {{ auth.user?.name }}!
+            ¡Hola, {{ auth.user?.names }}!
           </h1>
           <p class="text-slate-500 flex items-center">
             <Calendar class="w-4 h-4 mr-2" />
-            {{ currentDate }} - {{ currentDay }}
+            {{ currentDate }}
           </p>
+        </div>
+        <div v-else class="space-y-2">
+          <div class="w-48 h-6 bg-slate-200 rounded mb-2 animate-pulse"></div>
+          <div class="w-64 h-4 bg-slate-200 rounded animate-pulse"></div>
         </div>
         
         <!-- Acciones rápidas superiores -->
@@ -237,22 +250,29 @@
         <div class="space-y-8">
           <!-- Perfil del docente -->
           <div class="bg-white rounded-xl border border-slate-200 p-6 animate-fade-in-right">
-            <div class="text-center">
+            <div v-if="!auth.loading && auth.user" class="text-center">
               <div class="relative inline-block">
                 <img class="h-24 w-24 rounded-xl border-2 border-slate-200" 
-                     :src="auth.user?.picture" 
-                     :alt="auth.user?.name" @error="useFallback">
-                <button class="absolute -bottom-2 -right-2 bg-slate-800 text-white p-2 rounded-lg hover:bg-slate-700 transition-all duration-300 transform hover:scale-110 shadow-md">
-                  <Camera class="w-4 h-4" />
-                </button>
+                     :src="auth.user?.pictureUrl" 
+                     :alt="auth.user?.names" @error="useFallback">
               </div>
-              <h2 class="mt-4 text-xl font-bold text-slate-800">{{ auth.user?.name }}</h2>
-              <p class="text-slate-500">{{ teacherSubject }}</p>
+              <h2 class="mt-4 text-xl font-bold text-slate-800">{{ auth.user?.names }}</h2>
               <p class="text-sm text-slate-400 mt-1">{{ auth.user?.email }}</p>
               
               <div class="flex justify-center space-x-2 mt-4">
                 <span class="px-3 py-1 bg-slate-100 text-slate-700 text-xs rounded-full">Docente</span>
-                <span class="px-3 py-1 bg-slate-100 text-slate-700 text-xs rounded-full">Tutor 5°B</span>
+              </div>
+            </div>
+            <div v-else class="text-center space-y-3">
+              <div class="relative inline-block">
+                <div class="h-24 w-24 rounded-xl bg-slate-200 mx-auto animate-pulse"></div>
+              </div>
+              <div class="w-40 h-5 bg-slate-200 rounded mx-auto animate-pulse"></div>
+              <div class="w-32 h-4 bg-slate-200 rounded mx-auto animate-pulse"></div>
+              <div class="w-48 h-3 bg-slate-200 rounded mx-auto animate-pulse"></div>
+              <div class="flex justify-center space-x-2 mt-2">
+                <div class="w-20 h-6 bg-slate-200 rounded-full animate-pulse"></div>
+                <div class="w-20 h-6 bg-slate-200 rounded-full animate-pulse"></div>
               </div>
             </div>
 
@@ -392,22 +412,21 @@ import {
 
 const auth = useAuthStore()
 
-onMounted(() => {
-  if (!auth.user) {
-    auth.fetchUser()
+onMounted(async () => {
+  if (!auth.user && !auth.loading) {
+    await auth.fetchUser()
   }
 })
 
 const useFallback = (event: Event) => {
   const img = (event.currentTarget ?? event.target) as HTMLImageElement | null
-  const username = auth.user?.name ?? 'Usuario'
+  const username = auth.user?.names ?? 'Usuario'
   const name = username.replace(/\s+/g, '+')
   if (img) {
     img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=334155&color=fff&size=128`
   }
 };
 
-const teacherSubject = ref('Matemáticas - Ciencias')
 const teacherId = ref('4582')
 
 // Fecha actual
@@ -417,7 +436,6 @@ const currentDate = ref(new Date().toLocaleDateString('es-ES', {
   month: 'long', 
   day: 'numeric' 
 }))
-const currentDay = ref(new Date().toLocaleDateString('es-ES', { weekday: 'long' }))
 
 // Estadísticas académicas
 const academicStats = ref([
