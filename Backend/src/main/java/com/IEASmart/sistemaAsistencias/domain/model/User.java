@@ -8,13 +8,17 @@ public class User {
     private String firstLastName;
     private String secondLastName;
     private String email;
+    private String pictureUrl;
 
-    public User(Long userId, String names, String firstLastName, String secondLastName, String email) {
+    public User() {}
+
+    public User(Long userId, String names, String firstLastName, String secondLastName, String email, String pictureUrl) {
         this.userId = userId;
         this.names = names;
         this.firstLastName = firstLastName;
         this.secondLastName = secondLastName;
         this.email = email;
+        this.pictureUrl = pictureUrl;
     }
 
     public Long getUserId() {
@@ -56,5 +60,9 @@ public class User {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    public String getPictureUrl() { return pictureUrl; }
+
+    public void setPictureUrl(String pictureUrl) { this.pictureUrl = pictureUrl; }
 
 }

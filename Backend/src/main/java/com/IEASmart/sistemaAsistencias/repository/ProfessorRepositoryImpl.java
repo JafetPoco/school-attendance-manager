@@ -45,7 +45,8 @@ public class ProfessorRepositoryImpl implements ProfessorRepository {
                 entity.getNames(),
                 entity.getFirstLastName(),
                 entity.getSecondLastName(),
-                entity.getEmail()
+                entity.getEmail(),
+                null
         );
     }
 

@@ -42,7 +42,8 @@ public class AdminRepositoryImpl implements AdminRepository {
                 entity.getNames(),
                 entity.getFirstLastName(),
                 entity.getSecondLastName(),
-                entity.getEmail()
+                entity.getEmail(),
+                null
         );
     }
 
