@@ -3,6 +3,8 @@ import { useAuthStore } from '../stores/authStore'
 
 import Login from '../views/Login.vue'
 import Dashboard from '../views/Dashboard.vue'
+import page404 from '../views/error/Error404.vue'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,6 +19,10 @@ const router = createRouter({
       name: 'dashboard',
       component: Dashboard,
       meta: { requiresAuth: true}
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      component: page404,
     }
   ],
 })
