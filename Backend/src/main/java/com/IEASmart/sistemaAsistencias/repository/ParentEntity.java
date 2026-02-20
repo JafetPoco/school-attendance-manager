@@ -2,6 +2,7 @@ package com.IEASmart.sistemaAsistencias.repository;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -9,6 +10,7 @@ import java.util.List;
 public class ParentEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "parent_id", nullable = false)
     private Long parentId;
 
@@ -21,10 +23,11 @@ public class ParentEntity {
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<StudentEntity> children;
 
-    public ParentEntity() {}
+    public ParentEntity() {
+        this.children = new ArrayList<>();
+    }
 
-    public ParentEntity(Long parentId, String names, String phoneNumber, List<StudentEntity> children) {
-        this.parentId = parentId;
+    public ParentEntity(String names, String phoneNumber, List<StudentEntity> children) {
         this.names = names;
         this.phoneNumber = phoneNumber;
         this.children = children;
@@ -55,15 +58,20 @@ public class ParentEntity {
     }
 
     public List<StudentEntity> getChildren() {
+        if (this.children == null) this.children = new ArrayList<>();
         return children;
     }
 
     public void setChildren(List<StudentEntity> children) {
-        this.children = children;
+        this.children = (children == null) ? new ArrayList<>() : children;
     }
 
     public void addChild(StudentEntity child) {
-        children.add(child);
-        child.setParent(this);
+        if (child == null) return;
+        if (this.children == null) this.children = new ArrayList<>();
+        if (!this.children.contains(child)) {
+            children.add(child);
+            child.setParent(this);
+        }
     }
 }

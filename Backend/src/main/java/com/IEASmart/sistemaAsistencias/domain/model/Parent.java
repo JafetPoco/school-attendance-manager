@@ -1,5 +1,6 @@
 package com.IEASmart.sistemaAsistencias.domain.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Parent {
@@ -15,7 +16,9 @@ public class Parent {
         this.children = children;
     }
 
-    public Parent() {}
+    public Parent() {
+        this.children = new ArrayList<>();
+    }
 
     public Long getParentId() {
         return parentId;
@@ -42,18 +45,25 @@ public class Parent {
     }
 
     public List<Student> getChildren() {
+        if (this.children == null) this.children = new ArrayList<>();
         return children;
     }
 
     public void setChildren(List<Student> children) {
-        this.children = children;
+        this.children = (children == null) ? new ArrayList<>() : children;
     }
 
     public void addChild(Student child) {
-        this.children.add(child);
+        if (child == null) return;
+        if (this.children == null) this.children = new ArrayList<>();
+        if (!this.children.contains(child)) {
+            this.children.add(child);
+        }
     }
 
     public void removeChild(Student child) {
+        if (child == null) return;
+        if (this.children == null) return;
         this.children.remove(child);
     }
 }
