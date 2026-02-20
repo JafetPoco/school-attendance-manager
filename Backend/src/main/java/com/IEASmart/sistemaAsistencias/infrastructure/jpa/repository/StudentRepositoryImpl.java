@@ -1,8 +1,8 @@
-package com.IEASmart.sistemaAsistencias.repository;
+package com.IEASmart.sistemaAsistencias.infrastructure.jpa.repository;
 
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
 import com.IEASmart.sistemaAsistencias.domain.repository.StudentRepository;
-import com.IEASmart.sistemaAsistencias.repository.mapper.StudentMapper;
+import com.IEASmart.sistemaAsistencias.infrastructure.mapper.StudentMapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

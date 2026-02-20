@@ -1,7 +1,7 @@
-package com.IEASmart.sistemaAsistencias.controller;
+package com.IEASmart.sistemaAsistencias.api.controller;
 
 import com.IEASmart.sistemaAsistencias.domain.model.Parent;
-import com.IEASmart.sistemaAsistencias.service.ParentService;
+import com.IEASmart.sistemaAsistencias.application.service.ParentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,7 +1,7 @@
-package com.IEASmart.sistemaAsistencias.repository.mapper;
+package com.IEASmart.sistemaAsistencias.infrastructure.mapper;
 
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
-import com.IEASmart.sistemaAsistencias.repository.StudentEntity;
+import com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity.StudentEntity;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -1,10 +1,10 @@
-package com.IEASmart.sistemaAsistencias.controller.dto;
+package com.IEASmart.sistemaAsistencias.api.dto.request;
 
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Grade;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Level;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
 
-public class StudentDto {
+public class StudentRequest {
     private String dni;
     private String name;
     private String firstLastName;
@@ -14,7 +14,7 @@ public class StudentDto {
     private Section section;
     private Long parentId;
 
-    public StudentDto(String dni, String name, String firstLastName, String secondLastName, Level level, Grade grade, Section section, Long parentId) {
+    public StudentRequest(String dni, String name, String firstLastName, String secondLastName, Level level, Grade grade, Section section, Long parentId) {
         this.dni = dni;
         this.name = name;
         this.firstLastName = firstLastName;
@@ -25,7 +25,7 @@ public class StudentDto {
         this.parentId = parentId;
     }
 
-    public StudentDto() {}
+    public StudentRequest() {}
 
     public String getDni() {
         return dni;
@@ -91,5 +91,3 @@ public class StudentDto {
         this.parentId = parentId;
     }
 }
-
-

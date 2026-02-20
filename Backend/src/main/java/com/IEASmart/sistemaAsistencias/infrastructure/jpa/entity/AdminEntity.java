@@ -1,4 +1,4 @@
-package com.IEASmart.sistemaAsistencias.repository;
+package com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity;
 
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;

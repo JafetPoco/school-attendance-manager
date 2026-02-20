@@ -1,7 +1,8 @@
-package com.IEASmart.sistemaAsistencias.repository;
+package com.IEASmart.sistemaAsistencias.infrastructure.jpa.repository;
 
 import com.IEASmart.sistemaAsistencias.domain.model.Admin;
 import com.IEASmart.sistemaAsistencias.domain.repository.AdminRepository;
+import com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity.AdminEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

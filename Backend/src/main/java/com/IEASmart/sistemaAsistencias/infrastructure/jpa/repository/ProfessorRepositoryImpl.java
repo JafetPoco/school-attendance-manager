@@ -1,7 +1,8 @@
-package com.IEASmart.sistemaAsistencias.repository;
+package com.IEASmart.sistemaAsistencias.infrastructure.jpa.repository;
 
 import com.IEASmart.sistemaAsistencias.domain.model.Professor;
 import com.IEASmart.sistemaAsistencias.domain.repository.ProfessorRepository;
+import com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity.ProfessorEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.IEASmart.sistemaAsistencias.service;
+package com.IEASmart.sistemaAsistencias.application.service;
 
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.UserType;
 import com.IEASmart.sistemaAsistencias.domain.repository.AdminRepository;

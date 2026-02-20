@@ -1,7 +1,7 @@
-package com.IEASmart.sistemaAsistencias.repository.mapper;
+package com.IEASmart.sistemaAsistencias.infrastructure.mapper;
 
 import com.IEASmart.sistemaAsistencias.domain.model.Parent;
-import com.IEASmart.sistemaAsistencias.repository.ParentEntity;
+import com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity.ParentEntity;
 import org.springframework.stereotype.Component;
 
 @Component

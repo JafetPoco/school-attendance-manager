@@ -1,4 +1,4 @@
-package com.IEASmart.sistemaAsistencias.repository;
+package com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity;
 
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Grade;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Level;

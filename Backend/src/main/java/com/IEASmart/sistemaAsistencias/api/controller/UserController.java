@@ -1,10 +1,10 @@
-package com.IEASmart.sistemaAsistencias.controller;
+package com.IEASmart.sistemaAsistencias.api.controller;
 
 import com.IEASmart.sistemaAsistencias.domain.model.Admin;
 import com.IEASmart.sistemaAsistencias.domain.model.Professor;
 import com.IEASmart.sistemaAsistencias.domain.model.User;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.UserType;
-import com.IEASmart.sistemaAsistencias.service.AuthorizationService;
+import com.IEASmart.sistemaAsistencias.application.service.AuthorizationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
