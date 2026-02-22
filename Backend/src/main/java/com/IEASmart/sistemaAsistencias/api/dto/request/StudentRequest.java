@@ -12,9 +12,8 @@ public class StudentRequest {
     private Level level;
     private Grade grade;
     private Section section;
-    private Long parentId;
 
-    public StudentRequest(String dni, String name, String firstLastName, String secondLastName, Level level, Grade grade, Section section, Long parentId) {
+    public StudentRequest(String dni, String name, String firstLastName, String secondLastName, Level level, Grade grade, Section section) {
         this.dni = dni;
         this.name = name;
         this.firstLastName = firstLastName;
@@ -22,7 +21,6 @@ public class StudentRequest {
         this.level = level;
         this.grade = grade;
         this.section = section;
-        this.parentId = parentId;
     }
 
     public StudentRequest() {}
@@ -81,13 +79,5 @@ public class StudentRequest {
 
     public void setSection(Section section) {
         this.section = section;
-    }
-
-    public Long getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(Long parentId) {
-        this.parentId = parentId;
     }
 }

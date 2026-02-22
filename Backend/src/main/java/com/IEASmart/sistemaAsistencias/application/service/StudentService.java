@@ -14,18 +14,19 @@ import java.util.Optional;
 public class StudentService {
     private final StudentRepository studentRepository;
     private final ParentRepository parentRepository;
+    private final StudentApiMapper studentApiMapper;
 
-    public StudentService(StudentRepository studentRepository, ParentRepository parentRepository) {
+    public StudentService(StudentRepository studentRepository, ParentRepository parentRepository, StudentApiMapper studentApiMapper) {
         this.studentRepository = studentRepository;
         this.parentRepository = parentRepository;
+        this.studentApiMapper = studentApiMapper;
     }
 
     public List<StudentResponse> getAllStudents() {
         List<Student> students = studentRepository.getAllStudents();
         return students.stream()
                 .map(student -> {
-                    StudentResponse response = StudentApiMapper.toResponse(student);
-                    // Si existe un padre relacionado, se añade el nombre al response
+                    StudentResponse response = studentApiMapper.toResponse(student);
                     parentRepository.findByAlumnoId(student.getDni())
                             .ifPresent(parent -> response.setParentName(parent.getNames()));
                     return response;
@@ -34,6 +35,6 @@ public class StudentService {
     }
 
     public Optional<StudentResponse> getStudentById(String studentId) {
-        return studentRepository.findById(studentId).map(StudentApiMapper::toResponse);
+        return studentRepository.findById(studentId).map(studentApiMapper::toResponse);
     }
 }

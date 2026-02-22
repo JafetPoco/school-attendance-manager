@@ -7,7 +7,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class StudentApiMapper {
-    public static StudentResponse toResponse(Student student){
+    public StudentResponse toResponse(Student student){
+        if (student == null) return null;
         StudentResponse studentResponse = new StudentResponse();
         studentResponse.setDni(student.getDni());
         studentResponse.setName(student.getName());
@@ -19,7 +20,8 @@ public class StudentApiMapper {
         return studentResponse;
     }
 
-    public static Student toDomain(StudentRequest studentRequest){
+    public Student toDomain(StudentRequest studentRequest){
+        if (studentRequest == null) return null;
         Student student = new Student();
         student.setDni(studentRequest.getDni());
         student.setName(studentRequest.getName());
