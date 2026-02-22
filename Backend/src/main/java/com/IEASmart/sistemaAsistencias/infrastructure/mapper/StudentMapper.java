@@ -10,15 +10,17 @@ public class StudentMapper {
         if (entity == null) {
             return null;
         }
-        return new Student(
-                entity.getDni(),
-                entity.getName(),
-                entity.getFirstLastName(),
-                entity.getSecondLastName(),
-                entity.getLevel(),
-                entity.getGrade(),
-                entity.getSection()
-        );
+
+        Student student = new Student();
+        student.setDni(entity.getDni());
+        student.setName(entity.getName());
+        student.setFirstLastName(entity.getFirstLastName());
+        student.setSecondLastName(entity.getSecondLastName());
+        student.setLevel(entity.getLevel());
+        student.setGrade(entity.getGrade());
+        student.setSection(entity.getSection());
+        student.setSchool(entity.getSchool());
+        return student;
     }
 
     public StudentEntity toEntity(Student student) {

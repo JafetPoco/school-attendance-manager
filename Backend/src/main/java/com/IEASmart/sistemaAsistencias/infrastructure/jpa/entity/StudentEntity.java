@@ -2,6 +2,7 @@ package com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity;
 
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Grade;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Level;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
 import jakarta.persistence.*;
 
@@ -30,13 +31,16 @@ public class StudentEntity {
     @Column(name = "section", nullable = false)
     private Section section;
 
+    @Column(name = "school", nullable = false)
+    private School school;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private ParentEntity parent;
 
     public StudentEntity() {}
 
-    public StudentEntity(String dni, String name, String firstLastName, String secondLastName, Level level, Grade grade, Section section, ParentEntity parent) {
+    public StudentEntity(String dni, String name, String firstLastName, String secondLastName, Level level, Grade grade, Section section, School school, ParentEntity parent) {
         this.dni = dni;
         this.name = name;
         this.firstLastName = firstLastName;
@@ -44,6 +48,7 @@ public class StudentEntity {
         this.level = level;
         this.grade = grade;
         this.section = section;
+        this.school = school;
         this.parent = parent;
     }
 
@@ -101,6 +106,14 @@ public class StudentEntity {
 
     public void setSection(Section section) {
         this.section = section;
+    }
+
+    public School getSchool() {
+        return school;
+    }
+
+    public void setSchool(School school) {
+        this.school = school;
     }
 
     public ParentEntity getParent() {

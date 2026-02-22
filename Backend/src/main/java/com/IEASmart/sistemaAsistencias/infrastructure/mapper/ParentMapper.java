@@ -21,6 +21,7 @@ public class ParentMapper {
         parent.setParentId(entity.getParentId());
         parent.setNames(entity.getNames());
         parent.setPhoneNumber(entity.getPhoneNumber());
+        parent.setSchool(entity.getSchool());
 
         if(entity.getChildren() != null) {
             entity.getChildren().forEach(entityChild -> {
@@ -39,6 +40,7 @@ public class ParentMapper {
         entity.setParentId(parent.getParentId());
         entity.setNames(parent.getNames());
         entity.setPhoneNumber(parent.getPhoneNumber());
+        entity.setSchool(parent.getSchool());
 
         parent.getChildren().forEach(domainChild -> {
             entity.addChild(studentMapper.toEntity(domainChild));

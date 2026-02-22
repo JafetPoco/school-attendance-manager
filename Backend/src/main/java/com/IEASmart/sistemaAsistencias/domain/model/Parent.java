@@ -1,5 +1,7 @@
 package com.IEASmart.sistemaAsistencias.domain.model;
 
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,12 +10,14 @@ public class Parent {
     private String names;
     private String phoneNumber;
     private List<Student> children;
+    private School school;
 
-    public Parent(Long parentId, String names, String phoneNumber, List<Student> children) {
+    public Parent(Long parentId, String names, String phoneNumber, List<Student> children, School school) {
         this.parentId = parentId;
         this.names = names;
         this.phoneNumber = phoneNumber;
         this.children = children;
+        this.school = school;
     }
 
     public Parent() {
@@ -51,6 +55,14 @@ public class Parent {
 
     public void setChildren(List<Student> children) {
         this.children = (children == null) ? new ArrayList<>() : children;
+    }
+
+    public School getSchool() {
+        return school;
+    }
+
+    public void setSchool(School school) {
+        this.school = school;
     }
 
     public void addChild(Student child) {
