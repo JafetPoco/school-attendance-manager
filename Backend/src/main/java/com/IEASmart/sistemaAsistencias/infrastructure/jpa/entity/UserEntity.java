@@ -1,10 +1,11 @@
 package com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity;
 
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.UserType;
 import jakarta.persistence.*;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
 @Table(name = "users")
 public class UserEntity {
     @Id
@@ -24,15 +25,24 @@ public class UserEntity {
     @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
+    @Column(name = "school_id", nullable = true)
+    private School school;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_type", nullable = false)
+    private UserType userType;
+
     // Constructor sin argumentos necesario para JPA
     public UserEntity() {
     }
 
-    public UserEntity(String names, String firstLastName, String secondLastName, String email) {
+    public UserEntity(String names, String firstLastName, String secondLastName, String email, School school, UserType userType) {
         this.names = names;
         this.firstLastName = firstLastName;
         this.secondLastName = secondLastName;
         this.email = email;
+        this.school = school;
+        this.userType = userType;
     }
 
     public Long getUserId() {
@@ -73,5 +83,21 @@ public class UserEntity {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public School getSchool() {
+        return school;
+    }
+
+    public void setSchool(School school) {
+        this.school = school;
+    }
+
+    public UserType getUserType() {
+        return userType;
+    }
+
+    public void setUserType(UserType userType) {
+        this.userType = userType;
     }
 }

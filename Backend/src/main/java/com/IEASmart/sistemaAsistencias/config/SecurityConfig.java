@@ -51,8 +51,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(requests -> requests
                         // permitir explícitamente la raíz y recursos estáticos
-                        .requestMatchers(HttpMethod.GET, "/", "/index", "/api/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/", "/index").permitAll()
                         .requestMatchers("/favicon.ico", "/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
                         // permitir endpoints de OAuth2 y callbacks
                         .requestMatchers("/oauth2/**", "/oauth2/authorization/**", "/login", "/login/oauth2/**", "/login/oauth2/code/**", "/error").permitAll()

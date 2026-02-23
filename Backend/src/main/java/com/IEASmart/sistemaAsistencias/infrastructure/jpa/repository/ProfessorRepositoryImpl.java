@@ -3,6 +3,7 @@ package com.IEASmart.sistemaAsistencias.infrastructure.jpa.repository;
 import com.IEASmart.sistemaAsistencias.domain.model.Professor;
 import com.IEASmart.sistemaAsistencias.domain.repository.ProfessorRepository;
 import com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity.ProfessorEntity;
+import com.IEASmart.sistemaAsistencias.infrastructure.mapper.ProfessorMapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -11,15 +12,17 @@ import java.util.Optional;
 @Repository
 public class ProfessorRepositoryImpl implements ProfessorRepository {
     private final ProfessorJpaRepository jpaRepository;
+    private final ProfessorMapper mapper;
 
-    public ProfessorRepositoryImpl(ProfessorJpaRepository jpaRepository) {
+    public ProfessorRepositoryImpl(ProfessorJpaRepository jpaRepository, ProfessorMapper professorMapper) {
         this.jpaRepository = jpaRepository;
+        this.mapper = professorMapper;
     }
 
     @Override
     public List<Professor> findAll(){
         return jpaRepository.findAll().stream()
-                .map(this::toDomain)
+                .map(mapper::toDomain)
                 .toList();
     }
 
@@ -31,41 +34,19 @@ public class ProfessorRepositoryImpl implements ProfessorRepository {
     @Override
     public Optional<Professor> findById(Long id) {
         return jpaRepository.findById(id)
-                .map(this::toDomain);
+                .map(mapper::toDomain);
     }
 
     @Override
     public Optional<Professor> findByEmail(String email){
         return jpaRepository.findByEmail(email)
-                .map(this::toDomain);
-    }
-
-    private Professor toDomain(ProfessorEntity entity) {
-        return new Professor(
-                entity.getUserId(),
-                entity.getNames(),
-                entity.getFirstLastName(),
-                entity.getSecondLastName(),
-                entity.getEmail(),
-                null
-        );
+                .map(mapper::toDomain);
     }
 
     @Override
     public Professor save(Professor professor) {
-        ProfessorEntity entity = toEntity(professor);
+        ProfessorEntity entity = mapper.toEntity(professor);
         ProfessorEntity savedEntity = jpaRepository.save(entity);
-        return toDomain(savedEntity);
-    }
-
-    private ProfessorEntity toEntity(Professor professor) {
-        ProfessorEntity entity = new ProfessorEntity(
-                professor.getNames(),
-                professor.getFirstLastName(),
-                professor.getSecondLastName(),
-                professor.getEmail()
-        );
-
-        return entity;
+        return mapper.toDomain(savedEntity);
     }
 }

@@ -1,28 +1,17 @@
-package com.IEASmart.sistemaAsistencias.domain.model;
+package com.IEASmart.sistemaAsistencias.api.dto.response;
 
-import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.UserType;
 
-public class User {
+public class CreateUserResponse {
     private Long userId;
     private String names;
     private String firstLastName;
     private String secondLastName;
     private String email;
-    private School school;
+    private String schoolName;
     private UserType userType;
 
-    public User() {}
-
-    public User(Long userId, String names, String firstLastName, String secondLastName, String email, School school, UserType userType) {
-        this.userId = userId;
-        this.names = names;
-        this.firstLastName = firstLastName;
-        this.secondLastName = secondLastName;
-        this.email = email;
-        this.school = school;
-        this.userType = userType;
-    }
+    public CreateUserResponse() {}
 
     public Long getUserId() {
         return userId;
@@ -64,12 +53,12 @@ public class User {
         this.email = email;
     }
 
-    public School getSchool() {
-        return school;
+    public String getSchoolName() {
+        return schoolName;
     }
 
-    public void setSchool(School school) {
-        this.school = school;
+    public void setSchoolName(String schoolName) {
+        this.schoolName = schoolName;
     }
 
     public UserType getUserType() {

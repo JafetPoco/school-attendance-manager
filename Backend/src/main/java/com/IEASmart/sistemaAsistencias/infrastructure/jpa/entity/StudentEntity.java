@@ -22,15 +22,19 @@ public class StudentEntity {
     @Column(name = "second_last_name", nullable = false, length = 50)
     private String secondLastName;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "level", nullable = false)
     private Level level;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "grade", nullable = false)
     private Grade grade;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "section", nullable = false)
     private Section section;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "school", nullable = false)
     private School school;
 

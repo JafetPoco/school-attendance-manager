@@ -1,27 +1,29 @@
-package com.IEASmart.sistemaAsistencias.domain.model;
+package com.IEASmart.sistemaAsistencias.api.dto.response;
 
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.UserType;
 
-public class User {
+public class UserResponse {
     private Long userId;
     private String names;
     private String firstLastName;
     private String secondLastName;
     private String email;
-    private School school;
+    private String schoolName;
     private UserType userType;
+    private String urlPicture;
 
-    public User() {}
+    public UserResponse() {}
 
-    public User(Long userId, String names, String firstLastName, String secondLastName, String email, School school, UserType userType) {
+    public UserResponse(Long userId, String names, String firstLastName, String secondLastName, String email, String schoolName, UserType userType, String urlPicture) {
         this.userId = userId;
         this.names = names;
         this.firstLastName = firstLastName;
         this.secondLastName = secondLastName;
         this.email = email;
-        this.school = school;
+        this.schoolName = schoolName;
         this.userType = userType;
+        this.urlPicture = urlPicture;
     }
 
     public Long getUserId() {
@@ -64,12 +66,12 @@ public class User {
         this.email = email;
     }
 
-    public School getSchool() {
-        return school;
+    public String getSchoolName() {
+        return schoolName;
     }
 
-    public void setSchool(School school) {
-        this.school = school;
+    public void setSchoolName(String schoolName) {
+        this.schoolName = schoolName;
     }
 
     public UserType getUserType() {
@@ -78,5 +80,13 @@ public class User {
 
     public void setUserType(UserType userType) {
         this.userType = userType;
+    }
+
+    public String getUrlPicture() {
+        return urlPicture;
+    }
+
+    public void setUrlPicture(String urlPicture) {
+        this.urlPicture = urlPicture;
     }
 }
