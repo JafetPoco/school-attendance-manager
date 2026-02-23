@@ -31,6 +31,7 @@ public class UserApiMapper {
         user.setSecondLastName(response.getSecondLastName());
         user.setEmail(response.getEmail());
         user.setUserType(response.getUserType());
+        user.setSchool(response.getSchool());
         return user;
     }
 
@@ -42,6 +43,7 @@ public class UserApiMapper {
         a.setSecondLastName(req.getSecondLastName());
         a.setEmail(req.getEmail());
         a.setUserType(req.getUserType());
+        a.setSchool(req.getSchool());
         return a;
     }
 
@@ -53,6 +55,7 @@ public class UserApiMapper {
         p.setSecondLastName(req.getSecondLastName());
         p.setEmail(req.getEmail());
         p.setUserType(req.getUserType());
+        p.setSchool(req.getSchool());
         return p;
     }
 
@@ -64,6 +67,7 @@ public class UserApiMapper {
         s.setSecondLastName(req.getSecondLastName());
         s.setEmail(req.getEmail());
         s.setUserType(req.getUserType());
+        s.setSchool(req.getSchool());
         return s;
     }
 

@@ -9,15 +9,17 @@ public class UserRequest {
     private String secondLastName;
     private String email;
     private UserType userType;
+    private School school;
 
     public UserRequest() {}
 
-    public UserRequest(String names, String firstLastName, String secondLastName, String email, UserType userType) {
+    public UserRequest(String names, String firstLastName, String secondLastName, String email, UserType userType, School school) {
         this.names = names;
         this.firstLastName = firstLastName;
         this.secondLastName = secondLastName;
         this.email = email;
         this.userType = userType;
+        this.school = school;
     }
 
     public String getNames() {
@@ -58,5 +60,13 @@ public class UserRequest {
 
     public void setUserType(UserType userType) {
         this.userType = userType;
+    }
+
+    public School getSchool() {
+        return school;
+    }
+
+    public void setSchool(School school) {
+        this.school = school;
     }
 }

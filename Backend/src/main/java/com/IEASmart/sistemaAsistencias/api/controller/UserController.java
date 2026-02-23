@@ -23,11 +23,6 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<UserResponse> me(Authentication authentication) {
-        // Si no está autenticado devolvemos 401
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
         Object principal = authentication.getPrincipal();
         String email = null;
         String picture = null;
@@ -44,11 +39,6 @@ public class UserController {
             // fallback: use authentication.getName()
             email = authentication.getName();
         }
-
-        if (email == null || email.isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-
         UserResponse response = authorizationService.getUserInfoByEmail(email, picture);
         return ResponseEntity.ok(response);
     }
@@ -60,3 +50,4 @@ public class UserController {
     }
 
 }
+
