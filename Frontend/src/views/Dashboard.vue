@@ -10,7 +10,8 @@
               <GraduationCap class="w-6 h-6 text-white" />
             </div>
             <div>
-              <span class="text-lg font-semibold text-slate-800">Colegio Gral. José de San Martín</span>
+              <span v-if="auth.user?.schoolName" class="text-lg font-semibold text-slate-800">{{ auth.user.schoolName }}</span>
+              <span v-else class="text-lg font-semibold text-slate-800">PANEL ADMINISTRADOR</span>
               <p class="text-xs text-slate-500">Portal Docente</p>
             </div>
           </div>
@@ -49,11 +50,11 @@
             <div v-else class="flex items-center space-x-3 cursor-pointer group relative">
               <div class="text-right hidden sm:block">
                 <p class="text-sm font-semibold text-slate-800">{{ auth.user?.names }}</p>
-                <p class="text-xs text-slate-500">ADMIN - ROLE</p>
+                <p class="text-xs text-slate-500">{{ auth.user?.userType }}</p>
               </div>
               <div class="relative">
                 <img class="h-10 w-10 rounded-xl border-2 border-slate-200 group-hover:border-slate-400 transition-all duration-300" 
-                     :src="auth.user?.pictureUrl" 
+                     :src="auth.user?.urlPicture" 
                      :alt="auth.user?.names" @error="useFallback">
                 <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
               </div>
@@ -253,14 +254,14 @@
             <div v-if="!auth.loading && auth.user" class="text-center">
               <div class="relative inline-block">
                 <img class="h-24 w-24 rounded-xl border-2 border-slate-200" 
-                     :src="auth.user?.pictureUrl" 
+                     :src="auth.user?.urlPicture" 
                      :alt="auth.user?.names" @error="useFallback">
               </div>
-              <h2 class="mt-4 text-xl font-bold text-slate-800">{{ auth.user?.names }}</h2>
+              <h2 class="mt-4 text-xl font-bold text-slate-800">{{ auth.user?.names }} {{ auth.user.firstLastName }} {{ auth.user.secondLastName }}</h2>
               <p class="text-sm text-slate-400 mt-1">{{ auth.user?.email }}</p>
               
               <div class="flex justify-center space-x-2 mt-4">
-                <span class="px-3 py-1 bg-slate-100 text-slate-700 text-xs rounded-full">Docente</span>
+                <span class="px-3 py-1 bg-slate-100 text-slate-700 text-xs rounded-full">{{ auth.user.userType }}</span>
               </div>
             </div>
             <div v-else class="text-center space-y-3">

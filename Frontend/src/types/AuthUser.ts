@@ -4,5 +4,7 @@ export interface AuthUser {
     firstLastName: string
     secondLastName: string
     email: string
-    pictureUrl: string
+    schoolName: string
+    userType: string
+    urlPicture: string
 }
