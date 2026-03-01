@@ -21,6 +21,7 @@ public class ParentEntity {
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "school", nullable = false)
     private School school;
 

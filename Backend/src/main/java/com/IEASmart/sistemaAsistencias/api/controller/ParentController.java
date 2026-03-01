@@ -5,7 +5,9 @@ import com.IEASmart.sistemaAsistencias.api.dto.request.StudentRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.response.ParentResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.ParentWithChildResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.StudentResponse;
+import com.IEASmart.sistemaAsistencias.application.service.AuthorizationService;
 import com.IEASmart.sistemaAsistencias.application.service.ParentService;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,36 +17,28 @@ import java.util.List;
 @RequestMapping("/api/parents")
 public class ParentController {
     private final ParentService parentService;
+    private final AuthorizationService authorizationService;
 
-    public ParentController(ParentService parentService) {
+    public ParentController(ParentService parentService,
+                            AuthorizationService authorizationService) {
         this.parentService = parentService;
+        this.authorizationService = authorizationService;
     }
 
-    @GetMapping
-    public ResponseEntity<List<ParentResponse>> getAllParents() {
-        List<ParentResponse> parents = parentService.getAllParents();
-        return ResponseEntity.ok(parents);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ParentWithChildResponse> getParentById(@PathVariable Long id) {
-        return parentService.getParentById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @PostMapping("/{parentId}/students")
+    @PostMapping("/{parentId}/student")
     public ResponseEntity<StudentResponse> addChild(
             @PathVariable Long parentId,
             @RequestBody StudentRequest request) {
 
-        StudentResponse response = parentService.addChildToParent(parentId, request);
+        School school = authorizationService.getUserSchool();
+        StudentResponse response = parentService.addChildToParent(parentId, request, school);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/with-children")
-    public ResponseEntity<ParentResponse> createParentWithChild(@RequestBody ParentWithChildRequest request) {
-        ParentResponse response = parentService.addParentWithChild(request);
+    public ResponseEntity<ParentResponse> createParentWithChildren(@RequestBody ParentWithChildRequest request) {
+        School school = authorizationService.getUserSchool();
+        ParentResponse response = parentService.addParentWithChildren(request, school);
         return ResponseEntity.ok(response);
     }
 
@@ -52,15 +46,31 @@ public class ParentController {
     public ResponseEntity<List<StudentResponse>> addManyChildToParent(
             @PathVariable Long parentId,
             @RequestBody List<StudentRequest> requests) {
-
-        List<StudentResponse> responses = parentService.addChildrenToParent(parentId, requests);
+        School school = authorizationService.getUserSchool();
+        List<StudentResponse> responses = parentService.addChildrenToParent(parentId, requests, school);
 
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping
+    public ResponseEntity<List<ParentResponse>> getAllParents() {
+        School school = authorizationService.getUserSchool();
+        List<ParentResponse> parents = parentService.getAllParents(school);
+        return ResponseEntity.ok(parents);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ParentWithChildResponse> getParentById(@PathVariable Long id) {
+        School school = authorizationService.getUserSchool();
+        return parentService.getParentById(id, school)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/{parentId}/students")
-    public ResponseEntity<List<StudentResponse>> obtenerHijos(@PathVariable Long parentId) {
-        List<StudentResponse> responses = parentService.getChildrenOfParent(parentId);
+    public ResponseEntity<List<StudentResponse>> getChildren(@PathVariable Long parentId) {
+        School school = authorizationService.getUserSchool();
+        List<StudentResponse> responses = parentService.getChildrenOfParent(parentId, school);
         return ResponseEntity.ok(responses);
     }
 

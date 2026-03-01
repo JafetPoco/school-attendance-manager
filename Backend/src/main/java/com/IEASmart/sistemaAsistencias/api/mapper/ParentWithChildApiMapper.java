@@ -45,7 +45,6 @@ public class ParentWithChildApiMapper {
         if (request == null) return null;
 
         Parent parent = new Parent();
-        parent.setParentId(request.getParentId());
         parent.setNames(request.getNames());
         parent.setPhoneNumber(request.getPhoneNumber());
 

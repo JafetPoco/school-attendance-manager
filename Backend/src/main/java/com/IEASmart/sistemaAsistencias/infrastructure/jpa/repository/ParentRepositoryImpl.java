@@ -1,6 +1,7 @@
 package com.IEASmart.sistemaAsistencias.infrastructure.jpa.repository;
 
 import com.IEASmart.sistemaAsistencias.domain.model.Parent;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import com.IEASmart.sistemaAsistencias.domain.repository.ParentRepository;
 import com.IEASmart.sistemaAsistencias.infrastructure.mapper.ParentMapper;
 import org.springframework.stereotype.Repository;
@@ -19,8 +20,8 @@ public class ParentRepositoryImpl implements ParentRepository {
     }
 
     @Override
-    public Optional<Parent> findById(Long id){
-        return jpaRepository.findById(id).map(mapper::toDomain);
+    public Optional<Parent> findById(Long id, School school){
+        return jpaRepository.findByParentIdAndSchool(id, school).map(mapper::toDomain);
     }
 
     @Override
@@ -29,8 +30,8 @@ public class ParentRepositoryImpl implements ParentRepository {
     }
 
     @Override
-    public List<Parent> getAll(){
-        return jpaRepository.findAll().stream().map(mapper::toDomain).toList();
+    public List<Parent> getAll(School school){
+        return jpaRepository.findAllBySchool(school).stream().map(mapper::toDomain).toList();
     }
 
     @Override

@@ -9,5 +9,5 @@ import java.util.Optional;
 
 public interface StudentJpaRepository extends JpaRepository<StudentEntity, String> {
     List<StudentEntity> findAllBySchool(School school);
-    Optional<StudentEntity> findByIdWithSchool(String id, School school);
+    Optional<StudentEntity> findByDniAndSchool(String id, School school);
 }

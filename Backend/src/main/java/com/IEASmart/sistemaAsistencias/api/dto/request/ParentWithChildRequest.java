@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ParentWithChildRequest {
-    private Long parentId;
     private String names;
     private String phoneNumber;
     private List<StudentRequest> children;
@@ -13,19 +12,10 @@ public class ParentWithChildRequest {
         this.children = new ArrayList<>();
     }
 
-    public ParentWithChildRequest(Long parentId, String names, String phoneNumber, List<StudentRequest> children) {
-        this.parentId = parentId;
+    public ParentWithChildRequest(String names, String phoneNumber, List<StudentRequest> children) {
         this.names = names;
         this.phoneNumber = phoneNumber;
         this.children = children;
-    }
-
-    public Long getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(Long parentId) {
-        this.parentId = parentId;
     }
 
     public String getNames() {

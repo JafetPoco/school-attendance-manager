@@ -8,8 +8,10 @@ import com.IEASmart.sistemaAsistencias.api.dto.response.StudentResponse;
 import com.IEASmart.sistemaAsistencias.api.mapper.ParentApiMapper;
 import com.IEASmart.sistemaAsistencias.api.mapper.ParentWithChildApiMapper;
 import com.IEASmart.sistemaAsistencias.api.mapper.StudentApiMapper;
+import com.IEASmart.sistemaAsistencias.domain.exception.InvalidArgumentException;
 import com.IEASmart.sistemaAsistencias.domain.model.Parent;
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import com.IEASmart.sistemaAsistencias.domain.repository.ParentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,41 +33,20 @@ public class ParentService {
         this.parentWithChildApiMapper = parentWithChildApiMapper;
     }
 
-    @Transactional(readOnly = true)
-    public List<ParentResponse> getAllParents() {
-        List<Parent> parents = parentRepository.getAll();
-        return parents.stream()
-                .map(parentApiMapper::toResponse)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public Optional<ParentWithChildResponse> getParentById(Long parentId) {
-        Optional<Parent> parentOpt = parentRepository.findById(parentId);
-        if(parentOpt.isEmpty()){
-            return Optional.empty();
-        } else {
-            Parent parent = parentOpt.get();
-            ParentWithChildResponse response = parentWithChildApiMapper.toResponse(parent);
-            return Optional.of(response);
-        }
-    }
-
-    public StudentResponse addChildToParent(Long parentId, StudentRequest student) {
+    public StudentResponse addChildToParent(Long parentId, StudentRequest student, School school) {
         if(student == null) throw new IllegalArgumentException("Student cannot be null");
 
         if (student.getDni() == null || student.getDni().isBlank()) {
             throw new IllegalArgumentException("Student DNI is required and must not be empty when creating a student");
         }
 
-        Optional<Parent> parentOpt = parentRepository.findById(parentId);
+        Optional<Parent> parentOpt = parentRepository.findById(parentId, school);
         if (parentOpt.isPresent()) {
             Parent parent = parentOpt.get();
 
-            // Convertir request a dominio (una sola vez)
             Student domainStudent = studentApiMapper.toDomain(student);
+            domainStudent.setSchool(school);
 
-            // Agregar al padre y guardar
             parent.addChild(domainStudent);
             Parent savedParent = parentRepository.save(parent);
 
@@ -73,56 +54,62 @@ public class ParentService {
 
             // Buscar el estudiante recién guardado dentro del padre guardado por su dni
             Optional<Student> savedStudentOpt = savedParent.getChildren().stream()
-                    .filter(s -> s != null && studentDni != null && studentDni.equals(s.getDni()))
+                    .filter(s -> s.getDni().equals(studentDni))
                     .findFirst();
 
             StudentResponse studentResponse;
             if (savedStudentOpt.isPresent()) {
                 studentResponse = studentApiMapper.toResponse(savedStudentOpt.get());
             } else {
-                // Si no se encuentra (caso raro), mapear desde la entidad que intentamos guardar
                 studentResponse = studentApiMapper.toResponse(domainStudent);
             }
 
-            // Asignar el nombre del padre directamente desde el padre guardado
             studentResponse.setParentName(savedParent.getNames());
             return studentResponse;
         }
         throw new IllegalArgumentException("Parent with id " + parentId + " not found");
     }
 
-    public ParentResponse addParentWithChild(ParentWithChildRequest request) {
-        if(request == null) throw new IllegalArgumentException("Request cannot be null");
+    public ParentResponse addParentWithChildren(ParentWithChildRequest request, School school) {
+        if(request == null) throw new InvalidArgumentException("Request cannot be null", "request");
 
-        // Validar hijos: si vienen, cada uno debe tener DNI porque StudentEntity usa dni como @Id
         if (request.getChildren() != null) {
-            for (com.IEASmart.sistemaAsistencias.api.dto.request.StudentRequest s : request.getChildren()) {
+            for (StudentRequest s : request.getChildren()) {
                 if (s == null) continue;
                 if (s.getDni() == null || s.getDni().isBlank()) {
-                    throw new IllegalArgumentException("Each child in request must have a non-empty DNI to be persisted");
+                    throw new InvalidArgumentException("Each student must have a non-empty DNI to be persisted", "children");
                 }
             }
         }
 
         Parent parent = parentWithChildApiMapper.toDomain(request);
+        parent.setSchool(school);
+        for(Student child : parent.getChildren()) {
+            child.setSchool(school);
+        }
+
         Parent savedParent = parentRepository.save(parent);
         return parentApiMapper.toResponse(savedParent);
     }
 
-    public List<StudentResponse> addChildrenToParent(Long parentId, List<StudentRequest> students) {
-        if (students == null) throw new IllegalArgumentException("Students cannot be null");
+    public List<StudentResponse> addChildrenToParent(Long parentId, List<StudentRequest> students, School school) {
+        if (students == null) throw new InvalidArgumentException("Students list cannot be null", "students");
 
-        // Validar que cada student tenga DNI porque StudentEntity usa dni como @Id
         for (StudentRequest s : students) {
             if (s == null) continue;
             if (s.getDni() == null || s.getDni().isBlank()) {
-                throw new IllegalArgumentException("Each student must have a non-empty DNI to be persisted");
+                throw new InvalidArgumentException("Each student must have a non-empty DNI to be persisted", "students");
             }
         }
 
-        Optional<Parent> parentOpt = parentRepository.findById(parentId);
+        Optional<Parent> parentOpt = parentRepository.findById(parentId, school);
         if(parentOpt.isPresent()) {
             Parent parent = parentOpt.get();
+
+            for(Student child : parent.getChildren()) {
+                child.setSchool(school);
+            }
+
             List<Student> studentEntities = students.stream()
                     .map(studentApiMapper::toDomain)
                     .toList();
@@ -132,13 +119,31 @@ public class ParentService {
                     .map(studentApiMapper::toResponse)
                     .toList();
         }
-        throw new IllegalArgumentException("Parent with id " + parentId + " not found");
-
-
+        throw new InvalidArgumentException("Parent with id " + parentId + " not found", "parentId");
     }
 
-    public List<StudentResponse> getChildrenOfParent(Long parentId) {
-        Optional<Parent> parentOpt = parentRepository.findById(parentId);
+    @Transactional(readOnly = true)
+    public List<ParentResponse> getAllParents(School school) {
+        List<Parent> parents = parentRepository.getAll(school);
+        return parents.stream()
+                .map(parentApiMapper::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<ParentWithChildResponse> getParentById(Long parentId, School school) {
+        Optional<Parent> parentOpt = parentRepository.findById(parentId, school);
+        if(parentOpt.isEmpty()){
+            return Optional.empty();
+        } else {
+            Parent parent = parentOpt.get();
+            ParentWithChildResponse response = parentWithChildApiMapper.toResponse(parent);
+            return Optional.of(response);
+        }
+    }
+
+    public List<StudentResponse> getChildrenOfParent(Long parentId, School school) {
+        Optional<Parent> parentOpt = parentRepository.findById(parentId, school);
         if (parentOpt.isPresent()) {
             Parent parent = parentOpt.get();
             return parent.getChildren().stream()
