@@ -98,7 +98,11 @@ public class AuthorizationService {
     }
 
     public School getUserSchool() {
-        return resolveUserByEmail().getSchool();
+        School school = resolveUserByEmail().getSchool();
+        if(school == null) {
+            throw new ResourceNotFoundException("School", "user email", resolveUserByEmail().getEmail());
+        }
+        return school;
     }
 
     public UserResponse getUserInfo(String pictureUrl) {
