@@ -9,13 +9,13 @@ public class UserResponse {
     private String firstLastName;
     private String secondLastName;
     private String email;
-    private String schoolName;
+    private School schoolName;
     private UserType userType;
     private String urlPicture;
 
     public UserResponse() {}
 
-    public UserResponse(Long userId, String names, String firstLastName, String secondLastName, String email, String schoolName, UserType userType, String urlPicture) {
+    public UserResponse(Long userId, String names, String firstLastName, String secondLastName, String email, School schoolName, UserType userType, String urlPicture) {
         this.userId = userId;
         this.names = names;
         this.firstLastName = firstLastName;
@@ -66,11 +66,11 @@ public class UserResponse {
         this.email = email;
     }
 
-    public String getSchoolName() {
+    public School getSchoolName() {
         return schoolName;
     }
 
-    public void setSchoolName(String schoolName) {
+    public void setSchoolName(School schoolName) {
         this.schoolName = schoolName;
     }
 

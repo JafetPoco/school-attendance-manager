@@ -32,7 +32,6 @@ public class UserEntity {
     @Column(name = "user_type", nullable = false)
     private UserType userType;
 
-    // Constructor sin argumentos necesario para JPA
     public UserEntity() {
     }
 
