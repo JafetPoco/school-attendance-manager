@@ -9,10 +9,12 @@ import com.IEASmart.sistemaAsistencias.api.mapper.ParentApiMapper;
 import com.IEASmart.sistemaAsistencias.api.mapper.ParentWithChildApiMapper;
 import com.IEASmart.sistemaAsistencias.api.mapper.StudentApiMapper;
 import com.IEASmart.sistemaAsistencias.domain.exception.InvalidArgumentException;
+import com.IEASmart.sistemaAsistencias.domain.exception.ConflictException;
 import com.IEASmart.sistemaAsistencias.domain.model.Parent;
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import com.IEASmart.sistemaAsistencias.domain.repository.ParentRepository;
+import com.IEASmart.sistemaAsistencias.domain.repository.StudentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,12 +24,14 @@ import java.util.Optional;
 @Service
 public class ParentService {
     private final ParentRepository parentRepository;
+    private final StudentRepository studentRepository;
     private final ParentApiMapper parentApiMapper;
     private final StudentApiMapper studentApiMapper;
     private final ParentWithChildApiMapper parentWithChildApiMapper;
 
-    public ParentService(ParentRepository parentRepository, ParentApiMapper parentApiMapper, StudentApiMapper studentApiMapper, ParentWithChildApiMapper parentWithChildApiMapper) {
+    public ParentService(ParentRepository parentRepository, StudentRepository studentRepository, ParentApiMapper parentApiMapper, StudentApiMapper studentApiMapper, ParentWithChildApiMapper parentWithChildApiMapper) {
         this.parentRepository = parentRepository;
+        this.studentRepository = studentRepository;
         this.parentApiMapper = parentApiMapper;
         this.studentApiMapper = studentApiMapper;
         this.parentWithChildApiMapper = parentWithChildApiMapper;
@@ -79,6 +83,12 @@ public class ParentService {
                 if (s.getDni() == null || s.getDni().isBlank()) {
                     throw new InvalidArgumentException("Each student must have a non-empty DNI to be persisted", "children");
                 }
+
+                if (studentRepository != null && s.getDni() != null) {
+                    if (studentRepository.findById(s.getDni(), school).isPresent()) {
+                        throw new ConflictException("El estudiante con DNI " + s.getDni() + " ya existe en la escuela", "STUDENT_DNI_ALREADY_EXISTS");
+                    }
+                }
             }
         }
 
@@ -86,6 +96,10 @@ public class ParentService {
         parent.setSchool(school);
         for(Student child : parent.getChildren()) {
             child.setSchool(school);
+
+            if(child.getSchool() == null) {
+                throw new IllegalStateException("Child debe tener una escuela asignada antes de ser persistido");
+            }
         }
 
         Parent savedParent = parentRepository.save(parent);
