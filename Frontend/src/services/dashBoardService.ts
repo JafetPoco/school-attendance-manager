@@ -1,5 +1,5 @@
-import { http } from '../api/http'
-import type { AuthUser } from '../types/AuthUser'
+import { http } from '@/api/http'
+import type { AuthUser } from '@/types/AuthUser'
 
 export async function getCurrentUser(): Promise<AuthUser> {
   return http<AuthUser>('/user/me')

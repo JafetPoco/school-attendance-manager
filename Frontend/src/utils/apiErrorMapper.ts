@@ -1,4 +1,4 @@
-import { ApiHttpError } from '../api/ApiHttpError'
+import { ApiHttpError } from '@/api/ApiHttpError'
 
 export function mapApiError(error: unknown): ApiHttpError {
   if (error instanceof ApiHttpError) {

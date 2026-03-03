@@ -1,4 +1,4 @@
-import type { ErrorResponse } from '../types/Error'
+import type { ErrorResponse } from '@/types/Error'
 
 export class ApiHttpError extends Error {
   readonly status: number

@@ -1,9 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/authStore'
 
-import Login from '../views/Login.vue'
-import Dashboard from '../views/Dashboard.vue'
-import formParentWithChildren from '../views/FormParentWithChildren.vue'
 import page404 from '../views/error/Error404.vue'
 
 
@@ -13,18 +10,18 @@ const router = createRouter({
     {
       path: '/',
       name: 'login',
-      component: Login,
+      component: () => import('@/views/Login.vue')
     },
     {
       path: '/dashboard',
       name: 'dashboard',
-      component: Dashboard,
+      component: () => import('@/views/Dashboard.vue'),
       meta: { requiresAuth: true}
     },
     {
       path: '/addParentWithChildren',
       name: 'addParentWithChildren',
-      component: formParentWithChildren,
+      component: () => import('@/views/FormParentWithChildren.vue'),
       meta: { requiresAuth: true}
     },
     {

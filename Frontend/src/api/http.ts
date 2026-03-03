@@ -1,6 +1,6 @@
 const BASE_URL = 'http://localhost:8081/api'
 
-import type { ErrorResponse } from '../types/Error'
+import type { ErrorResponse } from '@/types/Error'
 import { ApiHttpError } from './ApiHttpError'
 
 function isErrorResponse(value: unknown): value is ErrorResponse {

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
-import type { AuthUser } from '../types/AuthUser'
-import { getCurrentUser, logout as logoutService } from '../services/DashBoardService'
+import type { AuthUser } from '@/types/AuthUser'
+import { getCurrentUser, logout as logoutService } from '@/services/dashBoardService'
 
 interface AuthState {
   user: AuthUser | null

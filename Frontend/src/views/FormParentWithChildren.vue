@@ -190,11 +190,11 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import ChildFormComponent from '../components/ChildFormComponent.vue'
-import { addParentWithChildren } from '../services/addParentWithChildren'
-import type { ParentWithChildrenRequest } from '../types/ParentWithChildren'
-import type { StudentRequest } from '../types/Student'
-import type { ParentResponse } from '../types/Parent'
+import ChildFormComponent from '@/components/ChildFormComponent.vue'
+import { addParentWithChildren } from '@/services/addParentWithChildren'
+import type { ParentWithChildrenRequest } from '@/types/ParentWithChildren'
+import type { StudentRequest } from '@/types/Student'
+import type { ParentResponse } from '@/types/Parent'
 import {
   Users,
   User,
