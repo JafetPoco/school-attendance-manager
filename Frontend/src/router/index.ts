@@ -3,6 +3,7 @@ import { useAuthStore } from '../stores/authStore'
 
 import Login from '../views/Login.vue'
 import Dashboard from '../views/Dashboard.vue'
+import formParentWithChildren from '../views/FormParentWithChildren.vue'
 import page404 from '../views/error/Error404.vue'
 
 
@@ -18,6 +19,12 @@ const router = createRouter({
       path: '/dashboard',
       name: 'dashboard',
       component: Dashboard,
+      meta: { requiresAuth: true}
+    },
+    {
+      path: '/addParentWithChildren',
+      name: 'addParentWithChildren',
+      component: formParentWithChildren,
       meta: { requiresAuth: true}
     },
     {
