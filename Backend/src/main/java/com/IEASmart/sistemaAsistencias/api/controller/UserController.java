@@ -23,23 +23,18 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<UserResponse> me(Authentication authentication) {
-        Object principal = authentication.getPrincipal();
-        String email = null;
         String picture = null;
 
-        if (principal instanceof OAuth2User) {
-            OAuth2User oauth = (OAuth2User) principal;
-            Object emailAttr = oauth.getAttribute("email");
-            if (emailAttr != null) email = emailAttr.toString();
-            Object picAttr = oauth.getAttribute("picture");
-            if (picAttr != null) picture = picAttr.toString();
-        } else if (principal instanceof UserDetails) {
-            email = ((UserDetails) principal).getUsername();
-        } else {
-            // fallback: use authentication.getName()
-            email = authentication.getName();
+        if (authentication != null) {
+            Object principal = authentication.getPrincipal();
+            if(principal instanceof OAuth2User) {
+                Object picAttr = ((OAuth2User) principal).getAttribute("picture");
+                if (picAttr != null) picture = picAttr.toString();
+            } else if (principal instanceof UserDetails) {
+                // No picture available for UserDetails, so we can ignore this case
+            }
         }
-        UserResponse response = authorizationService.getUserInfoByEmail(email, picture);
+        UserResponse response = authorizationService.getUserInfo(picture);
         return ResponseEntity.ok(response);
     }
 

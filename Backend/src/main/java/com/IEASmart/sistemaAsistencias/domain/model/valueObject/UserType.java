@@ -4,8 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum UserType {
     PROFESSOR,
-    ADMIN,
-    SUPER_ADMIN;
+    ADMIN;
 
     @JsonCreator
     public static UserType from(String value) {

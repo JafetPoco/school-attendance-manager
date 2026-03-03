@@ -25,14 +25,14 @@ public class UserEntity {
     @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(name = "school_id", nullable = true)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "school", nullable = true)
     private School school;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_type", nullable = false)
     private UserType userType;
 
-    // Constructor sin argumentos necesario para JPA
     public UserEntity() {
     }
 

@@ -3,6 +3,7 @@ package com.IEASmart.sistemaAsistencias.application.service;
 import com.IEASmart.sistemaAsistencias.api.dto.response.StudentResponse;
 import com.IEASmart.sistemaAsistencias.api.mapper.StudentApiMapper;
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import com.IEASmart.sistemaAsistencias.domain.repository.ParentRepository;
 import com.IEASmart.sistemaAsistencias.domain.repository.StudentRepository;
 import org.springframework.stereotype.Service;
@@ -22,8 +23,8 @@ public class StudentService {
         this.studentApiMapper = studentApiMapper;
     }
 
-    public List<StudentResponse> getAllStudents() {
-        List<Student> students = studentRepository.getAllStudents();
+    public List<StudentResponse> getAllStudents(School school) {
+        List<Student> students = studentRepository.getAllStudents(school);
         return students.stream()
                 .map(student -> {
                     StudentResponse response = studentApiMapper.toResponse(student);
@@ -34,7 +35,7 @@ public class StudentService {
                 .toList();
     }
 
-    public Optional<StudentResponse> getStudentById(String studentId) {
-        return studentRepository.findById(studentId).map(studentApiMapper::toResponse);
+    public Optional<StudentResponse> getStudentById(String studentId, School school) {
+        return studentRepository.findById(studentId, school).map(studentApiMapper::toResponse);
     }
 }

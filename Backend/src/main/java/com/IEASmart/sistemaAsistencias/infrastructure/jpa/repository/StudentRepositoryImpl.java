@@ -1,6 +1,7 @@
 package com.IEASmart.sistemaAsistencias.infrastructure.jpa.repository;
 
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import com.IEASmart.sistemaAsistencias.domain.repository.StudentRepository;
 import com.IEASmart.sistemaAsistencias.infrastructure.mapper.StudentMapper;
 import org.springframework.stereotype.Repository;
@@ -19,13 +20,13 @@ public class StudentRepositoryImpl implements StudentRepository {
     }
 
     @Override
-    public Optional<Student> findById(String dni){
-        return jpaRepository.findById(dni).map(studentMapper::toDomain);
+    public Optional<Student> findById(String dni, School school){
+        return jpaRepository.findByDniAndSchool(dni, school).map(studentMapper::toDomain);
     }
 
     @Override
-    public List<Student> getAllStudents(){
-        return jpaRepository.findAll().stream().map(studentMapper::toDomain).toList();
+    public List<Student> getAllStudents(School school){
+        return jpaRepository.findAllBySchool(school).stream().map(studentMapper::toDomain).toList();
     }
 
     @Override

@@ -5,7 +5,6 @@ import com.IEASmart.sistemaAsistencias.api.dto.response.CreateUserResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.UserResponse;
 import com.IEASmart.sistemaAsistencias.domain.model.Admin;
 import com.IEASmart.sistemaAsistencias.domain.model.Professor;
-import com.IEASmart.sistemaAsistencias.domain.model.SuperAdmin;
 import com.IEASmart.sistemaAsistencias.domain.model.User;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +19,7 @@ public class UserApiMapper {
         response.setSecondLastName(user.getSecondLastName());
         response.setEmail(user.getEmail());
         response.setUserType(user.getUserType());
+        response.setSchoolName(user.getSchool());
         return response;
     }
 
@@ -59,18 +59,6 @@ public class UserApiMapper {
         return p;
     }
 
-    public SuperAdmin toSuperAdminEntity(UserRequest req) {
-        if (req == null) return null;
-        SuperAdmin s = new SuperAdmin();
-        s.setNames(req.getNames());
-        s.setFirstLastName(req.getFirstLastName());
-        s.setSecondLastName(req.getSecondLastName());
-        s.setEmail(req.getEmail());
-        s.setUserType(req.getUserType());
-        s.setSchool(req.getSchool());
-        return s;
-    }
-
     public CreateUserResponse toCreateResponse(User user) {
         if (user == null) return null;
         CreateUserResponse resp = new CreateUserResponse();
@@ -80,6 +68,7 @@ public class UserApiMapper {
         resp.setSecondLastName(user.getSecondLastName());
         resp.setEmail(user.getEmail());
         resp.setUserType(user.getUserType());
+        resp.setSchoolName(user.getSchool().toString());
         return resp;
     }
 }

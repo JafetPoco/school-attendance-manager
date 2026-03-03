@@ -35,6 +35,7 @@ public class StudentMapper {
         entity.setLevel(student.getLevel());
         entity.setGrade(student.getGrade());
         entity.setSection(student.getSection());
+        entity.setSchool(student.getSchool());
         return entity;
     }
 }
