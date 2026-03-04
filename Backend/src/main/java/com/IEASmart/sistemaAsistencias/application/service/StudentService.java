@@ -1,14 +1,18 @@
 package com.IEASmart.sistemaAsistencias.application.service;
 
+import com.IEASmart.sistemaAsistencias.api.dto.request.StudentFilter;
+import com.IEASmart.sistemaAsistencias.api.dto.response.PageResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.StudentResponse;
 import com.IEASmart.sistemaAsistencias.api.mapper.StudentApiMapper;
+import com.IEASmart.sistemaAsistencias.application.dto.StudentCriteria;
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Level;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Grade;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
-import com.IEASmart.sistemaAsistencias.domain.repository.ParentRepository;
 import com.IEASmart.sistemaAsistencias.domain.repository.StudentRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,22 +21,34 @@ import java.util.Optional;
 @Service
 public class StudentService {
     private final StudentRepository studentRepository;
-    private final ParentRepository parentRepository;
     private final StudentApiMapper studentApiMapper;
 
-    public StudentService(StudentRepository studentRepository, ParentRepository parentRepository, StudentApiMapper studentApiMapper) {
+    public StudentService(StudentRepository studentRepository, StudentApiMapper studentApiMapper) {
         this.studentRepository = studentRepository;
-        this.parentRepository = parentRepository;
         this.studentApiMapper = studentApiMapper;
     }
 
-    public List<StudentResponse> getAllStudents(School school, String name, String level, String grade, String section) {
-        Level levelEnum = Level.from(level);
-        Grade gradeEnum = Grade.from(grade);
-        Section sectionEnum = Section.from(section);
+    public PageResponse<StudentResponse> getAllStudents(School school, StudentFilter filter, Pageable pageable) {
+        Level levelEnum = filter.level() == null ? null : Level.from(filter.level());
+        Grade gradeEnum = filter.grade() == null ? null : Grade.from(filter.grade());
+        Section sectionEnum = filter.section() == null ? null : Section.from(filter.section());
 
-        List<Student> students = studentRepository.findAllByFilters(school, name, levelEnum, gradeEnum, sectionEnum);
-        return students.stream().map(studentApiMapper::toResponse).toList();
+        StudentCriteria criteria = new StudentCriteria(filter.name(), levelEnum, gradeEnum, sectionEnum);
+
+        Page<Student> studentsPage = studentRepository.findAllByFilters(school, criteria, pageable);
+        List<StudentResponse> content = studentsPage
+                .getContent()
+                .stream()
+                .map(studentApiMapper::toResponse)
+                .toList();
+
+        return new PageResponse<>(
+                content,
+                studentsPage.getTotalElements(),
+                studentsPage.getTotalPages(),
+                studentsPage.getNumber(),
+                studentsPage.getSize()
+        );
     }
 
     public Optional<StudentResponse> getStudentById(String studentId, School school) {

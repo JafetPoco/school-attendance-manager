@@ -1,15 +1,15 @@
 package com.IEASmart.sistemaAsistencias.api.controller;
 
-import com.IEASmart.sistemaAsistencias.api.dto.request.StudentRequest;
+import com.IEASmart.sistemaAsistencias.api.dto.request.StudentFilter;
+import com.IEASmart.sistemaAsistencias.api.dto.response.PageResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.StudentResponse;
 import com.IEASmart.sistemaAsistencias.application.service.AuthorizationService;
 import com.IEASmart.sistemaAsistencias.application.service.StudentService;
-import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Level;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -25,14 +25,12 @@ public class StudentController {
     }
 
     @GetMapping
-    public List<StudentResponse> getAllStudents(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String level,
-            @RequestParam(required = false) String grade,
-            @RequestParam(required = false) String section
-            ) {
+    public PageResponse<StudentResponse> getAllStudents(
+            StudentFilter filter,
+            Pageable pageable
+    ) {
         School school = authorizationService.getUserSchool();
-        return studentService.getAllStudents(school, name, level, grade, section);
+        return studentService.getAllStudents(school, filter, pageable);
     }
 
     @GetMapping("/{id}")
