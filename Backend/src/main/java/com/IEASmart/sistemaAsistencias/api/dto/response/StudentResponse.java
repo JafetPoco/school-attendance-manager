@@ -12,9 +12,8 @@ public class StudentResponse {
     private Level level;
     private Grade grade;
     private Section section;
-    private String parentName;
 
-    public StudentResponse(String dni, String name, String firstLastName, String secondLastName, Level level, Grade grade, Section section, String parentName) {
+    public StudentResponse(String dni, String name, String firstLastName, String secondLastName, Level level, Grade grade, Section section) {
         this.dni = dni;
         this.name = name;
         this.firstLastName = firstLastName;
@@ -22,7 +21,6 @@ public class StudentResponse {
         this.level = level;
         this.grade = grade;
         this.section = section;
-        this.parentName = parentName;
     }
 
     public StudentResponse() {}
@@ -81,13 +79,5 @@ public class StudentResponse {
 
     public void setSection(Section section) {
         this.section = section;
-    }
-
-    public String getParentName() {
-        return parentName;
-    }
-
-    public void setParentName(String parentName) {
-        this.parentName = parentName;
     }
 }

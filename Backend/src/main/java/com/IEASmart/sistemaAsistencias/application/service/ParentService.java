@@ -67,8 +67,6 @@ public class ParentService {
             } else {
                 studentResponse = studentApiMapper.toResponse(domainStudent);
             }
-
-            studentResponse.setParentName(savedParent.getNames());
             return studentResponse;
         }
         throw new IllegalArgumentException("Parent with id " + parentId + " not found");
