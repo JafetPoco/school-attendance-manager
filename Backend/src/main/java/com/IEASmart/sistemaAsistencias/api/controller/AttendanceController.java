@@ -6,10 +6,9 @@ import com.IEASmart.sistemaAsistencias.application.service.AttendanceService;
 import com.IEASmart.sistemaAsistencias.application.service.AuthorizationService;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/attendances")
@@ -27,5 +26,12 @@ public class AttendanceController {
         School school = authorizationService.getUserSchool();
         AttendanceResponse response = attendanceService.markAttendance(request, school);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping()
+    public ResponseEntity<List<AttendanceResponse>> getAll(){
+        School school = authorizationService.getUserSchool();
+        List<AttendanceResponse> responses = attendanceService.getAll(school);
+        return ResponseEntity.ok(responses);
     }
 }

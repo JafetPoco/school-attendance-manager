@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Service
 public class AttendanceService {
@@ -41,5 +42,10 @@ public class AttendanceService {
 
         attendanceRepository.save(attendance);
         return mapper.toResponse(attendance);
+    }
+
+    public List<AttendanceResponse> getAll(School school) {
+        List<Attendance> attendances = attendanceRepository.findAllBySchool(school);
+        return attendances.stream().map(mapper::toResponse).toList();
     }
 }

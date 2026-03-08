@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum AttendanceType {
-    PRESENT("Presente"),
-    ABSENT("Ausente"),
-    LATE("Tarde"),
-    EXCUSED("Justificado");
+    PRESENTE("Presente"),
+    AUSENTE("Ausente"),
+    TARDE("Tarde"),
+    JUSTIFICADO("Justificado");
 
     private final String displayName;
 
