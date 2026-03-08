@@ -1,14 +1,21 @@
 package com.IEASmart.sistemaAsistencias.application.service;
 
+import com.IEASmart.sistemaAsistencias.api.dto.request.AttendanceFilter;
 import com.IEASmart.sistemaAsistencias.api.dto.request.AttendanceRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.response.AttendanceResponse;
+import com.IEASmart.sistemaAsistencias.api.dto.response.PageResponse;
 import com.IEASmart.sistemaAsistencias.api.mapper.AttendanceApiMapper;
+import com.IEASmart.sistemaAsistencias.application.dto.AttendanceCriteria;
 import com.IEASmart.sistemaAsistencias.domain.exception.ConflictException;
 import com.IEASmart.sistemaAsistencias.domain.model.Attendance;
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.AttendanceType;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
 import com.IEASmart.sistemaAsistencias.domain.repository.AttendanceRepository;
 import com.IEASmart.sistemaAsistencias.domain.repository.StudentRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -44,8 +51,25 @@ public class AttendanceService {
         return mapper.toResponse(attendance);
     }
 
-    public List<AttendanceResponse> getAll(School school) {
-        List<Attendance> attendances = attendanceRepository.findAllBySchool(school);
-        return attendances.stream().map(mapper::toResponse).toList();
+    public PageResponse<AttendanceResponse> getAllAttendaces(School school, AttendanceFilter filter, Pageable page) {
+        LocalDate date = filter.date() == null ? null : LocalDate.parse(filter.date());
+        Section section = filter.section() == null ? null : Section.from(filter.section());
+        AttendanceType attendanceType = filter.attendanceType() == null ? null : AttendanceType.from(filter.attendanceType());
+
+        AttendanceCriteria criteria = new AttendanceCriteria(date, filter.name(), section, attendanceType);
+        Page<Attendance> attendances = attendanceRepository.findAllByFilter(school, criteria, page);
+        List<AttendanceResponse> content = attendances
+                .getContent()
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
+
+        return new PageResponse<>(
+                content,
+                attendances.getTotalElements(),
+                attendances.getTotalPages(),
+                attendances.getNumber(),
+                attendances.getSize()
+        );
     }
 }

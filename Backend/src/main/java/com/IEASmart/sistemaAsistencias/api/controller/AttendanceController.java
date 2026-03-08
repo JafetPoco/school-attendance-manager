@@ -1,12 +1,15 @@
 package com.IEASmart.sistemaAsistencias.api.controller;
 
+import com.IEASmart.sistemaAsistencias.api.dto.request.AttendanceFilter;
 import com.IEASmart.sistemaAsistencias.api.dto.request.AttendanceRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.response.AttendanceResponse;
+import com.IEASmart.sistemaAsistencias.api.dto.response.PageResponse;
 import com.IEASmart.sistemaAsistencias.application.service.AttendanceService;
 import com.IEASmart.sistemaAsistencias.application.service.AuthorizationService;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -29,9 +32,11 @@ public class AttendanceController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<AttendanceResponse>> getAll(){
+    public PageResponse<AttendanceResponse> getAll(
+            AttendanceFilter filter,
+            Pageable page
+    ) {
         School school = authorizationService.getUserSchool();
-        List<AttendanceResponse> responses = attendanceService.getAll(school);
-        return ResponseEntity.ok(responses);
+        return attendanceService.getAllAttendaces(school, filter, page);
     }
 }

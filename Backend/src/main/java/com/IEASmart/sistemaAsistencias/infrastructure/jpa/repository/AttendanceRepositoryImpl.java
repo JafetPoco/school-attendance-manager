@@ -1,11 +1,17 @@
 package com.IEASmart.sistemaAsistencias.infrastructure.jpa.repository;
 
+import com.IEASmart.sistemaAsistencias.application.dto.AttendanceCriteria;
 import com.IEASmart.sistemaAsistencias.domain.model.Attendance;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import com.IEASmart.sistemaAsistencias.domain.repository.AttendanceRepository;
+import com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity.AttendanceEntity;
+import com.IEASmart.sistemaAsistencias.infrastructure.jpa.specification.AttendanceSpecifications;
 import com.IEASmart.sistemaAsistencias.infrastructure.mapper.AttendanceMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
+import org.springframework.data.domain.Pageable;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -32,5 +38,18 @@ public class AttendanceRepositoryImpl implements AttendanceRepository {
     @Override
     public List<Attendance> findAllBySchool(School school) {
         return attendanceJpaRepository.findAllByStudent_School(school).stream().map(mapper::toDomain).toList();
+    }
+
+    @Override
+    public Page<Attendance> findAllByFilter(School school, AttendanceCriteria criteria, Pageable pageable) {
+        Specification<AttendanceEntity> spec = Specification
+                .where(AttendanceSpecifications.hasSchool(school))
+                .and(AttendanceSpecifications.hasDate(criteria.date()))
+                .and(AttendanceSpecifications.hasName(criteria.name()))
+                .and(AttendanceSpecifications.hasSection(criteria.section()))
+                .and(AttendanceSpecifications.hasAttendanceType(criteria.attendanceType()));
+
+        Page<AttendanceEntity> page = attendanceJpaRepository.findAll(spec, pageable);
+        return page.map(mapper::toDomain);
     }
 }
