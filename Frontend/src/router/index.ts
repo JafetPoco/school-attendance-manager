@@ -37,6 +37,12 @@ const router = createRouter({
       meta: { requiresAuth: true}
     },
     {
+      path: '/attendances',
+      name: 'attendances',
+      component: () => import('@/views/Attendances.vue'),
+      meta: { requiresAuth: true}
+    },
+    {
       path: '/:pathMatch(.*)*',
       component: page404,
     }
