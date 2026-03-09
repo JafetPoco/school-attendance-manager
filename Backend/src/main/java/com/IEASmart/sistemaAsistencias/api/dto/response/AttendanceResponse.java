@@ -5,14 +5,18 @@ import com.IEASmart.sistemaAsistencias.api.dto.request.AttendanceRequest;
 public class AttendanceResponse {
     private String dni;
     private String studentName;
+    private String studentFirstLastName;
+    private String studentSecondLastName;
     private String attendanceType;
     private String date;
 
     public AttendanceResponse() {}
 
-    public AttendanceResponse(String dni, String studentName, String attendanceType, String date) {
+    public AttendanceResponse(String dni, String studentName, String studentFirstLastName, String studentSecondLastName, String attendanceType, String date) {
         this.dni = dni;
         this.studentName = studentName;
+        this.studentFirstLastName = studentFirstLastName;
+        this.studentSecondLastName = studentSecondLastName;
         this.attendanceType = attendanceType;
         this.date = date;
     }
@@ -31,6 +35,22 @@ public class AttendanceResponse {
 
     public void setStudentName(String studentName) {
         this.studentName = studentName;
+    }
+
+    public String getStudentFirstLastName() {
+        return studentFirstLastName;
+    }
+
+    public void setStudentFirstLastName(String studentFirstLastName) {
+        this.studentFirstLastName = studentFirstLastName;
+    }
+
+    public String getStudentSecondLastName() {
+        return studentSecondLastName;
+    }
+
+    public void setStudentSecondLastName(String studentSecondLastName) {
+        this.studentSecondLastName = studentSecondLastName;
     }
 
     public String getAttendanceType() {

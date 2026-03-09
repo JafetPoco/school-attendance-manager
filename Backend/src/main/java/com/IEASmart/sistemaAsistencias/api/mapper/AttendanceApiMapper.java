@@ -11,6 +11,8 @@ public class AttendanceApiMapper {
         AttendanceResponse response = new AttendanceResponse();
         response.setDni(attendance.getStudent().getDni());
         response.setStudentName(attendance.getStudent().getName());
+        response.setStudentFirstLastName(attendance.getStudent().getFirstLastName());
+        response.setStudentSecondLastName(attendance.getStudent().getSecondLastName());
         response.setAttendanceType(attendance.getAttendanceType().getFullName());
         response.setDate(attendance.getDate().toString());
         return response;
