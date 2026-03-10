@@ -1,24 +1,55 @@
 package com.IEASmart.sistemaAsistencias.api.dto.response;
 
+import java.util.List;
 import java.util.Map;
 
 public class MonthlyAttendanceResponse {
-    private StudentResponse student;
+    private String dni;
+    private String name;
+    private String lastName;
+    private String section;
     private Map<Integer, String> dailyAttendance; // Día del mes -> Estado
-    private Map<String, Object> summary; // Resumen del mes
 
-    public MonthlyAttendanceResponse(StudentResponse student, Map<Integer, String> dailyAttendance, Map<String, Object> summary) {
-        this.student = student;
+    public MonthlyAttendanceResponse() {}
+
+    public MonthlyAttendanceResponse(String dni, String name, String lastName, String section, Map<Integer, String> dailyAttendance) {
+        this.dni = dni;
+        this.name = name;
+        this.lastName = lastName;
+        this.section = section;
         this.dailyAttendance = dailyAttendance;
-        this.summary = summary;
     }
 
-    public StudentResponse getStudent() {
-        return student;
+    public String getDni() {
+        return dni;
     }
 
-    public void setStudent(StudentResponse student) {
-        this.student = student;
+    public void setDni(String dni) {
+        this.dni = dni;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getSection() {
+        return section;
+    }
+
+    public void setSection(String section) {
+        this.section = section;
     }
 
     public Map<Integer, String> getDailyAttendance() {
@@ -27,13 +58,5 @@ public class MonthlyAttendanceResponse {
 
     public void setDailyAttendance(Map<Integer, String> dailyAttendance) {
         this.dailyAttendance = dailyAttendance;
-    }
-
-    public Map<String, Object> getSummary() {
-        return summary;
-    }
-
-    public void setSummary(Map<String, Object> summary) {
-        this.summary = summary;
     }
 }

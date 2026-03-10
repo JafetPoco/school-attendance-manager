@@ -3,6 +3,7 @@ package com.IEASmart.sistemaAsistencias.infrastructure.jpa.repository;
 import com.IEASmart.sistemaAsistencias.application.dto.AttendanceCriteria;
 import com.IEASmart.sistemaAsistencias.domain.model.Attendance;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
 import com.IEASmart.sistemaAsistencias.domain.repository.AttendanceRepository;
 import com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity.AttendanceEntity;
 import com.IEASmart.sistemaAsistencias.infrastructure.jpa.specification.AttendanceSpecifications;
@@ -54,7 +55,10 @@ public class AttendanceRepositoryImpl implements AttendanceRepository {
     }
 
     @Override
-    public List<Attendance> findByStudentSchoolAndDateBetween(School school,LocalDate startDate,LocalDate endDate){
-        return attendanceJpaRepository.findAllByStudent_SchoolAndDateBetween(school, startDate, endDate).stream().map(mapper::toDomain).toList();
+    public List<Attendance> findByStudentSchoolAndSectionAndDateBetween(School school, Section section, LocalDate startDate, LocalDate endDate) {
+        return attendanceJpaRepository.findAllByStudent_SchoolAndStudent_SectionAndDateBetweenOrderByStudent_FirstLastNameAsc(school, section, startDate, endDate)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 }
