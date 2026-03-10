@@ -14,4 +14,5 @@ public interface AttendanceRepository {
     Attendance save(Attendance attendance);
     List<Attendance> findAllBySchool(School school);
     Page<Attendance> findAllByFilter(School school, AttendanceCriteria criteria, Pageable pageable);
+    List<Attendance> findByStudentSchoolAndDateBetween(School school,LocalDate startDate,LocalDate endDate);
 }

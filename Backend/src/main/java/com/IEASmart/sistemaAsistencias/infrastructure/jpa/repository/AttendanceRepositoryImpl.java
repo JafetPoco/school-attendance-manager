@@ -52,4 +52,9 @@ public class AttendanceRepositoryImpl implements AttendanceRepository {
         Page<AttendanceEntity> page = attendanceJpaRepository.findAll(spec, pageable);
         return page.map(mapper::toDomain);
     }
+
+    @Override
+    public List<Attendance> findByStudentSchoolAndDateBetween(School school,LocalDate startDate,LocalDate endDate){
+        return attendanceJpaRepository.findAllByStudent_SchoolAndDateBetween(school, startDate, endDate).stream().map(mapper::toDomain).toList();
+    }
 }

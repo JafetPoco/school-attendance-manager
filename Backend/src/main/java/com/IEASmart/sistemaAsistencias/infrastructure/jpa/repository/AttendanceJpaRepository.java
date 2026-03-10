@@ -12,5 +12,5 @@ import java.util.Optional;
 public interface AttendanceJpaRepository extends JpaRepository<AttendanceEntity, Long>, JpaSpecificationExecutor<AttendanceEntity> {
     Optional<AttendanceEntity> findByStudent_DniAndDate(String student, LocalDate date);
     List<AttendanceEntity> findAllByStudent_School(School school);
+    List<AttendanceEntity> findAllByStudent_SchoolAndDateBetween(School school, LocalDate startDate, LocalDate endDate);
 }
-
