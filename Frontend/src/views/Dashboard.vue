@@ -395,20 +395,13 @@ import {
   CheckSquare,
   MoreVertical,
   BarChart3,
-  Camera,
   Zap,
   ChevronRight,
   FileText,
   Clock,
-  TrendingUp,
-  TrendingDown,
   Activity,
   Award,
-  UserCheck,
-  AlertCircle,
-  Coffee,
   Calendar as CalendarIcon,
-  MapPin
 } from 'lucide-vue-next'
 
 const auth = useAuthStore()

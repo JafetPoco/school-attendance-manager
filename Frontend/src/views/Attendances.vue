@@ -1,4 +1,5 @@
 <template>
+  <Header></Header>
   <div class="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
       <!-- Header con título y selector de vista -->
@@ -78,6 +79,7 @@
 import { ref, computed } from 'vue'
 import AttendanceViewDay from '@/components/AttendanceViewDay.vue'
 import AttendanceViewMensual from '@/components/AttendanceViewMensual.vue'
+import Header from '@/components/Header.vue'
 import {
   ClipboardCheck,
   CalendarDays,

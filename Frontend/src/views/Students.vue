@@ -1,4 +1,5 @@
 <template>
+  <Header></Header>
   <div class="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
@@ -319,6 +320,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
+import Header from '@/components/Header.vue'
 import { getStudents } from '@/services/studentsService'
 import type { StudentFilter, StudentResponse } from '@/types/Student'
 import type { PageRequest, Sort } from '@/types/Pages'
