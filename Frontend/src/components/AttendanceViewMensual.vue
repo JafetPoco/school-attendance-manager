@@ -133,9 +133,27 @@
         </div>
       </div>
     </transition>
-  </div>
 
-  {{ attendances }}
+    <!-- Leyenda -->
+    <div class="my-4 ml-4 flex items-center text-sm text-slate-500">
+          <span class="inline-flex items-center space-x-1 ml-4">
+            <span class="inline-flex items-center justify-center w-5 h-5 bg-emerald-100 text-emerald-600 font-bold text-xs rounded">P</span>
+            <span class="text-xs text-slate-500">Presente</span>
+          </span>
+          <span class="inline-flex items-center space-x-1 ml-4">
+            <span class="inline-flex items-center justify-center w-5 h-5 bg-amber-100 text-amber-600 font-bold text-xs rounded">T</span>
+            <span class="text-xs text-slate-500">Tarde</span>
+          </span>
+          <span class="inline-flex items-center space-x-1 ml-4">
+            <span class="inline-flex items-center justify-center w-5 h-5 bg-red-100 text-red-600 font-bold text-xs rounded">A</span>
+            <span class="text-xs text-slate-500">Ausente</span>
+          </span>
+          <span class="inline-flex items-center space-x-1 ml-4">
+            <span class="inline-flex items-center justify-center w-5 h-5 bg-blue-100 text-blue-600 font-bold text-xs rounded">J</span>
+            <span class="text-xs text-slate-500">Justificado</span>
+          </span>
+        </div>
+  </div>
 </template>
 
 <script setup lang="ts">
