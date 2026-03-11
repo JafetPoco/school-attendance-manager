@@ -10,7 +10,7 @@ import jakarta.persistence.*;
 @Table(name = "students")
 public class StudentEntity {
     @Id
-    @Column(name = "dni", nullable = false, length = 8)
+    @Column(name = "dni", nullable = false, length = 9)
     private String dni;
 
     @Column(name = "name", nullable = false, length = 100)

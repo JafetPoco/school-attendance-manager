@@ -3,12 +3,22 @@ package com.IEASmart.sistemaAsistencias.domain.model.valueObject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum Section {
-    A,
-    B,
-    C,
-    D,
-    E,
-    F;
+    BENJAMIN,
+    NOE,
+    MOISES,
+    JACOB,
+    ENOC,
+    JOSE,
+    GEDEON,
+    JOSUE,
+    ELIAS,
+    ELISEO,
+    DANIEL,
+    ESTEBAN,
+    MATEO,
+    SALOMON,
+    DAVID,
+    JONATAN;
 
     @JsonCreator
     public static Section from(String value) {

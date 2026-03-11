@@ -10,6 +10,7 @@ import com.IEASmart.sistemaAsistencias.application.service.ParentService;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -50,6 +51,13 @@ public class ParentController {
         List<StudentResponse> responses = parentService.addChildrenToParent(parentId, requests, school);
 
         return ResponseEntity.ok(responses);
+    }
+
+    @PostMapping("/import")
+    public ResponseEntity<Void> importExcel(@RequestParam("file") MultipartFile file) {
+        School school = authorizationService.getUserSchool();
+        parentService.importFromExcel(file, school);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping
