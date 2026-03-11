@@ -21,9 +21,24 @@
                   :disabled="loading"
                   class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent appearance-none cursor-pointer disabled:opacity-50">
             <option value="">Todas las secciones</option>
-            <option value="A">Sección A</option>
-            <option value="B">Sección B</option>
-            <option value="C">Sección C</option>
+            <option value="BENJAMIN">Benjamin</option>
+            <option value="NOE">Noé</option>
+            <option value="MOISES">Moisés</option>
+            <option value="DAVID">David</option>
+            <option value="SALOMON">Salomón</option>
+            <option value="JACOB">Jacob</option>
+            <option value="ENOC">Enoc</option>
+            <option value="JOSE">José</option>
+            <option value="GEDEON">Gedeón</option>
+            <option value="JOSUE">Josué</option>
+            <option value="ELIAS">Elías</option>
+            <option value="ELISEO">Eliseo</option>
+            <option value="DANIEL">Daniel</option>
+            <option value="ESTEBAN">Esteban</option>
+            <option value="MATEO">Mateo</option>
+            <option value="SALOMON">Salomón</option>
+            <option value="DAVID">David</option>
+            <option value="JONATAN">Jonatán</option>
           </select>
         </div>
 
@@ -99,7 +114,7 @@
     <transition name="fade">
       <div v-if="errorMessage" 
            class="mx-6 my-4 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start space-x-3">
-        <AlertCircle class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+        <AlertCircle class="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
         <div class="flex-1">
           <h3 class="text-sm font-medium text-red-800">Error al cargar los datos</h3>
           <p class="text-xs text-red-600 mt-1">{{ errorMessage }}</p>

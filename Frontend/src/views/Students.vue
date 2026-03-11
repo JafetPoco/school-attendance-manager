@@ -70,12 +70,24 @@
             <select v-model="filter.section"
                     class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent appearance-none cursor-pointer">
               <option value="">Todas las secciones</option>
-              <option value="A">Sección A</option>
-              <option value="B">Sección B</option>
-              <option value="C">Sección C</option>
-              <option value="D">Sección D</option>
-              <option value="E">Sección E</option>
-              <option value="F">Sección F</option>
+              <option value="BENJAMIN">Benjamin</option>
+              <option value="NOE">Noé</option>
+              <option value="MOISES">Moisés</option>
+              <option value="DAVID">David</option>
+              <option value="SALOMON">Salomón</option>
+              <option value="JACOB">Jacob</option>
+              <option value="ENOC">Enoc</option>
+              <option value="JOSE">José</option>
+              <option value="GEDEON">Gedeón</option>
+              <option value="JOSUE">Josué</option>
+              <option value="ELIAS">Elías</option>
+              <option value="ELISEO">Eliseo</option>
+              <option value="DANIEL">Daniel</option>
+              <option value="ESTEBAN">Esteban</option>
+              <option value="MATEO">Mateo</option>
+              <option value="SALOMON">Salomón</option>
+              <option value="DAVID">David</option>
+              <option value="JONATAN">Jonatán</option>
             </select>
           </div>
         </div>
