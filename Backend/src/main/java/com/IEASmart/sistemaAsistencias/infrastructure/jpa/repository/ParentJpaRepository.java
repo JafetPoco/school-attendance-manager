@@ -15,4 +15,6 @@ public interface ParentJpaRepository extends JpaRepository<ParentEntity, Long> {
     List<ParentEntity> findAllBySchool(School school);
     @Query("SELECT p FROM ParentEntity p JOIN p.children h WHERE h.dni = :alumnoId")
     Optional<ParentEntity> findByAlumnoId(@Param("alumnoId") String alumnoId);
+    Optional<ParentEntity> findByPhoneNumberAndSchool(String phoneNumber, School school);
+    Optional<ParentEntity> findByChildren_Dni(String alumnoId);
 }

@@ -30,12 +30,18 @@ export async function http<T>(
   const timeoutId = setTimeout(() => controller.abort(), timeout)
 
   try {
+    const defaultHeaders: Record<string, string> = {
+      ...(options.headers as Record<string, string> | undefined)
+    }
+
+    // Let the browser set multipart boundaries when sending FormData.
+    if (!(options.body instanceof FormData) && !defaultHeaders['Content-Type']) {
+      defaultHeaders['Content-Type'] = 'application/json'
+    }
+
     const response = await fetch(`${BASE_URL}${endpoint}`, {
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options.headers as Record<string, string>)
-      },
+      headers: defaultHeaders,
       signal: controller.signal,
       ...options
     })

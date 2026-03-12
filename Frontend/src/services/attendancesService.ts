@@ -4,9 +4,9 @@ import { mapApiError } from '@/utils/apiErrorMapper'
 import type { ServiceResult } from '@/types/ServiceResult'
 import type { ApiHttpError } from '@/api/ApiHttpError'
 import type { PageRequest, PageResponse, Sort } from '@/types/Pages'
-import type { StudentFilter, StudentResponse } from '@/types/Student'
+import type { AttendanceFilter, AttendanceResponse } from '@/types/Attendance'
 
-function buildStudentsQuery(filter: StudentFilter, page: PageRequest, sort?: Sort): string {
+function buildStudentsQuery(filter: AttendanceFilter, page: PageRequest, sort?: Sort): string {
   const queryParams = new URLSearchParams()
 
   Object.entries(filter).forEach(([key, value]) => {
@@ -27,28 +27,12 @@ function buildStudentsQuery(filter: StudentFilter, page: PageRequest, sort?: Sor
   return query ? `?${query}` : ''
 }
 
-export async function getStudents(filter: StudentFilter, page: PageRequest, sort?: Sort): Promise<ServiceResult<PageResponse<StudentResponse>, ApiHttpError>> {
+export async function getAttendances(filter: AttendanceFilter, page: PageRequest, sort?: Sort): Promise<ServiceResult<PageResponse<AttendanceResponse>, ApiHttpError>> {
   try {
     const query = buildStudentsQuery(filter, page, sort)
 
-    const data = await http<PageResponse<StudentResponse>>(`/students${query}`, {
+    const data = await http<PageResponse<AttendanceResponse>>(`/attendances${query}`, {
       method: 'GET'
-      
-    })
-
-    return { success: true, data }
-  } catch (error) {
-    return {
-      success: false,
-      error: mapApiError(error)
-    }
-  }
-}
-
-export async function removeStudent(studentId: string): Promise<ServiceResult<void, ApiHttpError>> {
-  try {
-    const data = await http<void>(`/parents/${studentId}`, {
-      method: 'DELETE'
       
     })
 

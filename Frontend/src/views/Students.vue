@@ -1,4 +1,5 @@
 <template>
+  <Header></Header>
   <div class="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
@@ -20,7 +21,8 @@
               <p class="text-xs text-slate-500">Total estudiantes</p>
               <p class="text-xl font-bold text-slate-800">{{ totalStudents }}</p>
             </div>
-            <button class="bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2">
+            <button @click="goToNewStudent" 
+            class="bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2">
               <Plus class="w-4 h-4" />
               <span>Nuevo Estudiante</span>
             </button>
@@ -69,12 +71,24 @@
             <select v-model="filter.section"
                     class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent appearance-none cursor-pointer">
               <option value="">Todas las secciones</option>
-              <option value="A">Sección A</option>
-              <option value="B">Sección B</option>
-              <option value="C">Sección C</option>
-              <option value="D">Sección D</option>
-              <option value="E">Sección E</option>
-              <option value="F">Sección F</option>
+              <option value="BENJAMIN">Benjamin</option>
+              <option value="NOE">Noé</option>
+              <option value="MOISES">Moisés</option>
+              <option value="DAVID">David</option>
+              <option value="SALOMON">Salomón</option>
+              <option value="JACOB">Jacob</option>
+              <option value="ENOC">Enoc</option>
+              <option value="JOSE">José</option>
+              <option value="GEDEON">Gedeón</option>
+              <option value="JOSUE">Josué</option>
+              <option value="ELIAS">Elías</option>
+              <option value="ELISEO">Eliseo</option>
+              <option value="DANIEL">Daniel</option>
+              <option value="ESTEBAN">Esteban</option>
+              <option value="MATEO">Mateo</option>
+              <option value="SALOMON">Salomón</option>
+              <option value="DAVID">David</option>
+              <option value="JONATAN">Jonatán</option>
             </select>
           </div>
         </div>
@@ -314,12 +328,39 @@
         </div>
       </div>
     </transition>
+
+    <!-- Modal de ección realizada -->
+    <transition name="fade">
+      <div v-if="deleteSuccess" 
+           class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+           @click.self="deleteSuccess = false">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 animate-slide-up">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <Check class="w-5 h-5 text-green-600" />
+              </div>
+              <h3 class="text-lg font-semibold text-slate-800">Eliminación exitosa</h3>
+            </div>
+            <button @click="deleteSuccess = false" 
+                    class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+              <X class="w-5 h-5 text-slate-500" />
+            </button>
+          </div>
+          
+          <p class="text-sm text-slate-600 mb-6">
+            El estudiante ha sido eliminado exitosamente.
+          </p>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
-import { getStudents } from '@/services/studentsService'
+import Header from '@/components/Header.vue'
+import { getStudents, removeStudent } from '@/services/studentsService'
 import type { StudentFilter, StudentResponse } from '@/types/Student'
 import type { PageRequest, Sort } from '@/types/Pages'
 import {
@@ -342,8 +383,10 @@ import {
   AlertCircle,
   MoveVerticalIcon,
   MoveUpIcon,
-  MoveDownIcon
+  MoveDownIcon,
+  Check
 } from 'lucide-vue-next'
+import router from '@/router'
 
 // Constantes
 const PAGE_SIZE = 10
@@ -367,6 +410,7 @@ const students = ref<StudentResponse[]>([])
 const loading = ref(false)
 const errorMessage = ref('')
 const showDeleteModal = ref(false)
+const deleteSuccess = ref(false)
 const selectedStudent = ref<StudentResponse | null>(null)
 
 const filter = ref<StudentFilter>({
@@ -478,15 +522,26 @@ const confirmDelete = (student: StudentResponse) => {
 
 const executeDelete = async () => {
   if (!selectedStudent.value) return
-  
+
+  showDeleteModal.value = false
+  loading.value = true
+  errorMessage.value = ''
   try {
-    // Implementar servicio de eliminación
-    console.log('Eliminando:', selectedStudent.value)
-    showDeleteModal.value = false
-    selectedStudent.value = null
-    await loadStudents() // Recargar la lista
+    const response = await removeStudent(selectedStudent.value.dni)
+
+    if (response.success) {
+      console.log('Eliminado con éxito:', response.data)
+    } else {
+      errorMessage.value = response.error.message
+    }
+
+    deleteSuccess.value = true
+    await loadStudents()
   } catch (error) {
-    console.error('Error al eliminar:', error)
+    errorMessage.value = error instanceof Error ? error.message : 'Error de conexión'
+  } finally {
+    loading.value = false
+    selectedStudent.value = null
   }
 }
 
@@ -554,6 +609,10 @@ watch(
 
 // Lifecycle
 onMounted(loadStudents)
+
+const goToNewStudent = () => {
+  router.push('/addParentWithChildren')
+}
 </script>
 
 <style scoped>

@@ -10,5 +10,9 @@ public interface ParentRepository {
     Optional<Parent> findById(Long id, School school);
     Optional<Parent> findByAlumnoId(String alumnoId);
     List<Parent> getAll(School school);
+    Optional<Parent> findByPhoneNumber(String phoneNumber, School school);
     Parent save(Parent parent);
+    List<Parent> saveAll(List<Parent> parents);
+    void delete(Parent parent);
+
 }

@@ -10,16 +10,22 @@ import com.IEASmart.sistemaAsistencias.api.mapper.ParentWithChildApiMapper;
 import com.IEASmart.sistemaAsistencias.api.mapper.StudentApiMapper;
 import com.IEASmart.sistemaAsistencias.domain.exception.InvalidArgumentException;
 import com.IEASmart.sistemaAsistencias.domain.exception.ConflictException;
+import com.IEASmart.sistemaAsistencias.domain.exception.ResourceNotFoundException;
 import com.IEASmart.sistemaAsistencias.domain.model.Parent;
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Grade;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Level;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
 import com.IEASmart.sistemaAsistencias.domain.repository.ParentRepository;
 import com.IEASmart.sistemaAsistencias.domain.repository.StudentRepository;
+import org.apache.poi.ss.usermodel.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Optional;
+import java.io.InputStream;
+import java.util.*;
 
 @Service
 public class ParentService {
@@ -134,6 +140,119 @@ public class ParentService {
         throw new InvalidArgumentException("Parent with id " + parentId + " not found", "parentId");
     }
 
+    @Transactional
+    public void importFromExcel(MultipartFile file, School school) {
+        if (file == null || file.isEmpty()) {
+            throw new ConflictException("Archivo no especificado", "NO_FILE_PROVIDED");
+        }
+
+        String filename = Optional.ofNullable(file.getOriginalFilename()).orElse("").toLowerCase();
+        if (!filename.endsWith(".xlsx") && !filename.endsWith(".xls")) {
+            throw new ConflictException(
+                    "Archivo no soportado. Solo se permiten archivos .xlsx o .xls",
+                    "UNSUPPORTED_FILE_TYPE");
+        }
+
+        Map<String, Parent> parentsCache = new HashMap<>(); // phone -> Parent
+        Set<String> seenDnis = new HashSet<>();
+        List<String> importErrors = new ArrayList<>();
+
+        try (InputStream is = file.getInputStream();
+             Workbook workbook = WorkbookFactory.create(is)) {
+
+            Sheet sheet = workbook.getSheetAt(0);
+            if (sheet == null) return;
+
+            DataFormatter formatter = new DataFormatter();
+
+            for (int r = 1; r <= sheet.getLastRowNum(); r++) {
+                Row row = sheet.getRow(r);
+                if (row == null) continue;
+
+                String dni = formatter.formatCellValue(row.getCell(0)).trim();
+                if (dni.isEmpty()) {
+                    continue;
+                }
+
+                if (seenDnis.contains(dni)) {
+                    importErrors.add("Fila " + (r+1) + ": DNI duplicado en el archivo -> " + dni);
+                    continue;
+                }
+
+                String levelRaw = formatter.formatCellValue(row.getCell(1)).trim();
+                String gradeRaw = formatter.formatCellValue(row.getCell(2)).trim();
+                String sectionRaw = formatter.formatCellValue(row.getCell(3)).trim();
+
+                String firstLast = formatter.formatCellValue(row.getCell(4)).trim();
+                String secondLast = formatter.formatCellValue(row.getCell(5)).trim();
+                String name = formatter.formatCellValue(row.getCell(6)).trim();
+
+                String parentName = formatter.formatCellValue(row.getCell(7)).trim();
+                String parentPhone = formatter.formatCellValue(row.getCell(8)).trim();
+
+                Level level = null;
+                Grade grade = null;
+                Section section = null;
+                try {
+                    if (!levelRaw.isBlank()) level = Level.from(levelRaw);
+                } catch (Exception ex) {
+                    importErrors.add("Fila " + (r+1) + ": level inválido -> '" + levelRaw + "'");
+                    continue;
+                }
+                try {
+                    if (!gradeRaw.isBlank()) grade = Grade.from(gradeRaw);
+                } catch (Exception ex) {
+                    importErrors.add("Fila " + (r+1) + ": grade inválido -> '" + gradeRaw + "'");
+                    continue;
+                }
+                try {
+                    if (!sectionRaw.isBlank()) section = Section.from(sectionRaw);
+                } catch (Exception ex) {
+                    importErrors.add("Fila " + (r+1) + ": section inválida -> '" + sectionRaw + "'");
+                    continue;
+                }
+
+                if (studentRepository.findById(dni, school).isPresent()) {
+                    importErrors.add("Fila " + (r+1) + ": el estudiante con DNI " + dni + " ya existe");
+                    continue;
+                }
+
+                seenDnis.add(dni);
+                Student student = new Student(dni, name, firstLast, secondLast, level, grade, section, school);
+
+                if (parentPhone.isBlank()){
+                    importErrors.add("Fila " + (r+1) + ": el padre no tiene número de teléfono");
+                    continue;
+                }
+
+                Parent parent = parentsCache.get(parentPhone);
+                if (parent == null) {
+                    Optional<Parent> existing = parentRepository.findByPhoneNumber(parentPhone, school);
+                    parent = existing.orElseGet(() -> {
+                        Parent p = new Parent();
+                        p.setNames(parentName);
+                        p.setPhoneNumber(parentPhone);
+                        p.setSchool(school);
+                        return p;
+                    });
+                    parentsCache.put(parentPhone, parent);
+                }
+                parent.addChild(student);
+            }
+
+            if (!importErrors.isEmpty()) {
+                throw new ConflictException("Errores en import: " + String.join("; ", importErrors), "EXCEL_VALIDATION_ERROR");
+            }
+
+            List<Parent> listParents = new ArrayList<>(parentsCache.values());
+            parentRepository.saveAll(listParents);
+        } catch (ConflictException ce) {
+            throw ce;
+        } catch (Exception e) {
+            throw new ConflictException("Error al procesar el archivo Excel: " + e.getMessage(), "EXCEL_PROCESSING_ERROR");
+        }
+    }
+
     @Transactional(readOnly = true)
     public List<ParentResponse> getAllParents(School school) {
         List<Parent> parents = parentRepository.getAll(school);
@@ -163,5 +282,34 @@ public class ParentService {
                     .toList();
         }
         throw new IllegalArgumentException("Parent with id " + parentId + " not found");
+    }
+
+    @Transactional
+    public void removeChildByDni(String studentDni, School school) {
+        if (studentDni == null || studentDni.isBlank()){
+            throw new InvalidArgumentException("El DNI del estudiante es requerido para ser eliminado", "studentDni");
+        }
+
+        Optional<Parent> parentOpt = parentRepository.findByAlumnoId(studentDni);
+        if (parentOpt.isEmpty()) {
+            throw new ResourceNotFoundException("Padre de familia", "el DNI del estudiante", studentDni);
+        }
+
+        Parent parent = parentOpt.get();
+
+        if (parent.getSchool() != null && school != null && !parent.getSchool().equals(school)) {
+            throw new ConflictException("El padre de familia encontrado no pertenece a la escuela del usuario autenticado", "SCHOOL_MISMATCH");
+        }
+
+        List<Student> children = parent.getChildren();
+        boolean removed = children.removeIf(s -> studentDni.equals(s.getDni()));
+
+        if (!removed) throw new ConflictException("El estudiante con DNI " + studentDni + " no es hijo del padre de familia encontrado", "STUDENT_NOT_CHILD_OF_PARENT");
+
+        if (children.isEmpty()) {
+            parentRepository.delete(parent);
+        } else {
+            parentRepository.save(parent);
+        }
     }
 }

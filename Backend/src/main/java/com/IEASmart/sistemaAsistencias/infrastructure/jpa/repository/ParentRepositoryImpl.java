@@ -26,7 +26,8 @@ public class ParentRepositoryImpl implements ParentRepository {
 
     @Override
     public Optional<Parent> findByAlumnoId(String alumnoId){
-        return jpaRepository.findByAlumnoId(alumnoId).map(mapper::toDomain);
+        //return jpaRepository.findByAlumnoId(alumnoId).map(mapper::toDomain);
+        return jpaRepository.findByChildren_Dni(alumnoId).map(mapper::toDomain);
     }
 
     @Override
@@ -35,8 +36,23 @@ public class ParentRepositoryImpl implements ParentRepository {
     }
 
     @Override
+    public Optional<Parent> findByPhoneNumber(String phoneNumber, School school){
+        return jpaRepository.findByPhoneNumberAndSchool(phoneNumber, school).map(mapper::toDomain);
+    }
+
+    @Override
     public Parent save(Parent parent){
         return mapper.toDomain(jpaRepository.save(mapper.toEntity(parent)));
+    }
+
+    @Override
+    public List<Parent> saveAll(List<Parent> parents){
+        return jpaRepository.saveAll(parents.stream().map(mapper::toEntity).toList()).stream().map(mapper::toDomain).toList();
+    }
+
+    @Override
+    public void delete(Parent parent){
+        jpaRepository.delete(mapper.toEntity(parent));
     }
 
 }
