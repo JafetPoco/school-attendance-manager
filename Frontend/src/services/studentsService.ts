@@ -44,3 +44,19 @@ export async function getStudents(filter: StudentFilter, page: PageRequest, sort
     }
   }
 }
+
+export async function removeStudent(studentId: string): Promise<ServiceResult<void, ApiHttpError>> {
+  try {
+    const data = await http<void>(`/parents/${studentId}`, {
+      method: 'DELETE'
+      
+    })
+
+    return { success: true, data }
+  } catch (error) {
+    return {
+      success: false,
+      error: mapApiError(error)
+    }
+  }
+}
