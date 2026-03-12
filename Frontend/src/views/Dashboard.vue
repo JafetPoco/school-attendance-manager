@@ -18,16 +18,6 @@
 
           <!-- Información del docente y acciones -->
           <div class="flex items-center space-x-6">
-            <!-- Selector de período académico -->
-            <div class="hidden md:flex items-center space-x-2 bg-slate-100 px-4 py-2 rounded-lg">
-              <Calendar class="w-4 h-4 text-slate-600" />
-              <select class="bg-transparent text-sm text-slate-700 font-medium focus:outline-none cursor-pointer">
-                <option>Primer Trimestre 2024</option>
-                <option>Segundo Trimestre 2024</option>
-                <option>Tercer Trimestre 2024</option>
-              </select>
-            </div>
-
             <!-- Notificaciones -->
             <button class="relative p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-all duration-300 hover:scale-110 group">
               <Bell class="w-5 h-5" />
@@ -70,7 +60,7 @@
       <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8 animate-fade-in-down">
         <div v-if="!auth.loading && auth.user">
           <h1 class="text-2xl font-bold text-slate-800 mb-1">
-            ¡Hola, {{ auth.user?.names }}!
+            ¡Hola, {{ auth.user?.names }} {{ auth.user.firstLastName}} {{ auth.user.secondLastName }}!
           </h1>
           <p class="text-slate-500 flex items-center">
             <Calendar class="w-4 h-4 mr-2" />
@@ -80,18 +70,6 @@
         <div v-else class="space-y-2">
           <div class="w-48 h-6 bg-slate-200 rounded mb-2 animate-pulse"></div>
           <div class="w-64 h-4 bg-slate-200 rounded animate-pulse"></div>
-        </div>
-        
-        <!-- Acciones rápidas superiores -->
-        <div class="flex space-x-3 mt-4 md:mt-0">
-          <button class="flex items-center space-x-2 bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all duration-300 transform hover:scale-105">
-            <Download class="w-4 h-4" />
-            <span class="text-sm font-medium">Exportar</span>
-          </button>
-          <button class="flex items-center space-x-2 bg-slate-800 text-white px-4 py-2 rounded-xl hover:bg-slate-700 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
-            <Plus class="w-4 h-4" />
-            <span class="text-sm font-medium">Nueva Asistencia</span>
-          </button>
         </div>
       </div>
 
@@ -249,54 +227,6 @@
 
         <!-- Columna derecha - 1/3 del ancho -->
         <div class="space-y-8">
-          <!-- Perfil del docente -->
-          <div class="bg-white rounded-xl border border-slate-200 p-6 animate-fade-in-right">
-            <div v-if="!auth.loading && auth.user" class="text-center">
-              <div class="relative inline-block">
-                <img class="h-24 w-24 rounded-xl border-2 border-slate-200" 
-                     :src="auth.user?.urlPicture" 
-                     :alt="auth.user?.names" @error="useFallback">
-              </div>
-              <h2 class="mt-4 text-xl font-bold text-slate-800">{{ auth.user?.names }} {{ auth.user.firstLastName }} {{ auth.user.secondLastName }}</h2>
-              <p class="text-sm text-slate-400 mt-1">{{ auth.user?.email }}</p>
-              
-              <div class="flex justify-center space-x-2 mt-4">
-                <span class="px-3 py-1 bg-slate-100 text-slate-700 text-xs rounded-full">{{ auth.user.userType }}</span>
-              </div>
-            </div>
-            <div v-else class="text-center space-y-3">
-              <div class="relative inline-block">
-                <div class="h-24 w-24 rounded-xl bg-slate-200 mx-auto animate-pulse"></div>
-              </div>
-              <div class="w-40 h-5 bg-slate-200 rounded mx-auto animate-pulse"></div>
-              <div class="w-32 h-4 bg-slate-200 rounded mx-auto animate-pulse"></div>
-              <div class="w-48 h-3 bg-slate-200 rounded mx-auto animate-pulse"></div>
-              <div class="flex justify-center space-x-2 mt-2">
-                <div class="w-20 h-6 bg-slate-200 rounded-full animate-pulse"></div>
-                <div class="w-20 h-6 bg-slate-200 rounded-full animate-pulse"></div>
-              </div>
-            </div>
-
-            <div class="mt-6 space-y-3">
-              <div class="flex items-center justify-between text-sm py-2 border-b border-slate-100">
-                <span class="text-slate-500">Código docente</span>
-                <span class="font-medium text-slate-800">DOC-2024-{{ teacherId }}</span>
-              </div>
-              <div class="flex items-center justify-between text-sm py-2 border-b border-slate-100">
-                <span class="text-slate-500">Horas lectivas</span>
-                <span class="font-medium text-slate-800">24h/semana</span>
-              </div>
-              <div class="flex items-center justify-between text-sm py-2 border-b border-slate-100">
-                <span class="text-slate-500">Cursos a cargo</span>
-                <span class="font-medium text-slate-800">{{ teacherCourses.length }}</span>
-              </div>
-              <div class="flex items-center justify-between text-sm py-2">
-                <span class="text-slate-500">Total estudiantes</span>
-                <span class="font-medium text-slate-800">127</span>
-              </div>
-            </div>
-          </div>
-
           <!-- Acciones rápidas docentes -->
           <div class="bg-white rounded-xl border border-slate-200 p-6 animate-fade-in-right" style="animation-delay: 200ms">
             <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center">
@@ -305,7 +235,7 @@
             </h3>
             
             <div class="space-y-3">
-              <button v-for="(action, index) in teacherActions" :key="index"
+              <button v-for="(action, index) in teacherActions" :key="index" @click="navigateTo(action.path)"
                       class="w-full flex items-center justify-between p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-all duration-300 group">
                 <div class="flex items-center space-x-3">
                   <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -331,7 +261,7 @@
             <div class="space-y-4">
               <div v-for="(event, index) in upcomingEvents" :key="index"
                    class="flex items-start space-x-3 group cursor-pointer">
-                <div class="w-12 h-12 bg-slate-100 rounded-lg flex flex-col items-center justify-center flex-shrink-0 group-hover:bg-slate-200 transition-colors">
+                <div class="w-12 h-12 bg-slate-100 rounded-lg flex flex-col items-center justify-center shrink-0 group-hover:bg-slate-200 transition-colors">
                   <span class="text-xs text-slate-500">{{ event.month }}</span>
                   <span class="text-lg font-bold text-slate-800 -mt-1">{{ event.day }}</span>
                 </div>
@@ -403,6 +333,7 @@ import {
   Award,
   Calendar as CalendarIcon,
 } from 'lucide-vue-next'
+import router from '@/router'
 
 const auth = useAuthStore()
 
@@ -420,8 +351,6 @@ const useFallback = (event: Event) => {
     img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=334155&color=fff&size=128`
   }
 };
-
-const teacherId = ref('4582')
 
 // Fecha actual
 const currentDate = ref(new Date().toLocaleDateString('es-ES', { 
@@ -515,27 +444,29 @@ const attendanceChart = ref([
 
 // Acciones rápidas docentes
 const teacherActions = ref([
+  {
+    icon: CalendarIcon,
+    title: 'Ver Asistencias',
+    description: 'Revisar registros anteriores',
+    path: '/attendances'
+  },
   { 
     icon: CheckSquare, 
     title: 'Tomar Asistencia', 
-    description: 'Registrar asistencia del día'
-  },
-  { 
-    icon: FileText, 
-    title: 'Generar Reporte', 
-    description: 'Crear informe de rendimiento'
+    description: 'Registrar asistencia del día',
+    path: '/markAttendance'
   },
   { 
     icon: Users, 
     title: 'Ver Estudiantes', 
-    description: 'Listado completo del curso'
-  },
-  { 
-    icon: BarChart3, 
-    title: 'Estadísticas', 
-    description: 'Análisis de asistencia'
+    description: 'Listado completo de estudiantes',
+    path: '/students'
   }
 ])
+
+const navigateTo = (path: string) => {
+  router.push(path)
+}
 
 // Próximos eventos
 const upcomingEvents = ref([
