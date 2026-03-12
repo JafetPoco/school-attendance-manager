@@ -21,7 +21,8 @@
               <p class="text-xs text-slate-500">Total estudiantes</p>
               <p class="text-xl font-bold text-slate-800">{{ totalStudents }}</p>
             </div>
-            <button class="bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2">
+            <button @click="goToNewStudent" 
+            class="bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2">
               <Plus class="w-4 h-4" />
               <span>Nuevo Estudiante</span>
             </button>
@@ -358,6 +359,7 @@ import {
   MoveUpIcon,
   MoveDownIcon
 } from 'lucide-vue-next'
+import router from '@/router'
 
 // Constantes
 const PAGE_SIZE = 10
@@ -568,6 +570,10 @@ watch(
 
 // Lifecycle
 onMounted(loadStudents)
+
+const goToNewStudent = () => {
+  router.push('/addParentWithChildren')
+}
 </script>
 
 <style scoped>
