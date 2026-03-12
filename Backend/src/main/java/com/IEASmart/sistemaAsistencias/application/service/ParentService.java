@@ -10,6 +10,7 @@ import com.IEASmart.sistemaAsistencias.api.mapper.ParentWithChildApiMapper;
 import com.IEASmart.sistemaAsistencias.api.mapper.StudentApiMapper;
 import com.IEASmart.sistemaAsistencias.domain.exception.InvalidArgumentException;
 import com.IEASmart.sistemaAsistencias.domain.exception.ConflictException;
+import com.IEASmart.sistemaAsistencias.domain.exception.ResourceNotFoundException;
 import com.IEASmart.sistemaAsistencias.domain.model.Parent;
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Grade;
@@ -281,5 +282,34 @@ public class ParentService {
                     .toList();
         }
         throw new IllegalArgumentException("Parent with id " + parentId + " not found");
+    }
+
+    @Transactional
+    public void removeChildByDni(String studentDni, School school) {
+        if (studentDni == null || studentDni.isBlank()){
+            throw new InvalidArgumentException("El DNI del estudiante es requerido para ser eliminado", "studentDni");
+        }
+
+        Optional<Parent> parentOpt = parentRepository.findByAlumnoId(studentDni);
+        if (parentOpt.isEmpty()) {
+            throw new ResourceNotFoundException("Padre de familia", "el DNI del estudiante", studentDni);
+        }
+
+        Parent parent = parentOpt.get();
+
+        if (parent.getSchool() != null && school != null && !parent.getSchool().equals(school)) {
+            throw new ConflictException("El padre de familia encontrado no pertenece a la escuela del usuario autenticado", "SCHOOL_MISMATCH");
+        }
+
+        List<Student> children = parent.getChildren();
+        boolean removed = children.removeIf(s -> studentDni.equals(s.getDni()));
+
+        if (!removed) throw new ConflictException("El estudiante con DNI " + studentDni + " no es hijo del padre de familia encontrado", "STUDENT_NOT_CHILD_OF_PARENT");
+
+        if (children.isEmpty()) {
+            parentRepository.delete(parent);
+        } else {
+            parentRepository.save(parent);
+        }
     }
 }

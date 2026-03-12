@@ -82,4 +82,10 @@ public class ParentController {
         return ResponseEntity.ok(responses);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteStudentById(@PathVariable String id) {
+        School school = authorizationService.getUserSchool();
+        parentService.removeChildByDni(id, school);
+        return ResponseEntity.noContent().build();
+    }
 }
