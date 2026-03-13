@@ -546,8 +546,7 @@ const executeDelete = async () => {
 }
 
 const viewStudentDetails = (student: StudentResponse) => {
-  console.log('Ver detalles:', student)
-  // Implementar navegación a detalles
+  router.push(`/students/${student.dni}`)
 }
 
 // Carga de datos

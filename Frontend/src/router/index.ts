@@ -49,6 +49,12 @@ const router = createRouter({
       meta: { requiresAuth: true}
     },
     {
+      path: '/students/:id',
+      name: 'studentDetails',
+      component: () => import('@/views/StudentDetails.vue'),
+      meta: { requiresAuth: true}
+    },
+    {
       path: '/:pathMatch(.*)*',
       component: page404,
     }
