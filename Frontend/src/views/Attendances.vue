@@ -15,25 +15,35 @@
             </div>
           </div>
 
+          
+
+          
           <!-- Selector de vista moderno -->
-          <div class="bg-white p-1 rounded-xl border border-slate-200 shadow-sm inline-flex">
-            <button @click="dayView = true"
-                    class="px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 relative"
-                    :class="[dayView ? 'bg-slate-800 text-white shadow-md' : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50']">
-              <div class="flex items-center space-x-2">
-                <CalendarDays :class="[dayView ? 'text-white' : 'text-slate-400']" class="w-4 h-4" />
-                <span>Vista por Día</span>
-              </div>
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <button class="inline-flex items-center justify-center px-4 py-2.5 bg-amber-50 text-amber-700 rounded-xl hover:bg-amber-100 transition-all duration-300 border border-amber-200 shadow-sm group"
+                    @click="closeAttendance">
+              <CalendarClock class="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+              <span class="text-sm font-medium">Cerrar registro</span>
             </button>
-            
-            <button @click="dayView = false"
-                    class="px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 relative"
-                    :class="[!dayView ? 'bg-slate-800 text-white shadow-md' : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50']">
-              <div class="flex items-center space-x-2">
-                <CalendarRange :class="[!dayView ? 'text-white' : 'text-slate-400']" class="w-4 h-4" />
-                <span>Vista Mensual</span>
-              </div>
-            </button>
+            <div class="bg-white p-1 rounded-xl border border-slate-200 shadow-sm inline-flex">
+              <button @click="dayView = true"
+                      class="px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 relative"
+                      :class="[dayView ? 'bg-slate-800 text-white shadow-md' : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50']">
+                <div class="flex items-center space-x-2">
+                  <CalendarDays :class="[dayView ? 'text-white' : 'text-slate-400']" class="w-4 h-4" />
+                  <span>Vista por Día</span>
+                </div>
+              </button>
+              
+              <button @click="dayView = false"
+                      class="px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 relative"
+                      :class="[!dayView ? 'bg-slate-800 text-white shadow-md' : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50']">
+                <div class="flex items-center space-x-2">
+                  <CalendarRange :class="[!dayView ? 'text-white' : 'text-slate-400']" class="w-4 h-4" />
+                  <span>Vista Mensual</span>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -87,7 +97,8 @@ import {
   Info,
   Clock,
   Download,
-  Printer
+  Printer,
+  CalendarClock
 } from 'lucide-vue-next'
 
 const dayView = ref(true)
@@ -102,6 +113,11 @@ const currentDate = computed(() => {
     day: 'numeric'
   })
 })
+
+const closeAttendance = () => {
+  // Llaamar a la API para crear falta a los estudiantes que no han registrado asistencia
+  alert('Registro de asistencia cerrado')
+}
 </script>
 
 <style scoped>

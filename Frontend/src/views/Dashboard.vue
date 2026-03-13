@@ -319,7 +319,6 @@ import {
   Bell,
   Calendar,
   Download,
-  Plus,
   Users,
   BookOpen,
   CheckSquare,
