@@ -2,6 +2,7 @@ package com.IEASmart.sistemaAsistencias.infrastructure.jpa.repository;
 
 import com.IEASmart.sistemaAsistencias.application.dto.AttendanceCriteria;
 import com.IEASmart.sistemaAsistencias.domain.model.Attendance;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.AttendanceType;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
 import com.IEASmart.sistemaAsistencias.domain.repository.AttendanceRepository;
@@ -37,11 +38,6 @@ public class AttendanceRepositoryImpl implements AttendanceRepository {
     }
 
     @Override
-    public List<Attendance> findAllBySchool(School school) {
-        return attendanceJpaRepository.findAllByStudent_School(school).stream().map(mapper::toDomain).toList();
-    }
-
-    @Override
     public Page<Attendance> findAllByFilter(School school, AttendanceCriteria criteria, Pageable pageable) {
         Specification<AttendanceEntity> spec = Specification
                 .where(AttendanceSpecifications.hasSchool(school))
@@ -60,5 +56,15 @@ public class AttendanceRepositoryImpl implements AttendanceRepository {
                 .stream()
                 .map(mapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public long countByStudentDniAndAttendanceTypeAndDateBetween(String dni, AttendanceType type, LocalDate startDate, LocalDate endDate){
+        return attendanceJpaRepository.countByStudent_DniAndAttendanceTypeAndDateBetween(dni, type, startDate, endDate);
+    }
+
+    @Override
+    public List<Attendance> findByStudentAndDateBetween(String dni, LocalDate startDate, LocalDate endDate){
+        return attendanceJpaRepository.findAllByStudent_DniAndDateBetweenOrderByDateAsc(dni, startDate, endDate).stream().map(mapper::toDomain).toList();
     }
 }

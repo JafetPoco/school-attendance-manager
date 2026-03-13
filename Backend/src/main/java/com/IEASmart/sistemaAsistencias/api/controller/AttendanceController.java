@@ -4,6 +4,7 @@ import com.IEASmart.sistemaAsistencias.api.dto.request.AttendanceFilter;
 import com.IEASmart.sistemaAsistencias.api.dto.request.AttendanceMonthlyFilter;
 import com.IEASmart.sistemaAsistencias.api.dto.request.AttendanceRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.response.AttendanceResponse;
+import com.IEASmart.sistemaAsistencias.api.dto.response.InformationAttendanceResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.MonthlyAttendanceResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.PageResponse;
 import com.IEASmart.sistemaAsistencias.application.service.AttendanceService;
@@ -48,6 +49,13 @@ public class AttendanceController {
     ) {
         School school = authorizationService.getUserSchool();
         List<MonthlyAttendanceResponse> response = attendanceService.getMonthlyAttendance(school, filter);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<InformationAttendanceResponse> getById(@PathVariable String id) {
+        School school = authorizationService.getUserSchool();
+        InformationAttendanceResponse response = attendanceService.getAttendanceById(id, school);
         return ResponseEntity.ok(response);
     }
 }

@@ -6,9 +6,11 @@ import com.IEASmart.sistemaAsistencias.api.dto.request.AttendanceRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.response.*;
 import com.IEASmart.sistemaAsistencias.api.mapper.AttendanceApiMapper;
 import com.IEASmart.sistemaAsistencias.api.mapper.MonthlyAttendanceApiMapper;
+import com.IEASmart.sistemaAsistencias.api.mapper.StudentApiMapper;
 import com.IEASmart.sistemaAsistencias.application.dto.AttendanceCriteria;
 import com.IEASmart.sistemaAsistencias.application.dto.StudentCriteria;
 import com.IEASmart.sistemaAsistencias.domain.exception.ConflictException;
+import com.IEASmart.sistemaAsistencias.domain.exception.ResourceNotFoundException;
 import com.IEASmart.sistemaAsistencias.domain.model.Attendance;
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.AttendanceType;
@@ -16,6 +18,7 @@ import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
 import com.IEASmart.sistemaAsistencias.domain.repository.AttendanceRepository;
 import com.IEASmart.sistemaAsistencias.domain.repository.StudentRepository;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,6 +29,7 @@ import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class AttendanceService {
@@ -33,12 +37,19 @@ public class AttendanceService {
     private final StudentRepository studentRepository;
     private final AttendanceApiMapper mapper;
     private final MonthlyAttendanceApiMapper monthlyAttendanceApiMapper;
+    private final StudentApiMapper studentApiMapper;
 
-    public AttendanceService(AttendanceRepository attendanceRepository, StudentRepository studentRepository, AttendanceApiMapper mapper, MonthlyAttendanceApiMapper monthlyAttendanceApiMapper) {
+    public AttendanceService(
+            AttendanceRepository attendanceRepository,
+            StudentRepository studentRepository,
+            AttendanceApiMapper mapper,
+            MonthlyAttendanceApiMapper monthlyAttendanceApiMapper,
+            StudentApiMapper studentApiMapper) {
         this.attendanceRepository = attendanceRepository;
         this.studentRepository = studentRepository;
         this.mapper = mapper;
         this.monthlyAttendanceApiMapper = monthlyAttendanceApiMapper;
+        this.studentApiMapper = studentApiMapper;
     }
 
     public AttendanceResponse markAttendance(AttendanceRequest request, School school) {
@@ -123,4 +134,36 @@ public class AttendanceService {
         return studentResponses;
     }
 
+    public InformationAttendanceResponse getAttendanceById(String id, School school) {
+        Optional<Student> studentOpt = studentRepository.findById(id, school);
+        if (studentOpt.isEmpty()) {
+            throw new ResourceNotFoundException("Estudiante", id);
+        }
+        Student student = studentOpt.get();
+        InformationAttendanceResponse response = new InformationAttendanceResponse();
+        response.setStudent(studentApiMapper.toResponse(student));
+
+        LocalDate today = LocalDate.now();
+        LocalDate startDate = today.withDayOfMonth(1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+        long totalAttendances = attendanceRepository.countByStudentDniAndAttendanceTypeAndDateBetween(id, AttendanceType.PRESENTE, startDate, endDate);
+        long totalAbsences = attendanceRepository.countByStudentDniAndAttendanceTypeAndDateBetween(id, AttendanceType.AUSENTE, startDate, endDate);
+        long totalTardies = attendanceRepository.countByStudentDniAndAttendanceTypeAndDateBetween(id, AttendanceType.TARDE, startDate, endDate);
+        long totalJustifiedAbsences = attendanceRepository.countByStudentDniAndAttendanceTypeAndDateBetween(id, AttendanceType.JUSTIFICADO, startDate, endDate);
+
+        response.setTotalAttendances(totalAttendances);
+        response.setTotalAbsences(totalAbsences);
+        response.setTotalLate(totalTardies);
+        response.setTotalExcusedAbsences(totalJustifiedAbsences);
+        response.setTotal(totalAttendances + totalAbsences + totalTardies + totalJustifiedAbsences);
+
+        LocalDate fistDayOfWeek = today.minusDays(today.getDayOfWeek().getValue() - 1);
+        LocalDate lastDayOfWeek = fistDayOfWeek.plusDays(6);
+
+        List<Attendance> attendances = attendanceRepository.findByStudentAndDateBetween(id, fistDayOfWeek, lastDayOfWeek);
+        Map<LocalDate, String> dailyAttendance = attendances.stream()
+                .collect(HashMap::new, (map, attendance) -> map.put(attendance.getDate(), attendance.getAttendanceType().getFullName()), HashMap::putAll);
+        response.setAttendances(dailyAttendance);
+        return response;
+    }
 }
