@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,5 +52,12 @@ public class StudentRepositoryImpl implements StudentRepository {
 
         Page<StudentEntity> page = jpaRepository.findAll(spec, pageable);
         return page.map(studentMapper::toDomain);
+    }
+
+    @Override
+    public List<Student> findAllWithoutAttendanceOnDate(School school, LocalDate date) {
+        return jpaRepository.findAllBySchoolAndWithoutAttendanceOnDate(school, date).stream()
+                .map(studentMapper::toDomain)
+                .toList();
     }
 }

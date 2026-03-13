@@ -14,6 +14,7 @@ import java.util.List;
 public interface AttendanceRepository {
     boolean existsByStudentAndDate(String student, LocalDate date);
     Attendance save(Attendance attendance);
+    List<Attendance> saveAll(List<Attendance> attendances);
     Page<Attendance> findAllByFilter(School school, AttendanceCriteria criteria, Pageable pageable);
     List<Attendance> findByStudentSchoolAndSectionAndDateBetween(School school, Section section, LocalDate startDate, LocalDate endDate);
     long countByStudentDniAndAttendanceTypeAndDateBetween(String dni, AttendanceType type, LocalDate startDate, LocalDate endDate);

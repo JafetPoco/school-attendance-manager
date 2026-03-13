@@ -18,7 +18,6 @@ import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
 import com.IEASmart.sistemaAsistencias.domain.repository.AttendanceRepository;
 import com.IEASmart.sistemaAsistencias.domain.repository.StudentRepository;
-import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,10 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class AttendanceService {
@@ -165,5 +161,25 @@ public class AttendanceService {
                 .collect(HashMap::new, (map, attendance) -> map.put(attendance.getDate(), attendance.getAttendanceType().getFullName()), HashMap::putAll);
         response.setAttendances(dailyAttendance);
         return response;
+    }
+
+    @Transactional
+    public long addMissedAttendances(School school) {
+        LocalDate today = LocalDate.now();
+        List<Student> students = studentRepository.findAllWithoutAttendanceOnDate(school, today);
+        List<Attendance> attendances = new ArrayList<>();
+        long created = 0L;
+        for (Student s : students) {
+            Attendance a = new Attendance();
+            a.setStudent(s);
+            a.setDate(today);
+            a.setTime(LocalTime.now());
+            a.setAttendanceType(AttendanceType.AUSENTE);
+            attendances.add(a);
+            created++;
+        }
+
+        attendanceRepository.saveAll(attendances);
+        return created;
     }
 }

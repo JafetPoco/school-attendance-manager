@@ -38,6 +38,14 @@ public class AttendanceRepositoryImpl implements AttendanceRepository {
     }
 
     @Override
+    public List<Attendance> saveAll(List<Attendance> attendances){
+        return attendanceJpaRepository.saveAll(attendances.stream().map(mapper::toEntity).toList())
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public Page<Attendance> findAllByFilter(School school, AttendanceCriteria criteria, Pageable pageable) {
         Specification<AttendanceEntity> spec = Specification
                 .where(AttendanceSpecifications.hasSchool(school))

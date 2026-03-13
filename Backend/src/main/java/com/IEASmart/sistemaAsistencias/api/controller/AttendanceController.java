@@ -58,4 +58,11 @@ public class AttendanceController {
         InformationAttendanceResponse response = attendanceService.getAttendanceById(id, school);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/missed")
+    public ResponseEntity<Long> createMissedAttendances() {
+        School school = authorizationService.getUserSchool();
+        long count = attendanceService.addMissedAttendances(school);
+        return ResponseEntity.ok(count);
+    }
 }
