@@ -83,6 +83,58 @@
       </div>
     </div>
   </div>
+
+<!-- Modal de ección realizada -->
+    <transition name="fade">
+      <div v-if="success" 
+           class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+           @click.self="success = false">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 animate-slide-up">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <Check class="w-5 h-5 text-green-600" />
+              </div>
+              <h3 class="text-lg font-semibold text-slate-800">Registro Cerrado</h3>
+            </div>
+            <button @click="success = false" 
+                    class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+              <X class="w-5 h-5 text-slate-500" />
+            </button>
+          </div>
+          
+          <p class="text-sm text-slate-600 mb-6">
+            Se han registrado {{ countMissed }} alumnos que no han marcado su asistencia hoy. Puedes revisar el reporte para más detalles.
+          </p>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Modal de error -->
+    <transition name="fade">
+      <div v-if="errorMessage" 
+           class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+           @click.self="errorMessage = ''">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 animate-slide-up">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                <MessageCircleX class="w-5 h-5 text-red-600" />
+              </div>
+              <h3 class="text-lg font-semibold text-slate-800">Error</h3>
+            </div>
+            <button @click="errorMessage = ''" 
+                    class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+              <X class="w-5 h-5 text-slate-500" />
+            </button>
+          </div>
+          
+          <p class="text-sm text-slate-600 mb-6">
+            {{ errorMessage }}
+          </p>
+        </div>
+      </div>
+    </transition>
 </template>
 
 <script setup lang="ts">
@@ -98,10 +150,17 @@ import {
   Clock,
   Download,
   Printer,
-  CalendarClock
+  CalendarClock,
+  Check,
+  X,
+  MessageCircleX
 } from 'lucide-vue-next'
+import { createMissedAttendance } from '@/services/attendancesService'
 
 const dayView = ref(true)
+const errorMessage = ref('')
+const success = ref(false)
+const countMissed = ref(0)
 
 // Fecha actual formateada
 const currentDate = computed(() => {
@@ -114,9 +173,20 @@ const currentDate = computed(() => {
   })
 })
 
-const closeAttendance = () => {
-  // Llaamar a la API para crear falta a los estudiantes que no han registrado asistencia
-  alert('Registro de asistencia cerrado')
+const closeAttendance = async () => {
+  errorMessage.value = ''
+  try {
+    const response = await createMissedAttendance()
+
+    if (response.success) {
+      success.value = true
+      countMissed.value = response.data.count
+    } else {
+      errorMessage.value = response.error.message
+    }
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'Error de conexión'
+  }
 }
 </script>
 

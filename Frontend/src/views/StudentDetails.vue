@@ -179,7 +179,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Header from '@/components/Header.vue'
 import { getStudentAttendance } from '@/services/attendancesService'
@@ -197,10 +197,7 @@ import {
   XCircle,
   FileCheck,
   PieChart,
-  QrCode,
-  BarChart3,
-  Calendar,
-  CalendarDays
+  QrCode
 } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -209,23 +206,6 @@ const router = useRouter()
 const loading = ref(false)
 const errorMessage = ref('')
 const studentInfo = ref<StudentAttendanceDetailsResponse | null>(null)
-
-const semanaActual = computed(() => {
-  const hoy = new Date()
-  return hoy.toLocaleDateString('es-ES', { 
-    year: 'numeric', 
-    month: 'long',
-    day: 'numeric'
-  })
-})
-
-const semanaRango = computed(() => {
-  const hoy = new Date()
-  const inicio = hoy.getDate()
-  const fin = hoy.getDate() + 5
-  const mes = hoy.toLocaleDateString('es-ES', { month: 'long' })
-  return `${inicio} al ${fin} de ${mes}`
-})
 
 // Funciones de utilidad
 const getInitials = (name: string, lastName: string) => {
@@ -246,23 +226,6 @@ const formatGrade = (grade: string) => {
     'SEXTO': '6°'
   }
   return grades[grade] || grade
-}
-
-const getDiaClass = (dia: any) => {
-  const classes: Record<string, string> = {
-    'temprano': 'bg-emerald-50 hover:bg-emerald-100 border border-emerald-200',
-    'tarde': 'bg-amber-50 hover:bg-amber-100 border border-amber-200',
-    'falta': 'bg-red-50 hover:bg-red-100 border border-red-200',
-    'justificado': 'bg-blue-50 hover:bg-blue-100 border border-blue-200',
-    'proximo': 'bg-slate-50 hover:bg-slate-100 border border-slate-200',
-    'sin_clases': 'bg-slate-50 hover:bg-slate-100 border border-slate-200 opacity-60'
-  }
-  return classes[dia.estado] || 'bg-slate-50 hover:bg-slate-100 border border-slate-200'
-}
-
-const getShortDayName = (date: string) => {
-  const today = new Date(date)
-  return today.toLocaleDateString('es-ES', { weekday: 'short' })
 }
 
 // Acciones

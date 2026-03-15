@@ -4,7 +4,7 @@ import { mapApiError } from '@/utils/apiErrorMapper'
 import type { ServiceResult } from '@/types/ServiceResult'
 import type { ApiHttpError } from '@/api/ApiHttpError'
 import type { PageRequest, PageResponse, Sort } from '@/types/Pages'
-import type { AttendanceFilter, AttendanceResponse, StudentAttendanceDetailsResponse } from '@/types/Attendance'
+import type { AttendanceFilter, AttendanceResponse, MissedAttendance, StudentAttendanceDetailsResponse } from '@/types/Attendance'
 
 function buildStudentsQuery(filter: AttendanceFilter, page: PageRequest, sort?: Sort): string {
   const queryParams = new URLSearchParams()
@@ -49,6 +49,21 @@ export async function getStudentAttendance(studentId: string): Promise<ServiceRe
   try {
     const data = await http<StudentAttendanceDetailsResponse>(`/attendances/${studentId}`, {
       method: 'GET'
+    })
+
+    return { success: true, data }
+  } catch (error) {
+    return {
+      success: false,
+      error: mapApiError(error)
+    }
+  }
+}
+
+export async function createMissedAttendance(): Promise<ServiceResult<MissedAttendance, ApiHttpError>> {
+  try {
+    const data = await http<MissedAttendance>(`/attendances/missed`, {
+      method: 'GET',
     })
 
     return { success: true, data }

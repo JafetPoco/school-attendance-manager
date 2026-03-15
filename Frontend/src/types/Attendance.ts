@@ -30,3 +30,7 @@ export interface StudentAttendanceDetailsResponse {
     total: number
     attendances: Map<string, 'presente' | 'ausente' | 'tarde' | 'justificado'> // Mapa de fecha a tipo de asistencia
 }
+
+export interface MissedAttendance {
+    count: number
+}
