@@ -167,6 +167,9 @@ public class AttendanceService {
     public long addMissedAttendances(School school) {
         LocalDate today = LocalDate.now();
         List<Student> students = studentRepository.findAllWithoutAttendanceOnDate(school, today);
+        if(students.isEmpty()) {
+            throw new ConflictException("No hay estudiantes sin asistencia registrada para la fecha " + today, "NO_STUDENTS_WITHOUT_ATTENDANCE");
+        }
         List<Attendance> attendances = new ArrayList<>();
         long created = 0L;
         for (Student s : students) {

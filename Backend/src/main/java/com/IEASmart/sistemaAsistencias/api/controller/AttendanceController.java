@@ -4,6 +4,7 @@ import com.IEASmart.sistemaAsistencias.api.dto.request.AttendanceFilter;
 import com.IEASmart.sistemaAsistencias.api.dto.request.AttendanceMonthlyFilter;
 import com.IEASmart.sistemaAsistencias.api.dto.request.AttendanceRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.response.AttendanceResponse;
+import com.IEASmart.sistemaAsistencias.api.dto.response.CountResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.InformationAttendanceResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.MonthlyAttendanceResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.PageResponse;
@@ -60,9 +61,9 @@ public class AttendanceController {
     }
 
     @GetMapping("/missed")
-    public ResponseEntity<Long> createMissedAttendances() {
+    public ResponseEntity<CountResponse> createMissedAttendances() {
         School school = authorizationService.getUserSchool();
         long count = attendanceService.addMissedAttendances(school);
-        return ResponseEntity.ok(count);
+        return ResponseEntity.ok(new CountResponse(count));
     }
 }
