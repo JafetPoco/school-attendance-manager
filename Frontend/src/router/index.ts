@@ -55,6 +55,12 @@ const router = createRouter({
       meta: { requiresAuth: true}
     },
     {
+      path: '/addSchoolPolicy',
+      name: 'schoolPolicy',
+      component: () => import('@/views/SchoolPolicy.vue'),
+      meta: { requiresAuth: true}
+    },
+    {
       path: '/:pathMatch(.*)*',
       component: page404,
     }
