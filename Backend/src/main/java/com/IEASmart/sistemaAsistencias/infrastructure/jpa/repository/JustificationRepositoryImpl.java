@@ -1,0 +1,37 @@
+package com.IEASmart.sistemaAsistencias.infrastructure.jpa.repository;
+
+import com.IEASmart.sistemaAsistencias.domain.model.Justification;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.JustificationStatus;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
+import com.IEASmart.sistemaAsistencias.domain.repository.JustificationRepository;
+import com.IEASmart.sistemaAsistencias.infrastructure.mapper.JustificationMapper;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public class JustificationRepositoryImpl implements JustificationRepository {
+    private final JustificationJpaRepository jpaRepository;
+    private final JustificationMapper mapper;
+
+    public JustificationRepositoryImpl(JustificationJpaRepository jpaRepository, JustificationMapper mapper) {
+        this.jpaRepository = jpaRepository;
+        this.mapper = mapper;
+    }
+
+    @Override
+    public Optional<Justification> findByAttendanceId(Long attendanceId) {
+        return jpaRepository.findByAttendance_Id(attendanceId).map(mapper::toDomain);
+    }
+
+    @Override
+    public List<Justification> findAllByStatus(JustificationStatus status, School school) {
+        return jpaRepository.findAllByStatusAndAttendance_Student_School(status, school).stream().map(mapper::toDomain).toList();
+    }
+
+    @Override
+    public Justification save(Justification justification) {
+        return mapper.toDomain(jpaRepository.save(mapper.toEntity(justification)));
+    }
+}

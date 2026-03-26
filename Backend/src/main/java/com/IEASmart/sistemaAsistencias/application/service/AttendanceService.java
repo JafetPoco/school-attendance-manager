@@ -13,11 +13,13 @@ import com.IEASmart.sistemaAsistencias.domain.exception.ConflictException;
 import com.IEASmart.sistemaAsistencias.domain.exception.ResourceNotFoundException;
 import com.IEASmart.sistemaAsistencias.domain.model.Attendance;
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
+import com.IEASmart.sistemaAsistencias.domain.model.Token;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.AttendanceType;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
 import com.IEASmart.sistemaAsistencias.domain.repository.AttendanceRepository;
 import com.IEASmart.sistemaAsistencias.domain.repository.StudentRepository;
+import com.IEASmart.sistemaAsistencias.domain.repository.TokenRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -34,18 +36,17 @@ public class AttendanceService {
     private final AttendanceApiMapper mapper;
     private final MonthlyAttendanceApiMapper monthlyAttendanceApiMapper;
     private final StudentApiMapper studentApiMapper;
+    private final TokenService tokenService;
+    private final TokenRepository tokenRepository;
 
-    public AttendanceService(
-            AttendanceRepository attendanceRepository,
-            StudentRepository studentRepository,
-            AttendanceApiMapper mapper,
-            MonthlyAttendanceApiMapper monthlyAttendanceApiMapper,
-            StudentApiMapper studentApiMapper) {
+    public AttendanceService(AttendanceRepository attendanceRepository, StudentRepository studentRepository, AttendanceApiMapper mapper, MonthlyAttendanceApiMapper monthlyAttendanceApiMapper, StudentApiMapper studentApiMapper, TokenService tokenService, TokenRepository tokenRepository) {
         this.attendanceRepository = attendanceRepository;
         this.studentRepository = studentRepository;
         this.mapper = mapper;
         this.monthlyAttendanceApiMapper = monthlyAttendanceApiMapper;
         this.studentApiMapper = studentApiMapper;
+        this.tokenService = tokenService;
+        this.tokenRepository = tokenRepository;
     }
 
     public AttendanceResponse markAttendance(AttendanceRequest request, School school) {
@@ -130,7 +131,7 @@ public class AttendanceService {
         return studentResponses;
     }
 
-    public InformationAttendanceResponse getAttendanceById(String id, School school) {
+    public InformationAttendanceResponse getAttendanceByStudentId(String id, School school) {
         Optional<Student> studentOpt = studentRepository.findById(id, school);
         if (studentOpt.isEmpty()) {
             throw new ResourceNotFoundException("Estudiante", id);
@@ -163,6 +164,14 @@ public class AttendanceService {
         return response;
     }
 
+    public AttendanceInfoResponse getAttendanceById(Long id) {
+        Optional<Attendance> attendanceOpt = attendanceRepository.findById(id);
+        if (attendanceOpt.isEmpty()) {
+            throw new ResourceNotFoundException("Asistencia", id.toString());
+        }
+        return mapper.toInfoResponse(attendanceOpt.get());
+    }
+
     @Transactional
     public long addMissedAttendances(School school) {
         LocalDate today = LocalDate.now();
@@ -171,7 +180,6 @@ public class AttendanceService {
             throw new ConflictException("No hay estudiantes sin asistencia registrada para la fecha " + today, "NO_STUDENTS_WITHOUT_ATTENDANCE");
         }
         List<Attendance> attendances = new ArrayList<>();
-        long created = 0L;
         for (Student s : students) {
             Attendance a = new Attendance();
             a.setStudent(s);
@@ -179,10 +187,16 @@ public class AttendanceService {
             a.setTime(LocalTime.now());
             a.setAttendanceType(AttendanceType.AUSENTE);
             attendances.add(a);
-            created++;
         }
 
-        attendanceRepository.saveAll(attendances);
-        return created;
+        List<Attendance> saved = attendanceRepository.saveAll(attendances);
+        List<Token> tokens = new ArrayList<>(saved.size());
+        for(Attendance a : saved) {
+            Token t = tokenService.generateToken(a.getId(), school);
+            tokens.add(t);
+        }
+        tokenRepository.saveAll(tokens);
+
+        return saved.size();
     }
 }

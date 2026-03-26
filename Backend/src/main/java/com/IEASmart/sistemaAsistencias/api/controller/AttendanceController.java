@@ -56,7 +56,7 @@ public class AttendanceController {
     @GetMapping("/{id}")
     public ResponseEntity<InformationAttendanceResponse> getById(@PathVariable String id) {
         School school = authorizationService.getUserSchool();
-        InformationAttendanceResponse response = attendanceService.getAttendanceById(id, school);
+        InformationAttendanceResponse response = attendanceService.getAttendanceByStudentId(id, school);
         return ResponseEntity.ok(response);
     }
 

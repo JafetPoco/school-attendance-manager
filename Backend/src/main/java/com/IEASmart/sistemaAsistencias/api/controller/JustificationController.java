@@ -1,0 +1,50 @@
+package com.IEASmart.sistemaAsistencias.api.controller;
+
+import com.IEASmart.sistemaAsistencias.api.dto.request.JustificationRequest;
+import com.IEASmart.sistemaAsistencias.api.dto.response.AttendanceInfoResponse;
+import com.IEASmart.sistemaAsistencias.api.dto.response.JustificationResponse;
+import com.IEASmart.sistemaAsistencias.application.service.AttendanceService;
+import com.IEASmart.sistemaAsistencias.application.service.AuthorizationService;
+import com.IEASmart.sistemaAsistencias.application.service.JustificationService;
+import com.IEASmart.sistemaAsistencias.application.service.TokenService;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/justifications")
+public class JustificationController {
+    private final AuthorizationService authorizationService;
+    private final JustificationService justificationService;
+    private final AttendanceService attendanceService;
+    private final TokenService tokenService;
+
+    public JustificationController(AuthorizationService authorizationService, JustificationService justificationService, AttendanceService attendanceService, TokenService tokenService) {
+        this.authorizationService = authorizationService;
+        this.justificationService = justificationService;
+        this.attendanceService = attendanceService;
+        this.tokenService = tokenService;
+    }
+
+    @GetMapping("/public/{token}")
+    public ResponseEntity<AttendanceInfoResponse> getJustificationForm(@PathVariable String token) {
+        Long attendanceId = tokenService.getAttendanceIdFromToken(token);
+        return ResponseEntity.ok(attendanceService.getAttendanceById(attendanceId));
+    }
+
+    @PostMapping("/public/submit")
+    public ResponseEntity<JustificationResponse> submitJustification(
+            @RequestBody JustificationRequest request) {
+        return ResponseEntity.ok(justificationService.createJustification(request));
+    }
+
+    @GetMapping("/pending")
+    public ResponseEntity<List<JustificationResponse>> getPendingJustifications() {
+        School school = authorizationService.getUserSchool();
+        List<JustificationResponse> pending = justificationService.getPendingJustifications(school);
+        return ResponseEntity.ok(pending);
+    }
+
+}

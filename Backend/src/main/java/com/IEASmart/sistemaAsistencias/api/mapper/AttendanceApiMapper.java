@@ -1,6 +1,7 @@
 package com.IEASmart.sistemaAsistencias.api.mapper;
 
 import com.IEASmart.sistemaAsistencias.api.dto.request.AttendanceRequest;
+import com.IEASmart.sistemaAsistencias.api.dto.response.AttendanceInfoResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.AttendanceResponse;
 import com.IEASmart.sistemaAsistencias.domain.model.Attendance;
 import org.springframework.stereotype.Component;
@@ -24,5 +25,13 @@ public class AttendanceApiMapper {
         return attendance;
     }
 
+    public AttendanceInfoResponse toInfoResponse(Attendance attendance) {
+        AttendanceInfoResponse response = new AttendanceInfoResponse();
+        response.setId(attendance.getId());
+        response.setDate(attendance.getDate());
+        response.setFullName(attendance.getStudent().getName() + " " + attendance.getStudent().getFirstLastName() + " " + attendance.getStudent().getSecondLastName());
+        response.setGrade(attendance.getStudent().getLevel() + " - " + attendance.getStudent().getGrade() + " - " + attendance.getStudent().getSection());
+        return response;
+    }
 
 }

@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface AttendanceRepository {
     boolean existsByStudentAndDate(String student, LocalDate date);
@@ -19,4 +20,5 @@ public interface AttendanceRepository {
     List<Attendance> findByStudentSchoolAndSectionAndDateBetween(School school, Section section, LocalDate startDate, LocalDate endDate);
     long countByStudentDniAndAttendanceTypeAndDateBetween(String dni, AttendanceType type, LocalDate startDate, LocalDate endDate);
     List<Attendance> findByStudentAndDateBetween(String dni, LocalDate startDate, LocalDate endDate);
+    Optional<Attendance> findById(Long id);
 }
