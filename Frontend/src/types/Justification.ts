@@ -6,6 +6,7 @@ export interface JustificationRequest {
 }
 
 export interface JustificationResponse {
+    id: bigint
     studentName: string
     attendanceDate: string
     description: string

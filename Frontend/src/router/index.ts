@@ -81,6 +81,12 @@ const router = createRouter({
       }
     },
     {
+      path: '/pendingJustifications',
+      name: 'pendingJustifications',
+      component: () => import('@/views/PendingJustifications.vue'),
+      meta: { requiresAuth: true}
+    },
+    {
       path: '/justifications/error',
       name: 'justificationsError',
       component: () => import('@/views/error/JustificationNotFound.vue'),

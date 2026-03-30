@@ -36,3 +36,48 @@ export async function addJustification(request: JustificationRequest): Promise<S
     }
   }
 }
+
+export async function getPendingJustifications(): Promise<ServiceResult<JustificationResponse[], ApiHttpError>> {
+  try {
+    const data = await http<JustificationResponse[]>(`/justifications/pending`, {
+      method: 'GET'
+    })
+
+    return { success: true, data }
+  } catch (error) {
+    return {
+      success: false,
+      error: mapApiError(error)
+    }
+  }
+}
+
+export async function approveJustification(idJustification: bigint): Promise<ServiceResult<JustificationResponse, ApiHttpError>> {
+  try {
+    const data = await http<JustificationResponse>(`/justifications/${idJustification}/approve`, {
+      method: 'POST'
+    })  
+
+    return { success: true, data }
+  } catch (error) {
+    return {
+      success: false,
+      error: mapApiError(error)
+    }
+  }
+}
+
+export async function rejectJustification(idJustification: bigint): Promise<ServiceResult<JustificationResponse, ApiHttpError>> {
+  try {
+    const data = await http<JustificationResponse>(`/justifications/${idJustification}/reject`, {
+      method: 'POST'
+    })  
+
+    return { success: true, data }
+  } catch (error) {
+    return {
+      success: false,
+      error: mapApiError(error)
+    }
+  }
+}
