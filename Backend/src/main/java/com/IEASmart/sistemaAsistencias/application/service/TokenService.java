@@ -74,12 +74,12 @@ public class TokenService {
 
     public void markTokenAsUsed(String token) {
         Optional<Token> tokenOpt = tokenRepository.findByToken(token);
-        if(tokenOpt.isPresent()){
-            Token t = tokenOpt.get();
-            t.setUsed(true);
-            tokenRepository.save(t);
+        if(tokenOpt.isEmpty()){
+            throw new ResourceNotFoundException("Token", token);
         }
-        throw new ResourceNotFoundException("Token", token);
+        Token t = tokenOpt.get();
+        t.setUsed(true);
+        tokenRepository.save(t);
     }
 /*
     @Scheduled(cron = "0 0 2 * * ?") // Cada día a las 2 AM

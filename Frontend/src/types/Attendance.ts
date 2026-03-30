@@ -34,3 +34,10 @@ export interface StudentAttendanceDetailsResponse {
 export interface MissedAttendance {
     count: number
 }
+
+export interface AttendanceInfoResponse {
+    id: bigint
+    fullName: string
+    date: string
+    grade: string
+}
