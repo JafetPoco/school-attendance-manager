@@ -47,4 +47,14 @@ public class JustificationController {
         return ResponseEntity.ok(pending);
     }
 
+    @PostMapping("/{id}/approve")
+    public ResponseEntity<JustificationResponse> approveJustification(@PathVariable Long id) {
+        return ResponseEntity.ok(justificationService.approveJustification(id));
+    }
+
+    @PostMapping("/{id}/reject")
+    public ResponseEntity<JustificationResponse> rejectJustification(@PathVariable Long id) {
+        return ResponseEntity.ok(justificationService.rejectJustification(id));
+    }
+
 }

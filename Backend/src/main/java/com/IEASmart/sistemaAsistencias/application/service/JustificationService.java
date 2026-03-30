@@ -100,4 +100,35 @@ public class JustificationService {
         List<Justification> pendingJustifications = justificationRepository.findAllByStatus(JustificationStatus.PENDIENTE, school);
         return pendingJustifications.stream().map(justificationApiMapper::toResponse).toList();
     }
+
+    public JustificationResponse approveJustification(Long justificationId) {
+        Justification justification = justificationRepository.findById(justificationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Justificación", justificationId));
+
+        if (justification.getStatus() != JustificationStatus.PENDIENTE) {
+            throw new ConflictException("Solo se pueden aprobar justificaciones pendientes", "INVALID_JUSTIFICATION_STATUS");
+        }
+
+        justification.setStatus(JustificationStatus.ACEPTADA);
+        justificationRepository.save(justification);
+
+        Attendance attendance = justification.getAttendance();
+        attendance.setAttendanceType(AttendanceType.JUSTIFICADO);
+        attendanceRepository.save(attendance);
+
+        return justificationApiMapper.toResponse(justification);
+    }
+
+    public JustificationResponse rejectJustification(Long justificationId) {
+        Justification justification = justificationRepository.findById(justificationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Justificación", justificationId));
+
+        if (justification.getStatus() != JustificationStatus.PENDIENTE) {
+            throw new ConflictException("Solo se pueden rechazar justificaciones pendientes", "INVALID_JUSTIFICATION_STATUS");
+        }
+
+        justification.setStatus(JustificationStatus.RECHAZADA);
+        justificationRepository.save(justification);
+        return justificationApiMapper.toResponse(justification);
+     }
 }

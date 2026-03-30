@@ -4,13 +4,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class JustificationResponse {
+    private Long id;
     private String studentName;
     private LocalDate attendanceDate;
     private String description;
     private String urlEvidence;
     private LocalDateTime justificationDate;
 
-    public JustificationResponse(String studentName, LocalDate attendanceDate, String description, String urlEvidence, LocalDateTime justificationDate) {
+    public JustificationResponse(Long id, String studentName, LocalDate attendanceDate, String description, String urlEvidence, LocalDateTime justificationDate) {
+        this.id = id;
         this.studentName = studentName;
         this.attendanceDate = attendanceDate;
         this.description = description;
@@ -19,6 +21,14 @@ public class JustificationResponse {
     }
 
     public JustificationResponse() {}
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getStudentName() {
         return studentName;

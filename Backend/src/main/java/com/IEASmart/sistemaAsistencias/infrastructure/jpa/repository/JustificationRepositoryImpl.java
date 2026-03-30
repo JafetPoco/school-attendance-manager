@@ -21,6 +21,11 @@ public class JustificationRepositoryImpl implements JustificationRepository {
     }
 
     @Override
+    public Optional<Justification> findById(Long id) {
+        return jpaRepository.findById(id).map(mapper::toDomain);
+    }
+
+    @Override
     public Optional<Justification> findByAttendanceId(Long attendanceId) {
         return jpaRepository.findByAttendance_Id(attendanceId).map(mapper::toDomain);
     }

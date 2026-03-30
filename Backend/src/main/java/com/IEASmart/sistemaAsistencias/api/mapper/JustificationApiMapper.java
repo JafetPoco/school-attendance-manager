@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 public class JustificationApiMapper {
     public JustificationResponse toResponse(Justification justification) {
         JustificationResponse response = new JustificationResponse();
+        response.setId(justification.getId());
         response.setDescription(justification.getDescription());
         response.setJustificationDate(justification.getJustificationDate());
         response.setAttendanceDate(justification.getAttendance().getDate());

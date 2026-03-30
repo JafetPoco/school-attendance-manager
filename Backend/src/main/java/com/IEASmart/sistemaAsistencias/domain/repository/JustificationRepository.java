@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface JustificationRepository {
+    Optional<Justification> findById(Long id);
     Optional<Justification> findByAttendanceId(Long attendanceId);
     List<Justification> findAllByStatus(JustificationStatus status, School school);
     Justification save(Justification justification);
