@@ -1,7 +1,8 @@
 <template>
-  <Header></Header>
-  <div class="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
+  <div class="min-h-screen bg-slate-50">
+    <Header />
+    
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Header de la página -->
       <div class="mb-8 animate-fade-in-down">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -19,7 +20,7 @@
           <div class="flex items-center space-x-3">
             <div class="bg-amber-50 px-4 py-2 rounded-lg border border-amber-200">
               <p class="text-xs text-amber-600">Pendientes</p>
-              <p class="text-xl font-bold text-amber-700">{{ filteredJustifications.length }}</p>
+              <p class="text-xl font-bold text-amber-700">{{ totalJustifications }}</p>
             </div>
             <button @click="refreshList" 
                     class="p-2 text-slate-600 hover:bg-white rounded-lg transition-colors"
@@ -31,30 +32,24 @@
 
         <!-- Filtros y búsqueda -->
         <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="relative">
-            <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input type="text"
-                   v-model="searchQuery"
-                   placeholder="Buscar por nombre del estudiante..."
-                   class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent">
-          </div>
+          <!-- Filtro por fecha -->
           <div class="relative">
             <Calendar class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <select v-model="dateFilter"
+            <select v-model="filter.dateFilter"
                     class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 appearance-none cursor-pointer">
-              <option value="all">Todas las fechas</option>
-              <option value="today">Hoy</option>
-              <option value="week">Esta semana</option>
-              <option value="month">Este mes</option>
+              <option value="TODAY">Hoy</option>
+              <option value="WEEK">Esta semana</option>
+              <option value="MONTH">Este mes</option>
             </select>
           </div>
+
+          <!-- Ordenamiento -->
           <div class="relative">
             <Filter class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <select v-model="sortBy"
+            <select v-model="sort.direction"
                     class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 appearance-none cursor-pointer">
-              <option value="recent">Más recientes primero</option>
-              <option value="oldest">Más antiguos primero</option>
-              <option value="student">Ordenar por estudiante</option>
+              <option value="asc">Ordenar A-Z</option>
+              <option value="desc">Ordenar Z-A</option>
             </select>
           </div>
         </div>
@@ -83,8 +78,9 @@
       </transition>
 
       <!-- Grid de tarjetas -->
-      <div v-if="!loading && !errorMessage" class="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in-up">
-        <div v-for="item in paginatedJustifications" 
+      <div v-if="!loading && !errorMessage && pendingJustifications.length > 0" 
+           class="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in-up">
+        <div v-for="item in pendingJustifications" 
              :key="String(item.id)"
              class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
           
@@ -165,14 +161,18 @@
             <!-- Acciones -->
             <div class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-200">
               <button @click="rejectJustification(item)"
-                      class="flex items-center space-x-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 group">
-                <X class="w-4 h-4 group-hover:scale-110 transition-transform" />
-                <span>Denegar</span>
+                      :disabled="processingId === item.id"
+                      class="flex items-center space-x-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 group disabled:opacity-50 disabled:cursor-not-allowed">
+                <Loader2 v-if="processingId === item.id" class="w-4 h-4 animate-spin" />
+                <X v-else class="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <span>{{ processingId === item.id ? 'Procesando...' : 'Denegar' }}</span>
               </button>
               <button @click="approveJustification(item)"
-                      class="flex items-center space-x-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all duration-200 transform hover:scale-105 shadow-md group">
-                <Check class="w-4 h-4 group-hover:scale-110 transition-transform" />
-                <span>Aprobar</span>
+                      :disabled="processingId === item.id"
+                      class="flex items-center space-x-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all duration-200 transform hover:scale-105 shadow-md group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+                <Loader2 v-if="processingId === item.id" class="w-4 h-4 animate-spin" />
+                <Check v-else class="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <span>{{ processingId === item.id ? 'Procesando...' : 'Aprobar' }}</span>
               </button>
             </div>
           </div>
@@ -180,62 +180,67 @@
       </div>
 
       <!-- Empty state -->
-      <div v-if="!loading && !errorMessage && filteredJustifications.length === 0" 
+      <div v-if="!loading && !errorMessage && pendingJustifications.length === 0" 
            class="bg-white rounded-xl border border-slate-200 p-12 text-center animate-fade-in-up">
         <FileCheck class="w-16 h-16 text-slate-300 mx-auto mb-4" />
         <h3 class="text-lg font-semibold text-slate-800 mb-2">No hay justificaciones pendientes</h3>
         <p class="text-sm text-slate-500">
-          {{ searchQuery || dateFilter !== 'all' ? 'No se encontraron resultados con los filtros aplicados' : 'Todas las justificaciones han sido procesadas' }}
+          No se encontraron resultados para las justificaciones pendientes.
         </p>
-        <button v-if="searchQuery || dateFilter !== 'all'" 
-                @click="clearFilters"
-                class="mt-4 text-sm text-indigo-600 hover:text-indigo-800">
-          Limpiar filtros
-        </button>
       </div>
 
       <!-- Paginación -->
-      <div v-if="filteredJustifications.length > 0 && totalPages > 1" 
-           class="mt-8 flex items-center justify-between">
+      <div v-if="totalJustifications > 0 && totalPages > 1" 
+           class="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div class="text-xs text-slate-500">
-          Mostrando {{ paginationStart }} - {{ paginationEnd }} de {{ filteredJustifications.length }} justificaciones
+          Mostrando {{ paginationStart }} - {{ paginationEnd }} de {{ totalJustifications }} justificaciones
         </div>
-        <div class="flex space-x-2">
-          <button @click="currentPage--" 
-                  :disabled="currentPage === 1"
-                  class="px-3 py-1 border border-slate-200 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white transition-colors">
-            Anterior
+        <div class="flex items-center space-x-2">
+          <button @click="goToFirstPage" 
+                  :disabled="currentPage === 0 || loading"
+                  class="p-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Primera página">
+            <ChevronsLeft class="w-4 h-4" />
+          </button>
+          <button @click="prevPage" 
+                  :disabled="currentPage === 0 || loading"
+                  class="p-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Página anterior">
+            <ChevronLeft class="w-4 h-4" />
           </button>
           <div class="flex space-x-1">
             <button v-for="page in visiblePages" 
                     :key="page"
-                    @click="currentPage = page"
-                    class="px-3 py-1 rounded-lg text-sm transition-colors"
-                    :class="currentPage === page 
+                    @click="goToPage(page - 1)"
+                    class="min-w-8 px-2 py-1 rounded-lg text-sm transition-colors"
+                    :class="currentPage === page - 1 
                       ? 'bg-slate-800 text-white' 
                       : 'border border-slate-200 text-slate-600 hover:bg-white'">
               {{ page }}
             </button>
           </div>
-          <button @click="currentPage++"
-                  :disabled="currentPage >= totalPages"
-                  class="px-3 py-1 border border-slate-200 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white transition-colors">
-            Siguiente
+          <button @click="nextPage"
+                  :disabled="currentPage >= totalPages - 1 || loading"
+                  class="p-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Página siguiente">
+            <ChevronRight class="w-4 h-4" />
+          </button>
+          <button @click="goToLastPage"
+                  :disabled="currentPage >= totalPages - 1 || loading"
+                  class="p-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Última página">
+            <ChevronsRight class="w-4 h-4" />
           </button>
         </div>
       </div>
-    </div>
+    </main>
 
     <!-- Sistema de Toasts -->
     <transition-group name="toast" tag="div" class="fixed bottom-4 right-4 z-50 space-y-2">
       <div v-for="toast in toasts" 
            :key="toast.id"
-           :class="[
-             'flex items-center space-x-3 px-4 py-3 rounded-lg shadow-lg min-w-75 max-w-md animate-slide-in-right',
-             toast.type === 'success' ? 'bg-emerald-600 text-white' : '',
-             toast.type === 'error' ? 'bg-red-600 text-white' : '',
-           ]">
-        <component :is="toast.icon" class="w-5 h-5 shrink-0" />
+           class="flex items-center space-x-3 px-4 py-3 rounded-lg shadow-lg min-w-75 max-w-md animate-slide-in-right bg-gray-200">
+        <component :is="toast.icon" class="w-5 h-5 shrink-0" :class="toast.type == 'success' ? 'text-emerald-600' : 'text-red-600'" />
         <div class="flex-1">
           <p class="text-sm font-medium">{{ toast.title }}</p>
           <p class="text-xs opacity-90">{{ toast.message }}</p>
@@ -245,19 +250,18 @@
         </button>
       </div>
     </transition-group>
-    
   </div>
 </template>
 
 <script setup lang="ts">
 import Header from '@/components/Header.vue'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { getPendingJustifications, approveJustification as approve, rejectJustification as reject } from '@/services/justificationsService'
-import type { JustificationResponse } from '@/types/Justification'
+import type { JustificationFilter, JustificationResponse } from '@/types/Justification'
+import type { PageRequest, Sort } from '@/types/Pages'
 import {
   FileCheck,
   RotateCw,
-  Search,
   Loader2,
   AlertCircle,
   Calendar,
@@ -270,8 +274,15 @@ import {
   Check,
   X,
   CheckCircle,
-  XCircle
+  XCircle,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
 } from 'lucide-vue-next'
+
+// Constantes
+const PAGE_SIZE = 10
 
 // Interfaces
 interface Toast {
@@ -287,85 +298,38 @@ interface Toast {
 const loading = ref(false)
 const errorMessage = ref('')
 const pendingJustifications = ref<JustificationResponse[]>([])
-const searchQuery = ref('')
-const dateFilter = ref('all')
-const sortBy = ref('recent')
-const currentPage = ref(1)
-const itemsPerPage = ref(6) // 6 tarjetas por página (2 columnas x 3 filas)
+const currentPage = ref(0)
+const totalPages = ref(0)
+const totalJustifications = ref(0)
 const expandedDescriptions = ref<Record<string, boolean>>({})
 const toasts = ref<Toast[]>([])
+const processingId = ref<bigint | null>(null)
+const searchQuery = ref('')
 let nextToastId = 1
 
-// Computed
-const filteredJustifications = computed(() => {
-  let filtered = [...pendingJustifications.value]
-
-  // Búsqueda por nombre
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(j => 
-      j.studentName.toLowerCase().includes(query)
-    )
-  }
-
-  // Filtro por fecha
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-
-  filtered = filtered.filter(j => {
-    const attendanceDate = new Date(j.attendanceDate)
-    attendanceDate.setHours(0, 0, 0, 0)
-    const diffDays = Math.floor((today.getTime() - attendanceDate.getTime()) / (1000 * 60 * 60 * 24))
-
-    switch (dateFilter.value) {
-      case 'today':
-        return diffDays === 0
-      case 'week':
-        return diffDays <= 7
-      case 'month':
-        return diffDays <= 30
-      default:
-        return true
-    }
-  })
-
-  // Ordenamiento
-  switch (sortBy.value) {
-    case 'recent':
-      filtered.sort((a, b) => new Date(b.justificationDate).getTime() - new Date(a.justificationDate).getTime())
-      break
-    case 'oldest':
-      filtered.sort((a, b) => new Date(a.justificationDate).getTime() - new Date(b.justificationDate).getTime())
-      break
-    case 'student':
-      filtered.sort((a, b) => a.studentName.localeCompare(b.studentName))
-      break
-  }
-
-  return filtered
+const filter = ref<JustificationFilter>({
+  dateFilter: 'TODAY'
 })
 
-const totalPages = computed(() => Math.ceil(filteredJustifications.value.length / itemsPerPage.value))
-
-const paginatedJustifications = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return filteredJustifications.value.slice(start, end)
+const sort = ref<Sort>({
+  field: 'attendanceStudentName',
+  direction: 'asc'
 })
 
 const paginationStart = computed(() => {
-  if (filteredJustifications.value.length === 0) return 0
-  return (currentPage.value - 1) * itemsPerPage.value + 1
+  if (totalJustifications.value === 0) return 0
+  return currentPage.value * PAGE_SIZE + 1
 })
 
 const paginationEnd = computed(() => {
-  return Math.min(currentPage.value * itemsPerPage.value, filteredJustifications.value.length)
+  if (totalJustifications.value === 0) return 0
+  return Math.min((currentPage.value + 1) * PAGE_SIZE, totalJustifications.value)
 })
 
 const visiblePages = computed(() => {
   const pages = []
   const maxVisible = 5
-  let start = Math.max(1, currentPage.value - Math.floor(maxVisible / 2))
+  let start = Math.max(1, currentPage.value + 1 - Math.floor(maxVisible / 2))
   let end = Math.min(totalPages.value, start + maxVisible - 1)
   
   if (end - start + 1 < maxVisible) {
@@ -380,7 +344,6 @@ const visiblePages = computed(() => {
 
 // Funciones de utilidad
 const formatDate = (date: string) => {
-  // Evita desfase por zona horaria cuando el backend envía fechas como YYYY-MM-DD.
   const dateOnlyMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date)
   const parsedDate = dateOnlyMatch
     ? new Date(
@@ -409,13 +372,6 @@ const toggleDescription = (id: bigint) => {
   expandedDescriptions.value[key] = !expandedDescriptions.value[key]
 }
 
-const clearFilters = () => {
-  searchQuery.value = ''
-  dateFilter.value = 'all'
-  sortBy.value = 'recent'
-  currentPage.value = 1
-}
-
 // Funciones de Toast
 const addToast = (type: Toast['type'], title: string, message: string, duration: number = 3000) => {
   const icon = type === 'success' ? CheckCircle : XCircle
@@ -438,64 +394,121 @@ const removeToast = (id: number) => {
   toasts.value = toasts.value.filter(t => t.id !== id)
 }
 
-// Acciones
+// Acciones de paginación
+const goToFirstPage = () => {
+  if (currentPage.value > 0) {
+    currentPage.value = 0
+    loadJustifications()
+  }
+}
+
+const goToLastPage = () => {
+  if (currentPage.value < totalPages.value - 1) {
+    currentPage.value = totalPages.value - 1
+    loadJustifications()
+  }
+}
+
+const prevPage = () => {
+  if (currentPage.value > 0) {
+    currentPage.value -= 1
+    loadJustifications()
+  }
+}
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value - 1) {
+    currentPage.value += 1
+    loadJustifications()
+  }
+}
+
+const goToPage = (page: number) => {
+  if (page >= 0 && page < totalPages.value && page !== currentPage.value) {
+    currentPage.value = page
+    loadJustifications()
+  }
+}
+
+// Acciones de justificaciones
 const refreshList = async () => {
+  currentPage.value = 0
   await loadJustifications()
 }
 
 const approveJustification = async (item: JustificationResponse) => {
+  if (processingId.value) return
+  
+  processingId.value = item.id
+  
   try {
     const response = await approve(item.id)
 
     if (response.success) {
-      // Eliminar de la lista local
-      //pendingJustifications.value = pendingJustifications.value.filter(
-      //  j => j.id !== item.id
-      //)
-      loadJustifications() // Recargar para obtener la lista actualizada
-      
-      // Mostrar toast de éxito
+      await loadJustifications()
       addToast('success', 'Justificación aprobada', `La justificación de ${item.studentName} ha sido aprobada correctamente`)
     } else {
       addToast('error', 'Error', response.error.message)
     }
   } catch (error) {
     addToast('error', 'Error', error instanceof Error ? error.message : 'Error al aprobar la justificación')
+  } finally {
+    processingId.value = null
   }
 }
 
 const rejectJustification = async (item: JustificationResponse) => {
+  if (processingId.value) return
+  
+  processingId.value = item.id
+  
   try {
     const response = await reject(item.id)
 
     if (response.success) {
-      // Eliminar de la lista local
-      //pendingJustifications.value = pendingJustifications.value.filter(
-      //  j => j.id !== item.id
-      //)
-      loadJustifications() // Recargar para obtener la lista actualizada
-      
-      // Mostrar toast de éxito
+      await loadJustifications()
       addToast('success', 'Justificación denegada', `La justificación de ${item.studentName} ha sido denegada`)
-      
     } else {
       addToast('error', 'Error', response.error.message)
     }
   } catch (error) {
     addToast('error', 'Error', error instanceof Error ? error.message : 'Error al denegar la justificación')
+  } finally {
+    processingId.value = null
   }
 }
 
 // Carga de datos
+const buildPayloadFilter = (): JustificationFilter => ({
+  dateFilter: filter.value.dateFilter
+})
+
+const buildPayloadPage = (): PageRequest => ({
+  page: currentPage.value,
+  size: PAGE_SIZE
+})
+
+const buildPayloadSort = (): Sort => ({
+  field: sort.value.field,
+  direction: sort.value.direction
+})
+
 const loadJustifications = async () => {
   loading.value = true
   errorMessage.value = ''
 
   try {
-    const response = await getPendingJustifications()
+    const response = await getPendingJustifications(
+      buildPayloadFilter(),
+      buildPayloadPage(),
+      buildPayloadSort()
+    )
 
     if (response.success) {
-      pendingJustifications.value = response.data
+      pendingJustifications.value = response.data.content
+      totalPages.value = response.data.totalPages
+      currentPage.value = response.data.page
+      totalJustifications.value = Number(response.data.totalElements)
     } else {
       errorMessage.value = response.error.message
     }
@@ -506,6 +519,13 @@ const loadJustifications = async () => {
   }
 }
 
+// Watchers
+watch([() => filter.value.dateFilter, () => searchQuery.value, () => sort.value.direction], () => {
+  currentPage.value = 0
+  loadJustifications()
+})
+
+// Lifecycle
 onMounted(loadJustifications)
 </script>
 
@@ -519,6 +539,21 @@ onMounted(loadJustifications)
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s ease;
+}
+
+.toast-enter-from {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.toast-leave-to {
+  opacity: 0;
+  transform: translateX(100%);
 }
 
 @keyframes fadeInDown {
@@ -543,14 +578,14 @@ onMounted(loadJustifications)
   }
 }
 
-@keyframes slideUp {
+@keyframes slideInRight {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateX(100%);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
   }
 }
 
@@ -562,8 +597,8 @@ onMounted(loadJustifications)
   animation: fadeInUp 0.5s ease-out;
 }
 
-.animate-slide-up {
-  animation: slideUp 0.3s ease-out;
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-out;
 }
 
 /* Transiciones suaves */

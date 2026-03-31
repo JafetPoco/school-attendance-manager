@@ -2,19 +2,23 @@ package com.IEASmart.sistemaAsistencias.application.service;
 
 import com.IEASmart.sistemaAsistencias.api.dto.request.JustificationRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.response.JustificationResponse;
+import com.IEASmart.sistemaAsistencias.api.dto.response.PageResponse;
 import com.IEASmart.sistemaAsistencias.api.mapper.JustificationApiMapper;
 import com.IEASmart.sistemaAsistencias.domain.exception.ConflictException;
 import com.IEASmart.sistemaAsistencias.domain.exception.ResourceNotFoundException;
 import com.IEASmart.sistemaAsistencias.domain.model.Attendance;
 import com.IEASmart.sistemaAsistencias.domain.model.Justification;
-import com.IEASmart.sistemaAsistencias.domain.model.valueObject.AttendanceType;
-import com.IEASmart.sistemaAsistencias.domain.model.valueObject.JustificationStatus;
-import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.*;
 import com.IEASmart.sistemaAsistencias.domain.repository.AttendanceRepository;
 import com.IEASmart.sistemaAsistencias.domain.repository.JustificationRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Optional;
 
@@ -96,9 +100,46 @@ public class JustificationService {
         }
     }
 
-    public List<JustificationResponse> getPendingJustifications(School school) {
-        List<Justification> pendingJustifications = justificationRepository.findAllByStatus(JustificationStatus.PENDIENTE, school);
-        return pendingJustifications.stream().map(justificationApiMapper::toResponse).toList();
+    public PageResponse<JustificationResponse> getPendingJustifications(School school, String dateFilter, Pageable pageable) {
+        LocalDate startDate = null;
+        LocalDate endDate = null;
+
+        if (dateFilter != null) {
+            String df = dateFilter.trim().toUpperCase();
+            switch (df) {
+                case "TODAY" -> {
+                    startDate = LocalDate.now();
+                    endDate = startDate.plusDays(1); // end exclusive
+                }
+                case "WEEK" -> {
+                    // Usar lunes como primer día de la semana (inicio inclusivo)
+                    startDate = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+                    endDate = startDate.plusDays(7); // semana completa, end exclusive
+                }
+                case "MONTH" -> {
+                    startDate = LocalDate.now().withDayOfMonth(1);
+                    endDate = startDate.plusMonths(1); // end exclusive
+                }
+                default -> {
+                    // si viene un filtro desconocido, no aplicar rango (mantener nulls)
+                }
+            }
+        }
+
+        Page<Justification> justificationPage = justificationRepository.findAllByFilter(school, JustificationStatus.PENDIENTE, startDate, endDate, pageable);
+        List<JustificationResponse> content = justificationPage
+                .getContent()
+                .stream()
+                .map(justificationApiMapper::toResponse)
+                .toList();
+
+        return new PageResponse<JustificationResponse>(
+                content,
+                justificationPage.getTotalElements(),
+                justificationPage.getTotalPages(),
+                justificationPage.getNumber(),
+                justificationPage.getSize()
+        );
     }
 
     public JustificationResponse approveJustification(Long justificationId) {

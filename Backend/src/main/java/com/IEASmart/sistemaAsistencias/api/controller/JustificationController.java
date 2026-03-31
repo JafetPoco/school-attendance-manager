@@ -3,11 +3,13 @@ package com.IEASmart.sistemaAsistencias.api.controller;
 import com.IEASmart.sistemaAsistencias.api.dto.request.JustificationRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.response.AttendanceInfoResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.JustificationResponse;
+import com.IEASmart.sistemaAsistencias.api.dto.response.PageResponse;
 import com.IEASmart.sistemaAsistencias.application.service.AttendanceService;
 import com.IEASmart.sistemaAsistencias.application.service.AuthorizationService;
 import com.IEASmart.sistemaAsistencias.application.service.JustificationService;
 import com.IEASmart.sistemaAsistencias.application.service.TokenService;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,10 +43,12 @@ public class JustificationController {
     }
 
     @GetMapping("/pending")
-    public ResponseEntity<List<JustificationResponse>> getPendingJustifications() {
+    public PageResponse<JustificationResponse> getPendingJustifications(
+            @RequestParam(required = false) String dateFilter,
+            Pageable pageable
+    ) {
         School school = authorizationService.getUserSchool();
-        List<JustificationResponse> pending = justificationService.getPendingJustifications(school);
-        return ResponseEntity.ok(pending);
+        return justificationService.getPendingJustifications(school, dateFilter, pageable);
     }
 
     @PostMapping("/{id}/approve")

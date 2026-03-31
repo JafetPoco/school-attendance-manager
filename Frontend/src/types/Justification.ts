@@ -13,3 +13,7 @@ export interface JustificationResponse {
     urlEvidence: string
     justificationDate: string
 }
+
+export interface JustificationFilter {
+    dateFilter?: 'TODAY' | 'WEEK' | 'MONTH' 
+}

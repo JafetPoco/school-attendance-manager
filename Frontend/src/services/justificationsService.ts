@@ -4,7 +4,29 @@ import { mapApiError } from '@/utils/apiErrorMapper'
 import type { ServiceResult } from '@/types/ServiceResult'
 import type { ApiHttpError } from '@/api/ApiHttpError'
 import type { AttendanceInfoResponse } from '@/types/Attendance'
-import type { JustificationRequest, JustificationResponse } from '@/types/Justification'
+import type { JustificationFilter, JustificationRequest, JustificationResponse } from '@/types/Justification'
+import type { PageRequest, PageResponse, Sort } from '@/types/Pages'
+
+function buildJustificationQuery(filter: JustificationFilter, page: PageRequest, sort?: Sort): string {
+  const queryParams = new URLSearchParams()
+
+  Object.entries(filter).forEach(([key, value]) => {
+    if (typeof value !== 'string') return
+    const normalized = value.trim()
+    if (!normalized) return
+    queryParams.set(key, normalized)
+  })
+
+  queryParams.set('page', String(page.page))
+  queryParams.set('size', String(page.size))
+
+  if(sort?.field) {
+    queryParams.set('sort', `${sort.field},${sort.direction}`)
+  }
+
+  const query = queryParams.toString()
+  return query ? `?${query}` : ''
+}
 
 export async function getJustificationFormInfo(token: string): Promise<ServiceResult<AttendanceInfoResponse, ApiHttpError>> {
   try {
@@ -37,10 +59,13 @@ export async function addJustification(request: JustificationRequest): Promise<S
   }
 }
 
-export async function getPendingJustifications(): Promise<ServiceResult<JustificationResponse[], ApiHttpError>> {
+export async function getPendingJustifications(filter: JustificationFilter, page: PageRequest, sort?: Sort): Promise<ServiceResult<PageResponse<JustificationResponse>, ApiHttpError>> {
   try {
-    const data = await http<JustificationResponse[]>(`/justifications/pending`, {
+    const query = buildJustificationQuery(filter, page, sort)
+
+    const data = await http<PageResponse<JustificationResponse>>(`/justifications/pending${query}`, {
       method: 'GET'
+      
     })
 
     return { success: true, data }
