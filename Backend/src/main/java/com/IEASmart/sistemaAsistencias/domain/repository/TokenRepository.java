@@ -10,4 +10,5 @@ public interface TokenRepository {
     Optional<Token> findByToken(String token);
     Token save(Token token);
     List<Token> saveAll(List<Token> tokens);
+    Optional<Token> findByAttendanceIdAndUsedFalse(Long attendanceId);
 }

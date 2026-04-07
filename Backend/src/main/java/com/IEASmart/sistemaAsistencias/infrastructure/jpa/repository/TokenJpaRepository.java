@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface TokenJpaRepository extends JpaRepository<TokenEntity, String> {
     Optional<TokenEntity> findByTokenAndUsedFalse(String token);
+    Optional<TokenEntity> findByAttendanceIdAndUsedFalse(Long attendanceId);
 }

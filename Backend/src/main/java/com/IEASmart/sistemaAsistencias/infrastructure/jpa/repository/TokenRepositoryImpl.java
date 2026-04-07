@@ -38,4 +38,9 @@ public class TokenRepositoryImpl implements TokenRepository {
         return tokenJpaRepository.saveAll(tokens.stream().map(mapper::toEntity).toList())
                 .stream().map(mapper::toDomain).toList();
     }
+
+    @Override
+    public Optional<Token> findByAttendanceIdAndUsedFalse(Long attendanceId) {
+        return tokenJpaRepository.findByAttendanceIdAndUsedFalse(attendanceId).map(mapper::toDomain);
+    }
 }

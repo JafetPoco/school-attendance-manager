@@ -1,5 +1,6 @@
 package com.IEASmart.sistemaAsistencias.api.controller;
 
+import com.IEASmart.sistemaAsistencias.api.dto.request.JustificationProfessorRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.request.JustificationRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.response.AttendanceInfoResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.JustificationResponse;
@@ -12,8 +13,6 @@ import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/justifications")
@@ -40,6 +39,13 @@ public class JustificationController {
     public ResponseEntity<JustificationResponse> submitJustification(
             @RequestBody JustificationRequest request) {
         return ResponseEntity.ok(justificationService.createJustification(request));
+    }
+
+    @PostMapping("/submit")
+    public ResponseEntity<JustificationResponse> submitJustificationForStudent(
+            @RequestBody JustificationProfessorRequest request) {
+        School school = authorizationService.getUserSchool();
+        return ResponseEntity.ok(justificationService.createJustificationForStudent(request));
     }
 
     @GetMapping("/pending")

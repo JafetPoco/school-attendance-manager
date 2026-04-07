@@ -1,5 +1,6 @@
 package com.IEASmart.sistemaAsistencias.application.service;
 
+import com.IEASmart.sistemaAsistencias.api.dto.request.JustificationProfessorRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.request.JustificationRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.response.JustificationResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.PageResponse;
@@ -17,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Optional;
@@ -45,11 +45,28 @@ public class JustificationService {
 
         Justification justification = justificationApiMapper.toDomain(request);
         justification.setAttendance(attendance);
-        justification.setJustificationDate(LocalDateTime.now());
         justification.setStatus(JustificationStatus.PENDIENTE);
 
         justificationRepository.save(justification);
         tokenService.markTokenAsUsed(request.getToken());
+        return justificationApiMapper.toResponse(justification);
+    }
+
+    public JustificationResponse createJustificationForStudent(JustificationProfessorRequest request){
+        Attendance attendance = getAndValidateAttendance(request.getIdAttendance());
+
+        validateNoExistingJustification(attendance.getId());
+
+        Justification justification = justificationApiMapper.toProfessorDomain(request);
+        justification.setAttendance(attendance);
+        justification.setStatus(JustificationStatus.ACEPTADA);
+
+        justificationRepository.save(justification);
+        //tokenService.markTokenAsUsed(request.getToken());
+
+        attendance.setAttendanceType(AttendanceType.JUSTIFICADO);
+        attendanceRepository.save(attendance);
+
         return justificationApiMapper.toResponse(justification);
     }
 
