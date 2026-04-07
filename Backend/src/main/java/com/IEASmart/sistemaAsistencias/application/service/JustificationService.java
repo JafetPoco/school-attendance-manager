@@ -53,6 +53,10 @@ public class JustificationService {
     }
 
     public JustificationResponse createJustificationForStudent(JustificationProfessorRequest request){
+        if(request.getDescription() == null || request.getDescription().isBlank()){
+            throw new ConflictException("La descripción es obligatoria para las justificaciones", "DESCRIPTION_REQUIRED");
+        }
+
         Attendance attendance = getAndValidateAttendance(request.getIdAttendance());
 
         validateNoExistingJustification(attendance.getId());
