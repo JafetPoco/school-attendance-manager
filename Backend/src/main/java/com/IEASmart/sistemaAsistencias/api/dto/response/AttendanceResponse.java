@@ -1,7 +1,5 @@
 package com.IEASmart.sistemaAsistencias.api.dto.response;
 
-import com.IEASmart.sistemaAsistencias.api.dto.request.AttendanceRequest;
-
 public class AttendanceResponse {
     private String dni;
     private String studentName;
@@ -9,16 +7,18 @@ public class AttendanceResponse {
     private String studentSecondLastName;
     private String attendanceType;
     private String date;
+    private Long idAttendance;
 
     public AttendanceResponse() {}
 
-    public AttendanceResponse(String dni, String studentName, String studentFirstLastName, String studentSecondLastName, String attendanceType, String date) {
+    public AttendanceResponse(String dni, String studentName, String studentFirstLastName, String studentSecondLastName, String attendanceType, String date, Long idAttendance) {
         this.dni = dni;
         this.studentName = studentName;
         this.studentFirstLastName = studentFirstLastName;
         this.studentSecondLastName = studentSecondLastName;
         this.attendanceType = attendanceType;
         this.date = date;
+        this.idAttendance = idAttendance;
     }
 
     public String getDni() {
@@ -67,5 +67,13 @@ public class AttendanceResponse {
 
     public void setDate(String date) {
         this.date = date;
+    }
+
+    public Long getIdAttendance() {
+        return idAttendance;
+    }
+
+    public void setIdAttendance(Long idAttendance) {
+        this.idAttendance = idAttendance;
     }
 }
