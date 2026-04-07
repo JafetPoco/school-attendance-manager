@@ -3,11 +3,7 @@ package com.IEASmart.sistemaAsistencias.api.controller;
 import com.IEASmart.sistemaAsistencias.api.dto.request.AttendanceFilter;
 import com.IEASmart.sistemaAsistencias.api.dto.request.AttendanceMonthlyFilter;
 import com.IEASmart.sistemaAsistencias.api.dto.request.AttendanceRequest;
-import com.IEASmart.sistemaAsistencias.api.dto.response.AttendanceResponse;
-import com.IEASmart.sistemaAsistencias.api.dto.response.CountResponse;
-import com.IEASmart.sistemaAsistencias.api.dto.response.InformationAttendanceResponse;
-import com.IEASmart.sistemaAsistencias.api.dto.response.MonthlyAttendanceResponse;
-import com.IEASmart.sistemaAsistencias.api.dto.response.PageResponse;
+import com.IEASmart.sistemaAsistencias.api.dto.response.*;
 import com.IEASmart.sistemaAsistencias.application.service.AttendanceService;
 import com.IEASmart.sistemaAsistencias.application.service.AuthorizationService;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
@@ -56,7 +52,7 @@ public class AttendanceController {
     @GetMapping("/{id}")
     public ResponseEntity<InformationAttendanceResponse> getById(@PathVariable String id) {
         School school = authorizationService.getUserSchool();
-        InformationAttendanceResponse response = attendanceService.getAttendanceById(id, school);
+        InformationAttendanceResponse response = attendanceService.getAttendanceByStudentId(id, school);
         return ResponseEntity.ok(response);
     }
 
@@ -66,4 +62,11 @@ public class AttendanceController {
         long count = attendanceService.addMissedAttendances(school);
         return ResponseEntity.ok(new CountResponse(count));
     }
+
+    @GetMapping("/contact/{attendanceId}")
+    public ResponseEntity<ContactResponse> getContactInfo(@PathVariable Long attendanceId) {
+        ContactResponse response = attendanceService.getContactInfo(attendanceId);
+        return ResponseEntity.ok(response);
+    }
+
 }

@@ -15,4 +15,10 @@ public class ResourceNotFoundException extends BusinessException{
                 "RESOURCE_NOT_FOUND"
         );
     }
+    public ResourceNotFoundException(String message) {
+        super(String.format("%s no encontrado", message),
+                HttpStatus.NOT_FOUND,
+                "RESOURCE_NOT_FOUND"
+        );
+    }
 }

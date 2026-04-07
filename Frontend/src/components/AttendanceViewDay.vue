@@ -183,10 +183,24 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{{ attendance.studentFirstLastName }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{{ attendance.studentSecondLastName }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span :class="getAttendanceBadgeClass(attendance.attendanceType)" 
-                        class="px-3 py-1 text-xs rounded-full font-medium">
-                    {{ getAttendanceTypeLabel(attendance.attendanceType) }}
-                  </span>
+                  <div class="flex items-center space-x-2 duration-200">
+                    <span :class="getAttendanceBadgeClass(attendance.attendanceType)" 
+                          class="px-3 py-1 text-xs rounded-full font-medium">
+                      {{ getAttendanceTypeLabel(attendance.attendanceType) }}
+                    </span>
+                    <button v-if="attendance.attendanceType === 'Ausente'"
+                            class="p-2 text-slate-300 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all duration-200 hover:scale-110"
+                            title="Justificar ausencia"
+                            @click="selectStudentForJustification(attendance)">
+                      <AlertCircle class="w-4 h-4" />
+                    </button>
+                    <button v-if="attendance.attendanceType === 'Ausente'"
+                            class="p-2 text-slate-300 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all duration-200 hover:scale-110"
+                            title="Notificar Padre"
+                            @click="getContactInfo(Number(attendance.idAttendance), `${attendance.studentName} ${attendance.studentFirstLastName} ${attendance.studentSecondLastName}`)">
+                      <Send class="w-4 h-4" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -237,12 +251,58 @@
       </div>
     </transition>
   </div>
+
+  <!-- Modal de justificar alumno -->
+    <transition name="fade">
+      <div v-if="justificationModal" 
+           class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+           @click.self="closeJustificationModal">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 animate-slide-up">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <PenBox class="w-5 h-5 text-yellow-600" />
+              </div>
+              <h3 class="text-lg font-semibold text-slate-800">Justificar Alumno</h3>
+            </div>
+            <button @click="closeJustificationModal" 
+                    class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+              <X class="w-5 h-5 text-slate-500" />
+            </button>
+          </div>
+          
+          <p class="text-sm text-slate-600 mb-3">
+            Alumno:  
+            <span class="font-semibold">{{ selectedName }}</span>
+          </p>
+
+          <form action="" class="mb-6">
+              <label for="reason" class="block text-sm font-medium text-slate-700 mb-1">Motivo de justificación</label>
+              <textarea id="reason" 
+                        rows="4"
+                        class="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent resize-none"
+                        placeholder="Escribe el motivo por el cual se justifica la ausencia del alumno..."></textarea>
+          </form>
+          
+          <div class="flex justify-end space-x-3">
+            <button @click="closeJustificationModal"
+                    class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+              Cancelar
+            </button>
+            <button @click="executeJustification"
+                    class="px-4 py-2 bg-slate-600 text-white text-sm rounded-lg hover:bg-slate-700 transition-colors">
+              Aceptar
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
-import { getAttendances } from '@/services/attendancesService'
-import type { AttendanceFilter, AttendanceResponse } from '@/types/Attendance'
+import { contactStudent, getAttendances } from '@/services/attendancesService'
+import type { AttendanceFilter, AttendanceResponse, ContactResponse } from '@/types/Attendance'
 import type { PageRequest, Sort } from '@/types/Pages'
 import {
   Calendar,
@@ -260,8 +320,12 @@ import {
   ClipboardList,
   MoveVerticalIcon,
   MoveUpIcon,
-  MoveDownIcon
+  MoveDownIcon,
+  PenBox,
+  Send
 } from 'lucide-vue-next'
+import type { JustificationProfessorRequest } from '@/types/Justification'
+import { addProfessorJustification } from '@/services/justificationsService'
 
 // Constantes
 const PAGE_SIZE = 10
@@ -297,9 +361,13 @@ const filter = ref<AttendanceFilter>({
 })
 
 const sort = ref<Sort>({
-  field: '',
+  field: 'studentFirstLastName',
   direction: 'asc'
 })
+
+const justificationModal = ref(false)
+const selectedName = ref('')
+const selectedStudent = ref<JustificationProfessorRequest | null>(null)
 
 // Computed properties
 const hasActiveFilters = computed(() => {
@@ -402,7 +470,7 @@ const loadAttendances = async () => {
     if (response.success) {
       attendances.value = response.data.content
       totalPages.value = response.data.totalPages
-      totalElements.value = response.data.totalElements
+      totalElements.value = Number(response.data.totalElements)
     } else {
       errorMessage.value = response.error.message
     }
@@ -429,6 +497,79 @@ watch(
 
 // Lifecycle
 onMounted(loadAttendances)
+
+// Formulario de justificación
+const selectStudentForJustification = (attendance: AttendanceResponse) => {
+  selectedStudent.value = {
+    idAttendance: attendance.idAttendance,
+    description: ''
+  }
+  selectedName.value = `${attendance.studentName} ${attendance.studentFirstLastName} ${attendance.studentSecondLastName}`
+  justificationModal.value = true
+}
+
+const closeJustificationModal = () => {
+  justificationModal.value = false
+  selectedStudent.value = null
+  selectedName.value = ''
+}
+
+const executeJustification = async () => { 
+  try {
+    const response = await addProfessorJustification(selectedStudent.value as JustificationProfessorRequest)
+
+    if (!response.success) {
+      alert('Error al justificar la ausencia: ' + response.error.message)
+    }
+  } catch (error) {
+    alert('Error de conexión al justificar la ausencia: ' + (error instanceof Error ? error.message : 'Error desconocido'))
+  } finally {
+    loadAttendances()
+    closeJustificationModal()
+  }
+}
+
+// Notificar padre
+const getContactInfo = async (id: number, studentName: string) => {
+  try {
+    const response = await contactStudent(id)
+
+    if(response.success) {
+      response.data.studentName = studentName
+      const contactInfo = response.data
+      sendMensageToParent(contactInfo)
+    } else {
+      alert('Error al obtener la información de contacto: ' + response.error.message)
+    }
+  } catch (error) {
+    alert('Error de conexión al obtener la información de contacto: ' + (error instanceof Error ? error.message : 'Error desconocido'))
+  }
+}
+
+const sendMensageToParent = async (contactInfo: ContactResponse) => {
+  try {
+    const justificationUrl = `https://script.google.com/macros/s/AKfycbxUhy1SJDUn7SPld1ulVmGDcd-kgqpMxFtOCnTpFQ79EVtEXHBc9VDfSQQ7WRQOeym3/exec?id=${contactInfo.token}`
+    const mensage = encodeURIComponent(
+      `🚨 Aviso de Asistencia Escolar
+Estimado(a) Padre/Madre de Familia 👨‍👩‍👧‍👦:
+Reciba un cordial saludo 🤝.
+Le informamos que su hijo(a) ${contactInfo.studentName} 📌 no registra ingreso al colegio el día de hoy. 
+Le solicitamos, por favor, realizar la justificación de la inasistencia mediante el siguiente enlace:
+
+👇 Acceda al formulario:
+${justificationUrl}
+
+Agradecemos su apoyo para mantener actualizada la asistencia del estudiante ✅.
+📍 I.E. Gral. José de San Martin`)
+
+    const url = `https://api.whatsapp.com/send?phone=${contactInfo.number}&text=${mensage}`
+    window.open(url, '_blank')
+  } catch (error) {
+    alert('Error al enviar el mensaje: ' + (error instanceof Error ? error.message : 'Error desconocido'))
+  }
+}
+
+
 </script>
 
 <style scoped>

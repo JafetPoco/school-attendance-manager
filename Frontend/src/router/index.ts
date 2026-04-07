@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 
 import page404 from '@/views/error/Error404.vue'
+import { getJustificationFormInfo } from '@/services/justificationsService'
 
 
 const router = createRouter({
@@ -61,13 +62,43 @@ const router = createRouter({
       meta: { requiresAuth: true}
     },
     {
+      path: '/justifications/:token',
+      name: 'justifications',
+      component: () => import('@/views/Justifications.vue'),
+      beforeEnter: async (to, _from, next) => {
+        const result = await getJustificationFormInfo(to.params.token as string)
+
+        if (result.success) {
+          return next()
+        }
+
+        return next({
+          name: 'justificationsError',
+          query: {
+            message: result.error.message
+          }
+        })
+      }
+    },
+    {
+      path: '/pendingJustifications',
+      name: 'pendingJustifications',
+      component: () => import('@/views/PendingJustifications.vue'),
+      meta: { requiresAuth: true}
+    },
+    {
+      path: '/justifications/error',
+      name: 'justificationsError',
+      component: () => import('@/views/error/JustificationNotFound.vue'),
+    },
+    {
       path: '/:pathMatch(.*)*',
       component: page404,
     }
   ],
 })
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const auth = useAuthStore()
 
   // If route requires auth, ensure store is populated before deciding
