@@ -1,10 +1,14 @@
 package com.IEASmart.sistemaAsistencias.api.mapper;
 
+import com.IEASmart.sistemaAsistencias.api.dto.request.JustificationProfessorRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.request.JustificationRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.response.JustificationResponse;
 import com.IEASmart.sistemaAsistencias.domain.model.Justification;
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.JustificationStatus;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
 
 @Component
 public class JustificationApiMapper {
@@ -24,6 +28,15 @@ public class JustificationApiMapper {
         Justification justification = new Justification();
         justification.setDescription(request.getDescription());
         justification.setUrlEvidence(request.getUrlEvidence());
+        justification.setJustificationDate(LocalDateTime.now());
+        return justification;
+    }
+
+    public Justification toProfessorDomain(JustificationProfessorRequest request) {
+        Justification justification = new Justification();
+        justification.setStatus(JustificationStatus.ACEPTADA);
+        justification.setDescription(request.getDescription());
+        justification.setJustificationDate(LocalDateTime.now());
         return justification;
     }
 }

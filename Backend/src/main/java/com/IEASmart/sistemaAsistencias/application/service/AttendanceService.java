@@ -12,12 +12,14 @@ import com.IEASmart.sistemaAsistencias.application.dto.StudentCriteria;
 import com.IEASmart.sistemaAsistencias.domain.exception.ConflictException;
 import com.IEASmart.sistemaAsistencias.domain.exception.ResourceNotFoundException;
 import com.IEASmart.sistemaAsistencias.domain.model.Attendance;
+import com.IEASmart.sistemaAsistencias.domain.model.Parent;
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
 import com.IEASmart.sistemaAsistencias.domain.model.Token;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.AttendanceType;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
 import com.IEASmart.sistemaAsistencias.domain.repository.AttendanceRepository;
+import com.IEASmart.sistemaAsistencias.domain.repository.ParentRepository;
 import com.IEASmart.sistemaAsistencias.domain.repository.StudentRepository;
 import com.IEASmart.sistemaAsistencias.domain.repository.TokenRepository;
 import org.springframework.data.domain.Page;
@@ -28,20 +30,23 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final StudentRepository studentRepository;
+    private final ParentRepository parentRepository;
     private final AttendanceApiMapper mapper;
     private final MonthlyAttendanceApiMapper monthlyAttendanceApiMapper;
     private final StudentApiMapper studentApiMapper;
     private final TokenService tokenService;
     private final TokenRepository tokenRepository;
 
-    public AttendanceService(AttendanceRepository attendanceRepository, StudentRepository studentRepository, AttendanceApiMapper mapper, MonthlyAttendanceApiMapper monthlyAttendanceApiMapper, StudentApiMapper studentApiMapper, TokenService tokenService, TokenRepository tokenRepository) {
+    public AttendanceService(AttendanceRepository attendanceRepository, StudentRepository studentRepository, ParentRepository parentRepository, AttendanceApiMapper mapper, MonthlyAttendanceApiMapper monthlyAttendanceApiMapper, StudentApiMapper studentApiMapper, TokenService tokenService, TokenRepository tokenRepository) {
         this.attendanceRepository = attendanceRepository;
         this.studentRepository = studentRepository;
+        this.parentRepository = parentRepository;
         this.mapper = mapper;
         this.monthlyAttendanceApiMapper = monthlyAttendanceApiMapper;
         this.studentApiMapper = studentApiMapper;
@@ -77,7 +82,7 @@ public class AttendanceService {
                 .getContent()
                 .stream()
                 .map(mapper::toResponse)
-                .toList();
+                .collect(Collectors.toList());
 
         return new PageResponse<>(
                 content,
@@ -198,5 +203,29 @@ public class AttendanceService {
         tokenRepository.saveAll(tokens);
 
         return saved.size();
+    }
+
+    public ContactResponse getContactInfo(Long attendanceId) {
+        ContactResponse response = new ContactResponse();
+        Optional<Attendance> attendanceOpt = attendanceRepository.findById(attendanceId);
+        if(attendanceOpt.isEmpty()) {
+            throw new ResourceNotFoundException("Asistencia");
+        }
+
+        Optional<Token> tokenOpt = tokenRepository.findByAttendanceIdAndUsedFalse(attendanceId);
+        if(tokenOpt.isEmpty()) {
+            throw new ResourceNotFoundException("Token");
+        }
+        Token token = tokenOpt.get();
+        response.setToken(token.getToken());
+
+        Optional<Parent> parentOpt = parentRepository.findByAlumnoId(attendanceOpt.get().getStudent().getDni());
+        if(parentOpt.isEmpty()) {
+            throw new ResourceNotFoundException("Padre del estudiante");
+        }
+        Parent parent = parentOpt.get();
+        response.setNumber(parent.getPhoneNumber());
+
+        return response;
     }
 }
