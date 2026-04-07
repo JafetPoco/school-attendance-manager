@@ -12,6 +12,8 @@ export interface AttendanceResponse {
     studentSecondLastName: string
     attendanceType: 'presente' | 'ausente' | 'tarde' | 'justificado'
     date: string
+    token: string
+    idAttendance: bigint
 }
 
 export interface AttendanceFilter {
@@ -40,4 +42,11 @@ export interface AttendanceInfoResponse {
     fullName: string
     date: string
     grade: string
+}
+
+export interface ContactResponse {
+    number: string
+    parentName: string
+    studentName: string
+    token: string
 }

@@ -5,6 +5,11 @@ export interface JustificationRequest {
     urlEvidence: string
 }
 
+export interface JustificationProfessorRequest {
+    idAttendance: bigint
+    description: string
+}
+
 export interface JustificationResponse {
     id: bigint
     studentName: string

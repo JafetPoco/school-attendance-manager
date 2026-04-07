@@ -4,7 +4,7 @@ import { mapApiError } from '@/utils/apiErrorMapper'
 import type { ServiceResult } from '@/types/ServiceResult'
 import type { ApiHttpError } from '@/api/ApiHttpError'
 import type { AttendanceInfoResponse } from '@/types/Attendance'
-import type { JustificationFilter, JustificationRequest, JustificationResponse } from '@/types/Justification'
+import type { JustificationFilter, JustificationProfessorRequest, JustificationRequest, JustificationResponse } from '@/types/Justification'
 import type { PageRequest, PageResponse, Sort } from '@/types/Pages'
 
 function buildJustificationQuery(filter: JustificationFilter, page: PageRequest, sort?: Sort): string {
@@ -96,6 +96,22 @@ export async function rejectJustification(idJustification: bigint): Promise<Serv
   try {
     const data = await http<JustificationResponse>(`/justifications/${idJustification}/reject`, {
       method: 'POST'
+    })  
+
+    return { success: true, data }
+  } catch (error) {
+    return {
+      success: false,
+      error: mapApiError(error)
+    }
+  }
+}
+
+export async function addProfessorJustification(request: JustificationProfessorRequest): Promise<ServiceResult<JustificationResponse, ApiHttpError>> {
+  try {
+    const data = await http<JustificationResponse>(`/justifications/submit`, {
+      method: 'POST',
+      body: JSON.stringify(request)
     })  
 
     return { success: true, data }
