@@ -21,24 +21,9 @@
                   :disabled="loading"
                   class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent appearance-none cursor-pointer disabled:opacity-50">
             <option value="">Todas las secciones</option>
-            <option value="BENJAMIN">Benjamin</option>
-            <option value="NOE">Noé</option>
-            <option value="MOISES">Moisés</option>
-            <option value="DAVID">David</option>
-            <option value="SALOMON">Salomón</option>
-            <option value="JACOB">Jacob</option>
-            <option value="ENOC">Enoc</option>
-            <option value="JOSE">José</option>
-            <option value="GEDEON">Gedeón</option>
-            <option value="JOSUE">Josué</option>
-            <option value="ELIAS">Elías</option>
-            <option value="ELISEO">Eliseo</option>
-            <option value="DANIEL">Daniel</option>
-            <option value="ESTEBAN">Esteban</option>
-            <option value="MATEO">Mateo</option>
-            <option value="SALOMON">Salomón</option>
-            <option value="DAVID">David</option>
-            <option value="JONATAN">Jonatán</option>
+            <option v-for="section in sections" :key="section.value" :value="section.value">
+              {{ section.label }}
+            </option>
           </select>
         </div>
 
@@ -66,40 +51,30 @@
         </div>
       </div>
 
-      <!-- Filtros activos -->
-      <div v-if="hasActiveFilters" class="mt-4 flex items-center space-x-2">
-        <span class="text-xs text-slate-500">Filtros activos:</span>
-        <div class="flex flex-wrap gap-2">
-          <span v-if="filter.name" 
-                class="inline-flex items-center space-x-1 px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded-full">
-            <Search class="w-3 h-3" />
-            <span>"{{ filter.name }}"</span>
-            <button @click="filter.name = ''" class="hover:text-slate-900" :disabled="loading">
-              <X class="w-3 h-3" />
-            </button>
-          </span>
-          <span v-if="filter.section" 
-                class="inline-flex items-center space-x-1 px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded-full">
-            <Layers class="w-3 h-3" />
-            <span>Sección {{ filter.section }}</span>
-            <button @click="filter.section = ''" class="hover:text-slate-900" :disabled="loading">
-              <X class="w-3 h-3" />
-            </button>
-          </span>
-          <span v-if="filter.attendanceType" 
-                class="inline-flex items-center space-x-1 px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded-full">
-            <Filter class="w-3 h-3" />
-            <span>{{ getAttendanceTypeLabel(filter.attendanceType) }}</span>
-            <button @click="filter.attendanceType = ''" class="hover:text-slate-900" :disabled="loading">
-              <X class="w-3 h-3" />
-            </button>
-          </span>
-          <button @click="clearAllFilters" 
-                  class="text-xs text-slate-500 hover:text-slate-700 underline"
-                  :disabled="loading">
-            Limpiar todo
+      <!-- Botones de acción de filtros -->
+      <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center space-x-3">
+          <button @click="applyFilters"
+                  :disabled="loading"
+                  class="inline-flex items-center space-x-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-all duration-300 transform hover:scale-105 shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+            <Filter class="w-4 h-4" />
+            <span>Aplicar filtros</span>
+          </button>
+          <button @click="clearAllFilters"
+                  :disabled="loading"
+                  class="inline-flex items-center space-x-2 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-all duration-300">
+            <RotateCw class="w-4 h-4" />
+            <span>Limpiar filtros</span>
           </button>
         </div>
+        
+        <button @click="refreshTable"
+                :disabled="loading"
+                class="inline-flex items-center space-x-2 px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-all duration-300"
+                title="Recargar tabla">
+          <RotateCw class="w-4 h-4" :class="{ 'animate-spin': loading }" />
+          <span>Recargar</span>
+        </button>
       </div>
     </div>
 
@@ -188,13 +163,13 @@
                           class="px-3 py-1 text-xs rounded-full font-medium">
                       {{ getAttendanceTypeLabel(attendance.attendanceType) }}
                     </span>
-                    <button v-if="attendance.attendanceType === 'Ausente'"
+                    <button v-if="attendance.attendanceType.toLocaleLowerCase() === 'ausente'"
                             class="p-2 text-slate-300 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all duration-200 hover:scale-110"
                             title="Justificar ausencia"
                             @click="selectStudentForJustification(attendance)">
                       <AlertCircle class="w-4 h-4" />
                     </button>
-                    <button v-if="attendance.attendanceType === 'Ausente'"
+                    <button v-if="attendance.attendanceType.toLocaleLowerCase() === 'ausente'"
                             class="p-2 text-slate-300 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all duration-200 hover:scale-110"
                             title="Notificar Padre"
                             @click="getContactInfo(Number(attendance.idAttendance), `${attendance.studentName} ${attendance.studentFirstLastName} ${attendance.studentSecondLastName}`)">
@@ -261,7 +236,7 @@
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center space-x-3">
               <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <PenBox class="w-5 h-5 text-yellow-600" />
+                <PenBox class="w-5 h-5 text-amber-600" />
               </div>
               <h3 class="text-lg font-semibold text-slate-800">Justificar Alumno</h3>
             </div>
@@ -271,18 +246,23 @@
             </button>
           </div>
           
-          <p class="text-sm text-slate-600 mb-3">
-            Alumno:  
-            <span class="font-semibold">{{ selectedName }}</span>
-          </p>
+          <div class="mb-4 p-3 bg-slate-50 rounded-lg">
+            <p class="text-xs text-slate-500 mb-1">Alumno</p>
+            <p class="text-sm font-semibold text-slate-800">{{ selectedName }}</p>
+          </div>
 
-          <form action="" class="mb-6">
-              <label for="reason" class="block text-sm font-medium text-slate-700 mb-1">Motivo de justificación</label>
-              <textarea id="reason" 
-                        rows="4"
-                        class="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent resize-none"
-                        placeholder="Escribe el motivo por el cual se justifica la ausencia del alumno..."></textarea>
-          </form>
+          <div class="mb-6">
+            <label for="justification-reason" class="block text-sm font-medium text-slate-700 mb-2">
+              Motivo de justificación <span class="text-red-500">*</span>
+            </label>
+            <textarea id="justification-reason"
+                      v-model="justificationReason"
+                      rows="4"
+                      class="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent resize-none"
+                      placeholder="Escribe el motivo por el cual se justifica la ausencia del alumno..."></textarea>
+            <p v-if="!justificationReason.trim() && showReasonError" 
+               class="text-xs text-red-500 mt-1">El motivo es obligatorio</p>
+          </div>
           
           <div class="flex justify-end space-x-3">
             <button @click="closeJustificationModal"
@@ -290,8 +270,13 @@
               Cancelar
             </button>
             <button @click="executeJustification"
-                    class="px-4 py-2 bg-slate-600 text-white text-sm rounded-lg hover:bg-slate-700 transition-colors">
-              Aceptar
+                    :disabled="isSubmitting"
+                    class="relative px-4 py-2 bg-slate-800 text-white text-sm rounded-lg hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              <span :class="{ 'opacity-0': isSubmitting }">Justificar</span>
+              <div v-if="isSubmitting" 
+                   class="absolute inset-0 flex items-center justify-center">
+                <Loader2 class="w-4 h-4 animate-spin" />
+              </div>
             </button>
           </div>
         </div>
@@ -326,11 +311,31 @@ import {
 } from 'lucide-vue-next'
 import type { JustificationProfessorRequest } from '@/types/Justification'
 import { addProfessorJustification } from '@/services/justificationsService'
+import { useToast } from '@/composables/useToast'
 
 // Constantes
-const PAGE_SIZE = 10
+const PAGE_SIZE = 15
 
 // Definición de columnas
+const sections = [
+  { value: 'BENJAMIN', label: 'Benjamin' },
+  { value: 'NOE', label: 'Noé' },
+  { value: 'MOISES', label: 'Moisés' },
+  { value: 'DAVID', label: 'David' },
+  { value: 'SALOMON', label: 'Salomón' },
+  { value: 'JACOB', label: 'Jacob' },
+  { value: 'ENOC', label: 'Enoc' },
+  { value: 'JOSE', label: 'José' },
+  { value: 'GEDEON', label: 'Gedeón' },
+  { value: 'JOSUE', label: 'Josué' },
+  { value: 'ELIAS', label: 'Elías' },
+  { value: 'ELISEO', label: 'Eliseo' },
+  { value: 'DANIEL', label: 'Daniel' },
+  { value: 'ESTEBAN', label: 'Esteban' },
+  { value: 'MATEO', label: 'Mateo' },
+  { value: 'JONATAN', label: 'Jonatán' }
+]
+
 const columns = [
   { key: 'studentDni', label: 'DNI' },
   { key: 'studentName', label: 'Nombre' },
@@ -339,19 +344,28 @@ const columns = [
 ] as const
 
 // Helper para obtener fecha actual
-const getTodayDate = () => {
+const getTodayDate = (): string => {
   const today = new Date()
-  const timezoneOffset = today.getTimezoneOffset() * 60000
-  return new Date(today.getTime() - timezoneOffset).toISOString().split('T')[0]
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 // Estado
-const totalPages = ref(0)
-const totalElements = ref(0)
-const currentPage = ref(0)
 const loading = ref(false)
 const errorMessage = ref<string>('')
 const attendances = ref<AttendanceResponse[]>([])
+const totalPages = ref(0)
+const totalElements = ref(0)
+const currentPage = ref(0)
+
+const isSubmitting = ref(false)
+const showReasonError = ref(false)
+const justificationModal = ref(false)
+const justificationReason = ref('')
+const selectedStudent = ref<JustificationProfessorRequest | null>(null)
+const selectedName = ref('')
 
 const filter = ref<AttendanceFilter>({
   date: getTodayDate(),
@@ -365,9 +379,8 @@ const sort = ref<Sort>({
   direction: 'asc'
 })
 
-const justificationModal = ref(false)
-const selectedName = ref('')
-const selectedStudent = ref<JustificationProfessorRequest | null>(null)
+// Inicializar toast
+const toast = useToast()
 
 // Computed properties
 const hasActiveFilters = computed(() => {
@@ -419,10 +432,27 @@ const toggleSort = (field: string) => {
 }
 
 // Funciones de filtro
+const applyFilters = () => {
+  currentPage.value = 0
+  loadAttendances()
+  toast.showInfo('Filtros aplicados', 'Los filtros se han aplicado correctamente', 3000)
+}
+
 const clearAllFilters = () => {
-  filter.value.name = ''
-  filter.value.section = ''
-  filter.value.attendanceType = ''
+  filter.value = {
+    date: getTodayDate(),
+    name: '',
+    section: '',
+    attendanceType: ''
+  }
+  currentPage.value = 0
+  loadAttendances()
+  toast.showInfo('Filtros limpiados', 'Todos los filtros han sido restablecidos', 3000)
+}
+
+const refreshTable = () => {
+  loadAttendances()
+  toast.showInfo('Actualizando', 'Recargando datos de la tabla...', 2000)
 }
 
 // Funciones de paginación
@@ -481,23 +511,6 @@ const loadAttendances = async () => {
   }
 }
 
-// Watchers
-let debounceTimer: ReturnType<typeof setTimeout>
-watch(
-  filter,
-  () => {
-    clearTimeout(debounceTimer)
-    debounceTimer = setTimeout(() => {
-      currentPage.value = 0
-      loadAttendances()
-    }, 300)
-  },
-  { deep: true }
-)
-
-// Lifecycle
-onMounted(loadAttendances)
-
 // Formulario de justificación
 const selectStudentForJustification = (attendance: AttendanceResponse) => {
   selectedStudent.value = {
@@ -505,27 +518,43 @@ const selectStudentForJustification = (attendance: AttendanceResponse) => {
     description: ''
   }
   selectedName.value = `${attendance.studentName} ${attendance.studentFirstLastName} ${attendance.studentSecondLastName}`
+  showReasonError.value = false
   justificationModal.value = true
+  justificationReason.value = ''
 }
 
 const closeJustificationModal = () => {
   justificationModal.value = false
   selectedStudent.value = null
   selectedName.value = ''
+  justificationReason.value = ''
+  showReasonError.value = false
 }
 
-const executeJustification = async () => { 
+const executeJustification = async () => {
+  if (!justificationReason.value.trim()) {
+    showReasonError.value = true
+    toast.showWarning('Campo requerido', 'Debe ingresar un motivo de justificación')
+    return
+  }  
+  isSubmitting.value = true
+
   try {
+    selectedStudent.value!.description = justificationReason.value
+    
     const response = await addProfessorJustification(selectedStudent.value as JustificationProfessorRequest)
 
-    if (!response.success) {
-      alert('Error al justificar la ausencia: ' + response.error.message)
+    if (response.success) {
+      toast.showSuccess('Ausencia justificada', 'Se ha justificado la ausencia del estudiante correctamente')
+      await loadAttendances()
+      closeJustificationModal()
+    } else {
+      toast.showError('Error', response.error.message)
     }
   } catch (error) {
-    alert('Error de conexión al justificar la ausencia: ' + (error instanceof Error ? error.message : 'Error desconocido'))
+    toast.showError('Error de conexión', error instanceof Error ? error.message : 'Error desconocido')
   } finally {
-    loadAttendances()
-    closeJustificationModal()
+    isSubmitting.value = false
   }
 }
 
@@ -538,11 +567,12 @@ const getContactInfo = async (id: number, studentName: string) => {
       response.data.studentName = studentName
       const contactInfo = response.data
       sendMensageToParent(contactInfo)
+      toast.showInfo('Notificación', 'Se abrirá WhatsApp para enviar el mensaje')
     } else {
-      alert('Error al obtener la información de contacto: ' + response.error.message)
+      toast.showError('Error', response.error.message)
     }
   } catch (error) {
-    alert('Error de conexión al obtener la información de contacto: ' + (error instanceof Error ? error.message : 'Error desconocido'))
+    toast.showError('Error de conexión', error instanceof Error ? error.message : 'Error desconocido')
   }
 }
 
@@ -553,7 +583,7 @@ const sendMensageToParent = async (contactInfo: ContactResponse) => {
       `🚨 Aviso de Asistencia Escolar
 Estimado(a) Padre/Madre de Familia 👨‍👩‍👧‍👦:
 Reciba un cordial saludo 🤝.
-Le informamos que su hijo(a) ${contactInfo.studentName} 📌 no registra ingreso al colegio el día de hoy. 
+Le informamos que su hijo(a) *${contactInfo.studentName}* 📌 no registra ingreso al colegio el día de hoy. 
 Le solicitamos, por favor, realizar la justificación de la inasistencia mediante el siguiente enlace:
 
 👇 Acceda al formulario:
@@ -569,6 +599,7 @@ Agradecemos su apoyo para mantener actualizada la asistencia del estudiante ✅.
   }
 }
 
+onMounted(loadAttendances)
 
 </script>
 
