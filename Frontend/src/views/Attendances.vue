@@ -14,9 +14,6 @@
               <p class="text-sm text-slate-500">Gestiona el registro de asistencia de estudiantes</p>
             </div>
           </div>
-
-          
-
           
           <!-- Selector de vista moderno -->
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -26,20 +23,20 @@
               <span class="text-sm font-medium">Cerrar registro</span>
             </button>
             <div class="bg-white p-1 rounded-xl border border-slate-200 shadow-sm inline-flex">
-              <button @click="dayView = true"
+              <button @click="monthView = false"
                       class="px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 relative"
-                      :class="[dayView ? 'bg-slate-800 text-white shadow-md' : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50']">
+                      :class="[!monthView ? 'bg-slate-800 text-white shadow-md' : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50']">
                 <div class="flex items-center space-x-2">
-                  <CalendarDays :class="[dayView ? 'text-white' : 'text-slate-400']" class="w-4 h-4" />
+                  <CalendarDays :class="[!monthView ? 'text-white' : 'text-slate-400']" class="w-4 h-4" />
                   <span>Vista por Día</span>
                 </div>
               </button>
               
-              <button @click="dayView = false"
+              <button @click="monthView = true"
                       class="px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 relative"
-                      :class="[!dayView ? 'bg-slate-800 text-white shadow-md' : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50']">
+                      :class="[monthView ? 'bg-slate-800 text-white shadow-md' : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50']">
                 <div class="flex items-center space-x-2">
-                  <CalendarRange :class="[!dayView ? 'text-white' : 'text-slate-400']" class="w-4 h-4" />
+                  <CalendarRange :class="[monthView ? 'text-white' : 'text-slate-400']" class="w-4 h-4" />
                   <span>Vista Mensual</span>
                 </div>
               </button>
@@ -51,7 +48,7 @@
         <div class="mt-4 flex items-center space-x-4 text-sm">
           <div class="flex items-center space-x-2 text-slate-500">
             <Info class="w-4 h-4" />
-            <span>{{ dayView ? 'Registro diario de asistencia por curso' : 'Resumen mensual de asistencia' }}</span>
+            <span>{{ monthView ? 'Resumen mensual de asistencia' : 'Registro diario de asistencia por curso' }}</span>
           </div>
           
           <!-- Fecha actual -->
@@ -64,9 +61,9 @@
 
       <!-- Contenedor de la vista con animación de transición -->
       <transition name="view-transition" mode="out-in">
-        <div :key="dayView ? 'day' : 'month'" class="animate-fade-in-up">
-          <AttendanceViewDay v-if="dayView" />
-          <AttendanceViewMensual v-else />
+        <div :key="monthView ? 'month' : 'day'" class="animate-fade-in-up">
+          <AttendanceViewMensual v-if="monthView" />
+          <AttendanceViewDay v-else/>
         </div>
       </transition>
 
@@ -157,7 +154,7 @@ import {
 } from 'lucide-vue-next'
 import { createMissedAttendance } from '@/services/attendancesService'
 
-const dayView = ref(true)
+const monthView = ref(true)
 const errorMessage = ref('')
 const success = ref(false)
 const countMissed = ref(0)
