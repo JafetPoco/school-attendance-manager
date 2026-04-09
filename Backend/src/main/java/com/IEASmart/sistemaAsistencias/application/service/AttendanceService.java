@@ -24,6 +24,7 @@ import com.IEASmart.sistemaAsistencias.domain.repository.StudentRepository;
 import com.IEASmart.sistemaAsistencias.domain.repository.TokenRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -107,7 +108,7 @@ public class AttendanceService {
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
 
         StudentCriteria studentCriteria = new StudentCriteria(null, null, null, section);
-        List<Student> students = studentRepository.findAllByFilters(school, studentCriteria, Pageable.unpaged()).getContent();
+        List<Student> students = studentRepository.findAllByFilters(school, studentCriteria, Sort.by(Sort.Order.asc("firstLastName"), Sort.Order.asc("secondLastName")));
 
         // Obtener sólo las asistencias del rango de fechas y de la sección solicitada
         List<Attendance> attendances = attendanceRepository.findByStudentSchoolAndSectionAndDateBetween(school, section, startDate, endDate);
@@ -119,21 +120,15 @@ public class AttendanceService {
             dailyByDni.computeIfAbsent(dni, k -> new HashMap<>()).put(day, a.getAttendanceType().getFullName());
         }
 
-        List<MonthlyAttendanceResponse> studentResponses = students.stream()
+        return students.stream()
                 .map(s -> {
                     MonthlyAttendanceResponse resp = monthlyAttendanceApiMapper.toResponse(s);
                     // Asignar mapa (vacío si no hay registros para el alumno)
                     Map<Integer, String> daily = dailyByDni.get(s.getDni());
-                    if (daily == null) {
-                        resp.setDailyAttendance(Map.of());
-                    } else {
-                        resp.setDailyAttendance(daily);
-                    }
+                    resp.setDailyAttendance(Objects.requireNonNullElseGet(daily, Map::of));
                     return resp;
                 })
                 .toList();
-
-        return studentResponses;
     }
 
     public InformationAttendanceResponse getAttendanceByStudentId(String id, School school) {

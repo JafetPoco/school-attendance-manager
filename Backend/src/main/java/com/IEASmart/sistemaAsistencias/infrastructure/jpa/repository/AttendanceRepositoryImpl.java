@@ -61,7 +61,7 @@ public class AttendanceRepositoryImpl implements AttendanceRepository {
 
     @Override
     public List<Attendance> findByStudentSchoolAndSectionAndDateBetween(School school, Section section, LocalDate startDate, LocalDate endDate) {
-        return attendanceJpaRepository.findAllByStudent_SchoolAndStudent_SectionAndDateBetweenOrderByStudent_FirstLastNameAsc(school, section, startDate, endDate)
+        return attendanceJpaRepository.findAllByStudent_SchoolAndStudent_SectionAndDateBetween(school, section, startDate, endDate)
                 .stream()
                 .map(mapper::toDomain)
                 .toList();

@@ -5,6 +5,7 @@ import com.IEASmart.sistemaAsistencias.domain.model.Student;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,5 +16,6 @@ public interface StudentRepository {
     List<Student> getAllStudents(School school);
     Student save(Student student);
     Page<Student> findAllByFilters(School school, StudentCriteria criteria, Pageable pageable);
+    List<Student> findAllByFilters(School school, StudentCriteria criteria, Sort sort);
     List<Student> findAllWithoutAttendanceOnDate(School school, LocalDate date);
 }

@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -41,17 +42,27 @@ public class StudentRepositoryImpl implements StudentRepository {
         return studentMapper.toDomain(jpaRepository.save(studentMapper.toEntity(student)));
     }
 
-    @Override
-    public Page<Student> findAllByFilters(School school, StudentCriteria criteria, Pageable pageable) {
-        Specification<StudentEntity> spec = Specification
+    private Specification<StudentEntity> buildSpecification(School school, StudentCriteria criteria) {
+        return Specification
                 .where(StudentSpecifications.hasSchool(school))
                 .and(StudentSpecifications.hasName(criteria.name()))
                 .and(StudentSpecifications.hasLevel(criteria.level()))
                 .and(StudentSpecifications.hasGrade(criteria.grade()))
                 .and(StudentSpecifications.hasSection(criteria.section()));
+    }
 
+    @Override
+    public Page<Student> findAllByFilters(School school, StudentCriteria criteria, Pageable pageable) {
+        Specification<StudentEntity> spec = buildSpecification(school, criteria);
         Page<StudentEntity> page = jpaRepository.findAll(spec, pageable);
         return page.map(studentMapper::toDomain);
+    }
+
+    @Override
+    public List<Student> findAllByFilters(School school, StudentCriteria criteria, Sort sort) {
+        Specification<StudentEntity> spec = buildSpecification(school, criteria);
+        List<StudentEntity> list = jpaRepository.findAll(spec, sort);
+        return list.stream().map(studentMapper::toDomain).toList();
     }
 
     @Override

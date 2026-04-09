@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public interface AttendanceJpaRepository extends JpaRepository<AttendanceEntity, Long>, JpaSpecificationExecutor<AttendanceEntity> {
     Optional<AttendanceEntity> findByStudent_DniAndDate(String student, LocalDate date);
-    List<AttendanceEntity> findAllByStudent_SchoolAndStudent_SectionAndDateBetweenOrderByStudent_FirstLastNameAsc(School school, Section section, LocalDate startDate, LocalDate endDate);
+    List<AttendanceEntity> findAllByStudent_SchoolAndStudent_SectionAndDateBetween(School school, Section section, LocalDate startDate, LocalDate endDate);
     long countByStudent_DniAndAttendanceTypeAndDateBetween(String studentDni, AttendanceType type, LocalDate startDate, LocalDate endDate);
     List<AttendanceEntity> findAllByStudent_DniAndDateBetweenOrderByDateAsc(String studentDni, LocalDate startDate, LocalDate endDate);
 }
