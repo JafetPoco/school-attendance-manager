@@ -285,7 +285,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { contactStudent, getAttendances } from '@/services/attendancesService'
 import type { AttendanceFilter, AttendanceResponse, ContactResponse } from '@/types/Attendance'
 import type { PageRequest, Sort } from '@/types/Pages'

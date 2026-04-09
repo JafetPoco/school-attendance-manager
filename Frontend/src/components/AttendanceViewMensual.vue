@@ -56,11 +56,18 @@
       </div>
 
       <!-- Información del mes -->
-      <div class="mt-4 flex items-center space-x-4 text-sm">
+      <div class="mt-4 flex justify-between space-x-4 text-sm">
         <div class="flex items-center space-x-2 text-slate-500">
           <Users class="w-4 h-4" />
           <span>{{ attendances.length }} estudiantes</span>
         </div>
+        <button @click="refreshTable"
+                  :disabled="loading"
+                  class="inline-flex items-center space-x-2 px-3 py-1 text-slate-600 hover:bg-slate-100 rounded-lg transition-all duration-300"
+                  title="Recargar tabla">
+          <RotateCw class="w-4 h-4" :class="{ 'animate-spin': loading }" />
+          <span>Recargar</span>
+        </button>
       </div>
     </div>
 
@@ -306,6 +313,10 @@ onMounted(() => {
   filter.value.month = monthNumber.value
   loadAttendances()
 })
+
+const refreshTable = () => {
+  loadAttendances()
+}
 </script>
 
 <style scoped>
