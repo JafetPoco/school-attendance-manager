@@ -118,6 +118,8 @@ import {
   ClipboardCheck,
   BarChart3,
   Moon,
+  FileClockIcon,
+  FileClock,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/authStore';
 
@@ -144,7 +146,7 @@ const navItems = [
   { path: '/dashboard', label: 'Inicio', icon: Home },
   { path: '/students', label: 'Estudiantes', icon: Users },
   { path: '/attendances', label: 'Asistencias', icon: ClipboardCheck },
-  { path: '/reports', label: 'Reportes', icon: BarChart3 },
+  { path: '/pendingJustifications', label: 'Justificaciones', icon: FileClock },
 ]
 
 // Items del menú de usuario
