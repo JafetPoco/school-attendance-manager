@@ -234,22 +234,6 @@
         </div>
       </div>
     </main>
-
-    <!-- Sistema de Toasts -->
-    <transition-group name="toast" tag="div" class="fixed bottom-4 right-4 z-50 space-y-2">
-      <div v-for="toast in toasts" 
-           :key="toast.id"
-           class="flex items-center space-x-3 px-4 py-3 rounded-lg shadow-lg min-w-75 max-w-md animate-slide-in-right bg-gray-200">
-        <component :is="toast.icon" class="w-5 h-5 shrink-0" :class="toast.type == 'success' ? 'text-emerald-600' : 'text-red-600'" />
-        <div class="flex-1">
-          <p class="text-sm font-medium">{{ toast.title }}</p>
-          <p class="text-xs opacity-90">{{ toast.message }}</p>
-        </div>
-        <button @click="removeToast(toast.id)" class="opacity-70 hover:opacity-100 transition-opacity">
-          <X class="w-4 h-4" />
-        </button>
-      </div>
-    </transition-group>
   </div>
 </template>
 
@@ -273,26 +257,15 @@ import {
   ExternalLink,
   Check,
   X,
-  CheckCircle,
-  XCircle,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight
 } from 'lucide-vue-next'
+import { useToast } from '@/composables/useToast'
 
 // Constantes
 const PAGE_SIZE = 10
-
-// Interfaces
-interface Toast {
-  id: number
-  type: 'success' | 'error'
-  title: string
-  message: string
-  icon: any
-  duration?: number
-}
 
 // Estado
 const loading = ref(false)
@@ -302,10 +275,8 @@ const currentPage = ref(0)
 const totalPages = ref(0)
 const totalJustifications = ref(0)
 const expandedDescriptions = ref<Record<string, boolean>>({})
-const toasts = ref<Toast[]>([])
 const processingId = ref<bigint | null>(null)
 const searchQuery = ref('')
-let nextToastId = 1
 
 const filter = ref<JustificationFilter>({
   dateFilter: 'TODAY'
@@ -372,27 +343,8 @@ const toggleDescription = (id: bigint) => {
   expandedDescriptions.value[key] = !expandedDescriptions.value[key]
 }
 
-// Funciones de Toast
-const addToast = (type: Toast['type'], title: string, message: string, duration: number = 3000) => {
-  const icon = type === 'success' ? CheckCircle : XCircle
-  const toast: Toast = {
-    id: nextToastId++,
-    type,
-    title,
-    message,
-    icon,
-    duration
-  }
-  toasts.value.push(toast)
-  
-  setTimeout(() => {
-    removeToast(toast.id)
-  }, duration)
-}
-
-const removeToast = (id: number) => {
-  toasts.value = toasts.value.filter(t => t.id !== id)
-}
+// Inicializar toast
+const toast = useToast()
 
 // Acciones de paginación
 const goToFirstPage = () => {
@@ -445,13 +397,13 @@ const approveJustification = async (item: JustificationResponse) => {
     const response = await approve(item.id)
 
     if (response.success) {
+      toast.showSuccess('Justificación aprobada', `La justificación de ${item.studentName} ha sido aprobada`)
       await loadJustifications()
-      addToast('success', 'Justificación aprobada', `La justificación de ${item.studentName} ha sido aprobada correctamente`)
     } else {
-      addToast('error', 'Error', response.error.message)
+      toast.showError('Error', response.error.message)
     }
   } catch (error) {
-    addToast('error', 'Error', error instanceof Error ? error.message : 'Error al aprobar la justificación')
+    toast.showError('Error', error instanceof Error ? error.message : 'Error al aprobar la justificación')
   } finally {
     processingId.value = null
   }
@@ -466,13 +418,13 @@ const rejectJustification = async (item: JustificationResponse) => {
     const response = await reject(item.id)
 
     if (response.success) {
+      toast.showSuccess('Justificación denegada', `La justificación de ${item.studentName} ha sido denegada`)
       await loadJustifications()
-      addToast('success', 'Justificación denegada', `La justificación de ${item.studentName} ha sido denegada`)
     } else {
-      addToast('error', 'Error', response.error.message)
+      toast.showError('Error', response.error.message)
     }
   } catch (error) {
-    addToast('error', 'Error', error instanceof Error ? error.message : 'Error al denegar la justificación')
+    toast.showError('Error', error instanceof Error ? error.message : 'Error al denegar la justificación')
   } finally {
     processingId.value = null
   }
