@@ -12,6 +12,7 @@ import com.IEASmart.sistemaAsistencias.domain.model.Justification;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.*;
 import com.IEASmart.sistemaAsistencias.domain.repository.AttendanceRepository;
 import com.IEASmart.sistemaAsistencias.domain.repository.JustificationRepository;
+import com.IEASmart.sistemaAsistencias.domain.repository.TokenRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,12 +26,14 @@ import java.util.Optional;
 @Service
 public class JustificationService {
     private final TokenService tokenService;
+    private final TokenRepository tokenRepositor;
     private final AttendanceRepository attendanceRepository;
     private final JustificationRepository justificationRepository;
     private final JustificationApiMapper justificationApiMapper;
 
-    public JustificationService(TokenService tokenService, AttendanceRepository attendanceRepository, JustificationRepository justificationRepository, JustificationApiMapper justificationApiMapper) {
+    public JustificationService(TokenService tokenService, TokenRepository tokenRepositor, AttendanceRepository attendanceRepository, JustificationRepository justificationRepository, JustificationApiMapper justificationApiMapper) {
         this.tokenService = tokenService;
+        this.tokenRepositor = tokenRepositor;
         this.attendanceRepository = attendanceRepository;
         this.justificationRepository = justificationRepository;
         this.justificationApiMapper = justificationApiMapper;
@@ -66,7 +69,9 @@ public class JustificationService {
         justification.setStatus(JustificationStatus.ACEPTADA);
 
         justificationRepository.save(justification);
-        //tokenService.markTokenAsUsed(request.getToken());
+
+        String token = tokenRepositor.findByAttendanceIdAndUsedFalse(request.getIdAttendance()).get().getToken();
+        tokenService.markTokenAsUsed(token);
 
         attendance.setAttendanceType(AttendanceType.JUSTIFICADO);
         attendanceRepository.save(attendance);
