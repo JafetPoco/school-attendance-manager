@@ -5,7 +5,7 @@
         <!-- Logo y nombre del colegio -->
         <div class="flex items-center space-x-3">
           <div class="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center shadow-md">
-            <GraduationCap class="w-6 h-6 text-white" />
+            <img src="/logo-dark.svg" alt="Logo" class="w-6 h-6" />
           </div>
           <div class="hidden sm:block">
             <span class="text-lg font-semibold text-slate-800">{{ auth.user?.schoolName }}</span>
@@ -35,10 +35,10 @@
               <p class="text-xs text-slate-500">{{ auth.user?.userType }}</p>
             </div>
             <div class="relative">
-              <img class="h-9 w-9 rounded-xl border-2 border-slate-200 group-hover:border-slate-400 transition-all duration-200" 
-                   :src="auth.user?.urlPicture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(auth.user?.names || 'User') + '&background=0D8ABC&color=fff&size=128'" 
-                   :alt="auth.user?.names">
-              <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white"></div>
+              <img class="h-10 w-10 rounded-xl border-2 border-slate-200 group-hover:border-slate-400 transition-all duration-300" 
+                   :src="auth.user?.urlPicture" 
+                   :alt="auth.user?.names" @error="useFallback">
+              <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
             </div>
 
             <!-- Menú desplegable del usuario -->
@@ -108,7 +108,6 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
-  GraduationCap,
   User,
   Settings,
   LogOut,
@@ -116,9 +115,7 @@ import {
   Home,
   Users,
   ClipboardCheck,
-  BarChart3,
   Moon,
-  FileClockIcon,
   FileClock,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/authStore';
@@ -223,6 +220,16 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
+
+const useFallback = (event: Event) => {
+  const img = (event.currentTarget ?? event.target) as HTMLImageElement | null
+  const username = auth.user?.names ?? 'Usuario'
+  const name = username.replace(/\s+/g, '+')
+  if (img) {
+    img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=334155&color=fff&size=128`
+  }
+};
+
 </script>
 
 <style scoped>
