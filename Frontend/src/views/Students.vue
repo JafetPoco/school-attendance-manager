@@ -93,6 +93,32 @@
           </div>
         </div>
 
+        <!-- Botones de acción de filtros -->
+        <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center space-x-3">
+            <button @click="applyFilters"
+                    :disabled="loading"
+                    class="inline-flex items-center space-x-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-all duration-300 transform hover:scale-105 shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+              <Filter class="w-4 h-4" />
+              <span>Aplicar filtros</span>
+            </button>
+            <button @click="clearAllFilters"
+                    :disabled="loading"
+                    class="inline-flex items-center space-x-2 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-all duration-300">
+              <RotateCw class="w-4 h-4" />
+              <span>Limpiar filtros</span>
+            </button>
+          </div>
+          
+          <button @click="refreshTable"
+                  :disabled="loading"
+                  class="inline-flex items-center space-x-2 px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-all duration-300"
+                  title="Recargar tabla">
+            <RotateCw class="w-4 h-4" :class="{ 'animate-spin': loading }" />
+            <span>Recargar</span>
+          </button>
+        </div>
+
         <!-- Filtros activos -->
         <div v-if="hasActiveFilters" class="mt-4 flex items-center space-x-2">
           <span class="text-xs text-slate-500">Filtros activos:</span>
@@ -328,37 +354,11 @@
         </div>
       </div>
     </transition>
-
-    <!-- Modal de ección realizada -->
-    <transition name="fade">
-      <div v-if="deleteSuccess" 
-           class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
-           @click.self="deleteSuccess = false">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 animate-slide-up">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <Check class="w-5 h-5 text-green-600" />
-              </div>
-              <h3 class="text-lg font-semibold text-slate-800">Eliminación exitosa</h3>
-            </div>
-            <button @click="deleteSuccess = false" 
-                    class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
-              <X class="w-5 h-5 text-slate-500" />
-            </button>
-          </div>
-          
-          <p class="text-sm text-slate-600 mb-6">
-            El estudiante ha sido eliminado exitosamente.
-          </p>
-        </div>
-      </div>
-    </transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import Header from '@/components/Header.vue'
 import { getStudents, removeStudent } from '@/services/studentsService'
 import type { StudentFilter, StudentResponse } from '@/types/Student'
@@ -384,12 +384,14 @@ import {
   MoveVerticalIcon,
   MoveUpIcon,
   MoveDownIcon,
-  Check
+  Filter,
+  RotateCw
 } from 'lucide-vue-next'
 import router from '@/router'
+import { useToast } from '@/composables/useToast'
 
 // Constantes
-const PAGE_SIZE = 10
+const PAGE_SIZE = 15
 
 // Definición de columnas
 const columns = [
@@ -421,9 +423,12 @@ const filter = ref<StudentFilter>({
 })
 
 const sort = ref<Sort>({
-  field: '',
+  field: 'firstLastName',
   direction: 'asc'
 })
+
+// Inicializar toast
+const toast = useToast()
 
 // Computed properties
 const hasActiveFilters = computed(() => {
@@ -447,7 +452,8 @@ const formatGrade = (grade: string) => {
     'SEGUNDO': '2°',
     'TERCERO': '3°',
     'CUARTO': '4°',
-    'QUINTO': '5°'
+    'QUINTO': '5°',
+    'SEXTO': '6°'
   }
   return grades[grade] || grade
 }
@@ -471,6 +477,12 @@ const toggleSort = (field: string) => {
 }
 
 // Funciones de filtro
+const applyFilters = () => {
+  currentPage.value = 0
+  loadStudents()
+  toast.showInfo('Filtros aplicados', 'Los filtros se han aplicado correctamente', 3000)
+}
+
 const clearAllFilters = () => {
   filter.value = {
     name: '',
@@ -478,6 +490,14 @@ const clearAllFilters = () => {
     grade: '',
     section: ''
   }
+  currentPage.value = 0
+  loadStudents()
+  toast.showInfo('Filtros limpiados', 'Se han eliminado todos los filtros', 3000)
+}
+
+const refreshTable = () => {
+  loadStudents()
+  toast.showInfo('Actualizando', 'Recargando datos de la tabla...', 3000)
 }
 
 // Funciones de paginación
@@ -530,15 +550,18 @@ const executeDelete = async () => {
     const response = await removeStudent(selectedStudent.value.dni)
 
     if (response.success) {
-      console.log('Eliminado con éxito:', response.data)
+      toast.showSuccess('Estudiante eliminado', `El estudiante ${selectedStudent.value?.name} ha sido eliminado correctamente`)
+      await loadStudents()
     } else {
       errorMessage.value = response.error.message
+      toast.showError('Error al eliminar', errorMessage.value)
     }
 
     deleteSuccess.value = true
     await loadStudents()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : 'Error de conexión'
+    toast.showError('Error de conexión', error instanceof Error ? error.message : 'Error desconocido')
   } finally {
     loading.value = false
     selectedStudent.value = null
@@ -591,20 +614,6 @@ const loadStudents = async () => {
     loading.value = false
   }
 }
-
-// Watchers
-let debounceTimer: ReturnType<typeof setTimeout>
-watch(
-  filter,
-  () => {
-    clearTimeout(debounceTimer)
-    debounceTimer = setTimeout(() => {
-      currentPage.value = 0
-      loadStudents()
-    }, 300)
-  },
-  { deep: true }
-)
 
 // Lifecycle
 onMounted(loadStudents)

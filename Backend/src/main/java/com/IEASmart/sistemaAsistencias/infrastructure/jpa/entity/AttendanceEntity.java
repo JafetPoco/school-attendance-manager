@@ -26,7 +26,7 @@ public class AttendanceEntity {
     private AttendanceType attendanceType;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dni", nullable = false)
+    @JoinColumn(name = "dni", nullable = false, foreignKey = @ForeignKey(name = "fk_attendance_student", foreignKeyDefinition = "FOREIGN KEY (dni) REFERENCES students(dni) ON DELETE CASCADE"))
     private StudentEntity student;
 
     public AttendanceEntity() {}
