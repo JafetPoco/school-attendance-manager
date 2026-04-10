@@ -7,7 +7,7 @@
           <!-- Logo y nombre del colegio -->
           <div class="flex items-center space-x-3">
             <div class="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center shadow-md">
-              <GraduationCap class="w-6 h-6 text-white" />
+              <img src="/logo-dark.svg" alt="Logo" class="w-6 h-6" />
             </div>
             <div>
               <span v-if="auth.user?.schoolName" class="text-lg font-semibold text-slate-800">{{ auth.user.schoolName }}</span>
