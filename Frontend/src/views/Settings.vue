@@ -10,7 +10,7 @@
             <Settings class="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 class="text-2xl font-bold text-slate-800">Configuración de Políticas</h1>
+            <h1 class="text-2xl font-bold text-slate-800">Configuración</h1>
             <p class="text-sm text-slate-500">Gestiona los parámetros y reglas del sistema escolar</p>
           </div>
         </div>
