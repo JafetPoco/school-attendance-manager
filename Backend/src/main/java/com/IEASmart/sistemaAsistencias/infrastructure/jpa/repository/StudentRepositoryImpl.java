@@ -71,4 +71,9 @@ public class StudentRepositoryImpl implements StudentRepository {
                 .map(studentMapper::toDomain)
                 .toList();
     }
+
+    @Override
+    public long countStudentsBySchool(School school) {
+        return jpaRepository.countBySchool(school);
+    }
 }

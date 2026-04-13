@@ -7,6 +7,7 @@ import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
 import com.IEASmart.sistemaAsistencias.domain.repository.AttendanceRepository;
 import com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity.AttendanceEntity;
+import com.IEASmart.sistemaAsistencias.infrastructure.jpa.projection.AttendanceStats;
 import com.IEASmart.sistemaAsistencias.infrastructure.jpa.specification.AttendanceSpecifications;
 import com.IEASmart.sistemaAsistencias.infrastructure.mapper.AttendanceMapper;
 import org.springframework.data.domain.Page;
@@ -70,6 +71,11 @@ public class AttendanceRepositoryImpl implements AttendanceRepository {
     @Override
     public long countByStudentDniAndAttendanceTypeAndDateBetween(String dni, AttendanceType type, LocalDate startDate, LocalDate endDate){
         return attendanceJpaRepository.countByStudent_DniAndAttendanceTypeAndDateBetween(dni, type, startDate, endDate);
+    }
+
+    @Override
+    public List<AttendanceStats> getAttendanceStats(School school, LocalDate date){
+        return attendanceJpaRepository.getAttendanceStatsByDateAndSchool(date, school);
     }
 
     @Override

@@ -112,11 +112,11 @@ import {
   Settings,
   LogOut,
   Menu,
-  Home,
   Users,
   ClipboardCheck,
   Moon,
   FileClock,
+  LayoutDashboard,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/authStore';
 
@@ -140,7 +140,7 @@ const isDarkMode = ref(false)
 
 // Items de navegación
 const navItems = [
-  { path: '/dashboard', label: 'Inicio', icon: Home },
+  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/students', label: 'Estudiantes', icon: Users },
   { path: '/attendances', label: 'Asistencias', icon: ClipboardCheck },
   { path: '/pendingJustifications', label: 'Justificaciones', icon: FileClock },

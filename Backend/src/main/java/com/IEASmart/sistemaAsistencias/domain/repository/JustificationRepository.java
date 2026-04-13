@@ -16,4 +16,5 @@ public interface JustificationRepository {
     List<Justification> findAllByStatus(JustificationStatus status, School school);
     Page<Justification> findAllByFilter(School school, JustificationStatus justificationStatus, LocalDate startDate, LocalDate endDate, Pageable pageable);
     Justification save(Justification justification);
+    long countByStatus(JustificationStatus status, School school);
 }

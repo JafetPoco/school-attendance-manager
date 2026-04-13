@@ -18,4 +18,6 @@ public interface StudentJpaRepository extends JpaRepository<StudentEntity, Strin
 
     @Query("SELECT s FROM StudentEntity s LEFT JOIN AttendanceEntity a ON s.dni = a.student.dni AND a.date = :date WHERE s.school = :school AND a.id IS NULL")
     List<StudentEntity> findAllBySchoolAndWithoutAttendanceOnDate(@Param("school") School school, @Param("date") LocalDate date);
+
+    long countBySchool(School school);
 }

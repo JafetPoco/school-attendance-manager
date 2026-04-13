@@ -16,12 +16,11 @@ import com.IEASmart.sistemaAsistencias.domain.model.Parent;
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
 import com.IEASmart.sistemaAsistencias.domain.model.Token;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.AttendanceType;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.JustificationStatus;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
-import com.IEASmart.sistemaAsistencias.domain.repository.AttendanceRepository;
-import com.IEASmart.sistemaAsistencias.domain.repository.ParentRepository;
-import com.IEASmart.sistemaAsistencias.domain.repository.StudentRepository;
-import com.IEASmart.sistemaAsistencias.domain.repository.TokenRepository;
+import com.IEASmart.sistemaAsistencias.domain.repository.*;
+import com.IEASmart.sistemaAsistencias.infrastructure.jpa.projection.AttendanceStats;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -29,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,8 +43,9 @@ public class AttendanceService {
     private final StudentApiMapper studentApiMapper;
     private final TokenService tokenService;
     private final TokenRepository tokenRepository;
+    private final JustificationRepository justificationRepository;
 
-    public AttendanceService(AttendanceRepository attendanceRepository, StudentRepository studentRepository, ParentRepository parentRepository, AttendanceApiMapper mapper, MonthlyAttendanceApiMapper monthlyAttendanceApiMapper, StudentApiMapper studentApiMapper, TokenService tokenService, TokenRepository tokenRepository) {
+    public AttendanceService(AttendanceRepository attendanceRepository, StudentRepository studentRepository, ParentRepository parentRepository, AttendanceApiMapper mapper, MonthlyAttendanceApiMapper monthlyAttendanceApiMapper, StudentApiMapper studentApiMapper, TokenService tokenService, TokenRepository tokenRepository, JustificationRepository justificationRepository) {
         this.attendanceRepository = attendanceRepository;
         this.studentRepository = studentRepository;
         this.parentRepository = parentRepository;
@@ -53,6 +54,7 @@ public class AttendanceService {
         this.studentApiMapper = studentApiMapper;
         this.tokenService = tokenService;
         this.tokenRepository = tokenRepository;
+        this.justificationRepository = justificationRepository;
     }
 
     public AttendanceResponse markAttendance(AttendanceRequest request, School school) {
@@ -222,5 +224,45 @@ public class AttendanceService {
         response.setNumber(parent.getPhoneNumber());
 
         return response;
+    }
+
+    @Transactional(readOnly = true)
+    public AttendanceTodayDashboard getTodayAttendanceInfo(School school){
+        LocalDateTime today = LocalDateTime.now();
+
+        List<AttendanceStats> stats = attendanceRepository.getAttendanceStats(school, today.toLocalDate());
+        AttendanceTodayDashboard dashboard = new AttendanceTodayDashboard();
+
+        if (stats == null || stats.isEmpty()) {
+            dashboard.setTotalPresences(0L);
+            dashboard.setTotalAbsences(0L);
+            dashboard.setTotalLate(0L);
+            dashboard.setTotalAttendances(0L);
+            return dashboard;
+        }
+
+        Map<AttendanceType, Long> countsByType = stats.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(
+                        AttendanceStats::getAttendanceType,
+                        Collectors.summingLong(AttendanceStats::getCount)
+                ));
+
+        long present = countsByType.getOrDefault(AttendanceType.PRESENTE, 0L);
+        long absent = countsByType.getOrDefault(AttendanceType.AUSENTE, 0L);
+        long late = countsByType.getOrDefault(AttendanceType.TARDE, 0L);
+        long justified = countsByType.getOrDefault(AttendanceType.JUSTIFICADO, 0L);
+
+        long pendingJustifications = justificationRepository.countByStatus(JustificationStatus.PENDIENTE, school);
+
+        dashboard.setTotalPresences(present);
+        dashboard.setTotalAbsences(absent);
+        dashboard.setTotalLate(late);
+        dashboard.setTotalPendingJustifications(pendingJustifications);
+
+        long totalStudents = studentRepository.countStudentsBySchool(school);
+        dashboard.setTotalAttendances(totalStudents);
+
+        return dashboard;
     }
 }

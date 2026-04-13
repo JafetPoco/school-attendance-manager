@@ -18,4 +18,5 @@ public interface StudentRepository {
     Page<Student> findAllByFilters(School school, StudentCriteria criteria, Pageable pageable);
     List<Student> findAllByFilters(School school, StudentCriteria criteria, Sort sort);
     List<Student> findAllWithoutAttendanceOnDate(School school, LocalDate date);
+    long countStudentsBySchool(School school);
 }

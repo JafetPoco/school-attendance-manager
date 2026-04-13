@@ -50,3 +50,11 @@ export interface ContactResponse {
     studentName: string
     token: string
 }
+
+export interface AttendanceStats {
+    totalAttendances: number
+    totalPresences: number
+    totalAbsences: number
+    totalPendingJustifications: number
+    totalLate: number
+}

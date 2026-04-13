@@ -56,4 +56,9 @@ public class JustificationRepositoryImpl implements JustificationRepository {
     public Justification save(Justification justification) {
         return mapper.toDomain(jpaRepository.save(mapper.toEntity(justification)));
     }
+
+    @Override
+    public long countByStatus(JustificationStatus status, School school){
+        return jpaRepository.countByStatusAndAttendance_Student_School(status, school);
+    }
 }
