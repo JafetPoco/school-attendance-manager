@@ -13,7 +13,7 @@ public class JustificationEntity {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "attendance_id", unique = true)
+    @JoinColumn(name = "attendance_id", unique = true, nullable = false, foreignKey = @ForeignKey(name = "fk_justification_attendance", foreignKeyDefinition = "FOREIGN KEY (attendance_id) REFERENCES attendances(id) ON DELETE CASCADE"))
     private AttendanceEntity attendance;
 
     @Column(nullable = false, length = 255)
