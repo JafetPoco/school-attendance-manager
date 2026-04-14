@@ -619,7 +619,7 @@ const loadStudents = async () => {
 onMounted(loadStudents)
 
 const goToNewStudent = () => {
-  router.push('/addParentWithChildren')
+  router.push('/addStudent')
 }
 </script>
 

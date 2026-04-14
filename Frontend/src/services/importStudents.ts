@@ -21,3 +21,24 @@ export async function importStudentsExcel(file: File): Promise<ServiceResult<nul
     }
   }
 }
+
+export async function getTemplate(): Promise<ServiceResult<Blob, ApiHttpError>> {
+  try {
+    const response = await fetch('http://localhost:8081/api/parents/template', {
+      method: 'GET',
+      credentials: 'include'
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP ${response.status}`)
+    }
+
+    const blob = await response.blob()
+    return { success: true, data: blob }
+  } catch (error) {
+    return {
+      success: false,
+      error: mapApiError(error)
+    }
+  }
+}

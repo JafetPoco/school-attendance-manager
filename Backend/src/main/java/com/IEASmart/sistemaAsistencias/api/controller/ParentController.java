@@ -8,6 +8,10 @@ import com.IEASmart.sistemaAsistencias.api.dto.response.StudentResponse;
 import com.IEASmart.sistemaAsistencias.application.service.AuthorizationService;
 import com.IEASmart.sistemaAsistencias.application.service.ParentService;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -58,6 +62,29 @@ public class ParentController {
         School school = authorizationService.getUserSchool();
         parentService.importFromExcel(file, school);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/template")
+    public ResponseEntity<Resource> descargarPlantillaExcel() {
+        try {
+            // Cargar el archivo desde resources
+            Resource resource = new ClassPathResource("templates/studentsTemplate.xlsx");
+
+            // Verificar que existe
+            if (!resource.exists()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"studentsTemplate.xlsx\"")
+                    .contentType(MediaType.parseMediaType(
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(resource);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @GetMapping

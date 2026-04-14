@@ -20,9 +20,9 @@ const router = createRouter({
       meta: { requiresAuth: true}
     },
     {
-      path: '/addParentWithChildren',
-      name: 'addParentWithChildren',
-      component: () => import('@/views/FormParentWithChildren.vue'),
+      path: '/addStudent',
+      name: 'addStudent',
+      component: () => import('@/views/AddStudents.vue'),
       meta: { requiresAuth: true}
     },
     {
