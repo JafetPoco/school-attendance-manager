@@ -3,6 +3,7 @@ package com.IEASmart.sistemaAsistencias.api.controller;
 import com.IEASmart.sistemaAsistencias.api.dto.request.StudentFilter;
 import com.IEASmart.sistemaAsistencias.api.dto.response.PageResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.StudentResponse;
+import com.IEASmart.sistemaAsistencias.api.dto.response.StudentSuggestionResponse;
 import com.IEASmart.sistemaAsistencias.application.service.AuthorizationService;
 import com.IEASmart.sistemaAsistencias.application.service.StudentService;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -39,5 +41,12 @@ public class StudentController {
         Optional<StudentResponse> studentOpt = studentService.getStudentById(id, school);
         return studentOpt.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/autocomplete")
+    public ResponseEntity<List<StudentSuggestionResponse>> autocompleteStudents(@RequestParam String query) {
+        School school = authorizationService.getUserSchool();
+        List<StudentSuggestionResponse> suggestions = studentService.autocompleteStudents(query, school);
+        return ResponseEntity.ok(suggestions);
     }
 }

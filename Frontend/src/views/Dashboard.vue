@@ -30,7 +30,6 @@
         >
           <UserCheck class="w-5 h-5" />
           <span class="font-medium text-sm">Ver Asistencias</span>
-
         </router-link>
         
         
@@ -56,14 +55,6 @@
         >
           <Users class="w-5 h-5" />
           <span class="font-medium text-sm">Mis Alumnos</span>
-        </router-link>
-        
-        <router-link 
-          to="/reports" 
-          class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800"
-        >
-          <BarChart3 class="w-5 h-5" />
-          <span class="font-medium text-sm">Reportes</span>
         </router-link>
         
         <router-link 
@@ -253,7 +244,6 @@ import {
   ClipboardList,
   FileCheck,
   Users,
-  BarChart3,
   Settings,
   LogOut,
   UserCheck,

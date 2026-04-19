@@ -24,3 +24,8 @@ export interface StudentFilter {
     grade?: string
     section?: string
 }
+
+export interface StudentSuggestionResponse {
+    fullName: string
+    dni: string
+}

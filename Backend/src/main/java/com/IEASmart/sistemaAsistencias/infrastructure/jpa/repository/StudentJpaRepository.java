@@ -15,6 +15,7 @@ public interface StudentJpaRepository extends JpaRepository<StudentEntity, Strin
     List<StudentEntity> findAllBySchool(School school);
 
     Optional<StudentEntity> findByDniAndSchool(String id, School school);
+    List<StudentEntity> findByNameContainingIgnoreCaseAndSchool(String query, School school);
 
     @Query("SELECT s FROM StudentEntity s LEFT JOIN AttendanceEntity a ON s.dni = a.student.dni AND a.date = :date WHERE s.school = :school AND a.id IS NULL")
     List<StudentEntity> findAllBySchoolAndWithoutAttendanceOnDate(@Param("school") School school, @Param("date") LocalDate date);

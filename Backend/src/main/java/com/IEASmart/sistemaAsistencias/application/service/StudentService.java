@@ -3,6 +3,7 @@ package com.IEASmart.sistemaAsistencias.application.service;
 import com.IEASmart.sistemaAsistencias.api.dto.request.StudentFilter;
 import com.IEASmart.sistemaAsistencias.api.dto.response.PageResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.StudentResponse;
+import com.IEASmart.sistemaAsistencias.api.dto.response.StudentSuggestionResponse;
 import com.IEASmart.sistemaAsistencias.api.mapper.StudentApiMapper;
 import com.IEASmart.sistemaAsistencias.application.dto.StudentCriteria;
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
@@ -53,5 +54,14 @@ public class StudentService {
 
     public Optional<StudentResponse> getStudentById(String studentId, School school) {
         return studentRepository.findById(studentId, school).map(studentApiMapper::toResponse);
+    }
+
+    public List<StudentSuggestionResponse> autocompleteStudents(String query, School school){
+        if (query == null || query.trim().length() < 3) {
+            return List.of();
+        }
+        return studentRepository.findByNameContainingIgnoreCase(query, school).stream()
+                .map(studentApiMapper::toSuggestionResponse)
+                .toList();
     }
 }

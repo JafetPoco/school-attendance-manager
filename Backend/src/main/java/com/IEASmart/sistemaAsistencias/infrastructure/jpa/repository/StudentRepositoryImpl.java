@@ -7,6 +7,7 @@ import com.IEASmart.sistemaAsistencias.domain.repository.StudentRepository;
 import com.IEASmart.sistemaAsistencias.infrastructure.mapper.StudentMapper;
 import com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity.StudentEntity;
 import com.IEASmart.sistemaAsistencias.infrastructure.jpa.specification.StudentSpecifications;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
@@ -75,5 +76,13 @@ public class StudentRepositoryImpl implements StudentRepository {
     @Override
     public long countStudentsBySchool(School school) {
         return jpaRepository.countBySchool(school);
+    }
+
+    @Override
+    public List<Student> findByNameContainingIgnoreCase(String query, School school) {
+        StudentCriteria criteria = new StudentCriteria(query, null, null, null);
+        Specification<StudentEntity> spec = buildSpecification(school, criteria);
+        List<StudentEntity> list = jpaRepository.findAll(spec);
+        return list.stream().map(studentMapper::toDomain).toList();
     }
 }

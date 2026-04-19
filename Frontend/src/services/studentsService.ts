@@ -4,7 +4,7 @@ import { mapApiError } from '@/utils/apiErrorMapper'
 import type { ServiceResult } from '@/types/ServiceResult'
 import type { ApiHttpError } from '@/api/ApiHttpError'
 import type { PageRequest, PageResponse, Sort } from '@/types/Pages'
-import type { StudentFilter, StudentResponse } from '@/types/Student'
+import type { StudentFilter, StudentResponse, StudentSuggestionResponse } from '@/types/Student'
 
 function buildStudentsQuery(filter: StudentFilter, page: PageRequest, sort?: Sort): string {
   const queryParams = new URLSearchParams()
@@ -50,6 +50,21 @@ export async function removeStudent(studentId: string): Promise<ServiceResult<vo
     const data = await http<void>(`/parents/${studentId}`, {
       method: 'DELETE'
       
+    })
+
+    return { success: true, data }
+  } catch (error) {
+    return {
+      success: false,
+      error: mapApiError(error)
+    }
+  }
+}
+
+export async function autocompleteStudents(query: string): Promise<ServiceResult<StudentSuggestionResponse[], ApiHttpError>> {
+  try {
+    const data = await http<StudentSuggestionResponse[]>(`/students/autocomplete?query=${encodeURIComponent(query)}`, {
+      method: 'GET'
     })
 
     return { success: true, data }

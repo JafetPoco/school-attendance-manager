@@ -26,11 +26,21 @@
 
           <!-- Acciones rápidas -->
           <div class="flex items-center space-x-3">
-            <button 
-                    class="flex items-center space-x-2 px-4 py-2 text-sm text-slate-600 hover:text-slate-800 hover:bg-white rounded-lg border border-slate-200 transition-all duration-300 hover:scale-105">
-              <QrCode class="w-4 h-4" />
-              <span class="hidden sm:inline">Generar QR</span>
-            </button>
+            <div class="relative group w-fit">
+              <button disabled
+                      class="flex items-center space-x-2 px-4 py-2 text-sm text-slate-600 rounded-lg border border-slate-200 cursor-not-allowed opacity-70">
+                <QrCode class="w-4 h-4" />
+                <span class="hidden sm:inline">Generar QR</span>
+              </button>
+              <span
+                  class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2
+                    pointer-events-none opacity-0 translate-y-1
+                    bg-black text-white text-sm px-2 py-1 rounded whitespace-nowrap
+                    transition-all duration-200 ease-out
+                    group-hover:opacity-100 group-hover:translate-y-0">
+                Próximamente
+              </span>
+            </div>
             <button @click="editStudent" 
                     class="flex items-center space-x-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-all duration-300 transform hover:scale-105">
               <Edit class="w-4 h-4" />

@@ -19,4 +19,5 @@ public interface StudentRepository {
     List<Student> findAllByFilters(School school, StudentCriteria criteria, Sort sort);
     List<Student> findAllWithoutAttendanceOnDate(School school, LocalDate date);
     long countStudentsBySchool(School school);
+    List<Student> findByNameContainingIgnoreCase(String query, School school);
 }
