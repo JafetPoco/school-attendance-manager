@@ -166,7 +166,7 @@ public class AttendanceService {
         return response;
     }
 
-    public AttendanceInfoResponse getAttendanceById(Long id) {
+    public AttendanceInfoResponse getAttendanceById(String id) {
         Optional<Attendance> attendanceOpt = attendanceRepository.findById(id);
         if (attendanceOpt.isEmpty()) {
             throw new ResourceNotFoundException("Asistencia", id.toString());
@@ -202,7 +202,7 @@ public class AttendanceService {
         return saved.size();
     }
 
-    public ContactResponse getContactInfo(Long attendanceId) {
+    public ContactResponse getContactInfo(String attendanceId) {
         ContactResponse response = new ContactResponse();
         Optional<Attendance> attendanceOpt = attendanceRepository.findById(attendanceId);
         if(attendanceOpt.isEmpty()) {

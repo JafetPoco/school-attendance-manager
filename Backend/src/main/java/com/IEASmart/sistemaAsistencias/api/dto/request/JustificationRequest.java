@@ -2,11 +2,11 @@ package com.IEASmart.sistemaAsistencias.api.dto.request;
 
 public class JustificationRequest {
     private String token;
-    private Long idAttendance;
+    private String idAttendance;
     private String description;
     private String urlEvidence;
 
-    public JustificationRequest(String token, Long idAttendance, String description, String urlEvidence) {
+    public JustificationRequest(String token, String idAttendance, String description, String urlEvidence) {
         this.token = token;
         this.idAttendance = idAttendance;
         this.description = description;
@@ -21,11 +21,11 @@ public class JustificationRequest {
         this.token = token;
     }
 
-    public Long getIdAttendance() {
+    public String getIdAttendance() {
         return idAttendance;
     }
 
-    public void setIdAttendance(Long idAttendance) {
+    public void setIdAttendance(String idAttendance) {
         this.idAttendance = idAttendance;
     }
 

@@ -3,18 +3,19 @@ package com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity;
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.AttendanceType;
 import jakarta.persistence.*;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "attendances")
 public class AttendanceEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    private Long id;
+    private String id;
 
     @Column(name = "time", nullable = false)
     private LocalTime time;
@@ -31,7 +32,7 @@ public class AttendanceEntity {
 
     public AttendanceEntity() {}
 
-    public AttendanceEntity(Long id, LocalTime time, LocalDate date, AttendanceType attendanceType, StudentEntity student) {
+    public AttendanceEntity(String id, LocalTime time, LocalDate date, AttendanceType attendanceType, StudentEntity student) {
         this.id = id;
         this.time = time;
         this.date = date;
@@ -39,11 +40,21 @@ public class AttendanceEntity {
         this.student = student;
     }
 
-    public Long getId() {
+    @PrePersist
+    public void generarId() {
+        if (id == null) {
+            id = UUID.randomUUID()
+                    .toString()
+                    .replace("-", "")
+                    .substring(0,10);
+        }
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

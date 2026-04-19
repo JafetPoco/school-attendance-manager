@@ -40,7 +40,7 @@ public class TokenRepositoryImpl implements TokenRepository {
     }
 
     @Override
-    public Optional<Token> findByAttendanceIdAndUsedFalse(Long attendanceId) {
+    public Optional<Token> findByAttendanceIdAndUsedFalse(String attendanceId) {
         return tokenJpaRepository.findByAttendanceIdAndUsedFalse(attendanceId).map(mapper::toDomain);
     }
 }

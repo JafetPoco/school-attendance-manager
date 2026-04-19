@@ -1,21 +1,21 @@
 package com.IEASmart.sistemaAsistencias.api.dto.request;
 
 public class JustificationProfessorRequest {
-    private Long idAttendance;
+    private String idAttendance;
     private String description;
 
     public JustificationProfessorRequest() {}
 
-    public JustificationProfessorRequest(Long idAttendance, String description) {
+    public JustificationProfessorRequest(String idAttendance, String description) {
         this.idAttendance = idAttendance;
         this.description = description;
     }
 
-    public Long getIdAttendance() {
+    public String getIdAttendance() {
         return idAttendance;
     }
 
-    public void setIdAttendance(Long idAttendance) {
+    public void setIdAttendance(String idAttendance) {
         this.idAttendance = idAttendance;
     }
 

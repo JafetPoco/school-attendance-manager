@@ -32,7 +32,7 @@ public class TokenService {
         this.schoolPolicyRepository = schoolPolicyRepository;
     }
 
-    public Token generateToken(Long attendanceId, School school) {
+    public Token generateToken(String attendanceId, School school) {
         Attendance attendance = attendanceRepository.findById(attendanceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Asistencia no encontrada"));
 
@@ -61,7 +61,7 @@ public class TokenService {
         return token;
     }
 
-    public Long getAttendanceIdFromToken(String token) {
+    public String getAttendanceIdFromToken(String token) {
         Token tokenDomain = tokenRepository.findByTokenAndUsedFalse(token)
                 .orElseThrow(() -> new ConflictException("Token inválido o ya utilizado", "INVALID_TOKEN"));
 

@@ -11,7 +11,7 @@ public class TokenEntity {
     private String token;
 
     @Column(name = "attendance_id")
-    private Long attendanceId;
+    private String attendanceId;
 
     @Column(name = "expiry_date")
     private LocalDateTime expiryDate;
@@ -24,7 +24,7 @@ public class TokenEntity {
 
     public TokenEntity() {}
 
-    public TokenEntity(String token, Long attendanceId, LocalDateTime expiryDate, LocalDateTime createdAt, boolean used) {
+    public TokenEntity(String token, String attendanceId, LocalDateTime expiryDate, LocalDateTime createdAt, boolean used) {
         this.token = token;
         this.attendanceId = attendanceId;
         this.expiryDate = expiryDate;
@@ -40,11 +40,11 @@ public class TokenEntity {
         this.token = token;
     }
 
-    public Long getAttendanceId() {
+    public String getAttendanceId() {
         return attendanceId;
     }
 
-    public void setAttendanceId(Long attendanceId) {
+    public void setAttendanceId(String attendanceId) {
         this.attendanceId = attendanceId;
     }
 

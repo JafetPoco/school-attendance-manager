@@ -31,7 +31,7 @@ public class JustificationController {
 
     @GetMapping("/public/{token}")
     public ResponseEntity<AttendanceInfoResponse> getJustificationForm(@PathVariable String token) {
-        Long attendanceId = tokenService.getAttendanceIdFromToken(token);
+        String attendanceId = tokenService.getAttendanceIdFromToken(token);
         return ResponseEntity.ok(attendanceService.getAttendanceById(attendanceId));
     }
 

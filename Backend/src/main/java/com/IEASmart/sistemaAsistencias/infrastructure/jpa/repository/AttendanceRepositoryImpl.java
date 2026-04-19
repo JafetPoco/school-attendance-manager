@@ -84,7 +84,7 @@ public class AttendanceRepositoryImpl implements AttendanceRepository {
     }
 
     @Override
-    public Optional<Attendance> findById(Long id) {
+    public Optional<Attendance> findById(String id) {
         return attendanceJpaRepository.findById(id).map(mapper::toDomain);
     }
 }

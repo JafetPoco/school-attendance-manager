@@ -7,11 +7,11 @@ public class AttendanceResponse {
     private String studentSecondLastName;
     private String attendanceType;
     private String date;
-    private Long idAttendance;
+    private String idAttendance;
 
     public AttendanceResponse() {}
 
-    public AttendanceResponse(String dni, String studentName, String studentFirstLastName, String studentSecondLastName, String attendanceType, String date, Long idAttendance) {
+    public AttendanceResponse(String dni, String studentName, String studentFirstLastName, String studentSecondLastName, String attendanceType, String date, String idAttendance) {
         this.dni = dni;
         this.studentName = studentName;
         this.studentFirstLastName = studentFirstLastName;
@@ -69,11 +69,11 @@ public class AttendanceResponse {
         this.date = date;
     }
 
-    public Long getIdAttendance() {
+    public String getIdAttendance() {
         return idAttendance;
     }
 
-    public void setIdAttendance(Long idAttendance) {
+    public void setIdAttendance(String idAttendance) {
         this.idAttendance = idAttendance;
     }
 }

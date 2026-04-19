@@ -82,8 +82,8 @@ public class JustificationService {
     /**
      * Valida que el token sea válido y corresponda a la asistencia
      */
-    private void validateToken(String token, Long attendanceId) {
-        Long attendanceIdFromToken = tokenService.getAttendanceIdFromToken(token);
+    private void validateToken(String token, String attendanceId) {
+        String attendanceIdFromToken = tokenService.getAttendanceIdFromToken(token);
 
         if (!attendanceIdFromToken.equals(attendanceId)) {
             throw new SecurityException("Token inválido para esta asistencia");
@@ -93,7 +93,7 @@ public class JustificationService {
     /**
      * Obtiene y valida que la asistencia exista y esté en estado FALTA
      */
-    private Attendance getAndValidateAttendance(Long attendanceId) {
+    private Attendance getAndValidateAttendance(String attendanceId) {
         Optional<Attendance> attendanceOpt = attendanceRepository.findById(attendanceId);
         if(attendanceOpt.isEmpty()){
             throw new ResourceNotFoundException("Asistencia");
@@ -109,7 +109,7 @@ public class JustificationService {
     /**
      * Verifica que no exista una justificación pendiente o aprobada
      */
-    private void validateNoExistingJustification(Long attendanceId) {
+    private void validateNoExistingJustification(String attendanceId) {
         Optional<Justification> existingJustification = justificationRepository.findByAttendanceId(attendanceId);
 
         if (existingJustification.isPresent()) {

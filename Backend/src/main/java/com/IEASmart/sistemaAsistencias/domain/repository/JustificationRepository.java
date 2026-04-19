@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface JustificationRepository {
     Optional<Justification> findById(Long id);
-    Optional<Justification> findByAttendanceId(Long attendanceId);
+    Optional<Justification> findByAttendanceId(String attendanceId);
     List<Justification> findAllByStatus(JustificationStatus status, School school);
     Page<Justification> findAllByFilter(School school, JustificationStatus justificationStatus, LocalDate startDate, LocalDate endDate, Pageable pageable);
     Justification save(Justification justification);

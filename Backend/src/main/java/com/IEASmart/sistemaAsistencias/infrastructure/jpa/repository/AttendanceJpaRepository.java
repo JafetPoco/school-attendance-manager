@@ -14,7 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-public interface AttendanceJpaRepository extends JpaRepository<AttendanceEntity, Long>, JpaSpecificationExecutor<AttendanceEntity> {
+public interface AttendanceJpaRepository extends JpaRepository<AttendanceEntity, String>, JpaSpecificationExecutor<AttendanceEntity> {
     Optional<AttendanceEntity> findByStudent_DniAndDate(String student, LocalDate date);
     List<AttendanceEntity> findAllByStudent_SchoolAndStudent_SectionAndDateBetween(School school, Section section, LocalDate startDate, LocalDate endDate);
     long countByStudent_DniAndAttendanceTypeAndDateBetween(String studentDni, AttendanceType type, LocalDate startDate, LocalDate endDate);

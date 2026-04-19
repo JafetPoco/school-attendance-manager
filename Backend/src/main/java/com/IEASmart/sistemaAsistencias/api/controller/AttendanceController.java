@@ -64,7 +64,7 @@ public class AttendanceController {
     }
 
     @GetMapping("/contact/{attendanceId}")
-    public ResponseEntity<ContactResponse> getContactInfo(@PathVariable Long attendanceId) {
+    public ResponseEntity<ContactResponse> getContactInfo(@PathVariable String attendanceId) {
         ContactResponse response = attendanceService.getContactInfo(attendanceId);
         return ResponseEntity.ok(response);
     }

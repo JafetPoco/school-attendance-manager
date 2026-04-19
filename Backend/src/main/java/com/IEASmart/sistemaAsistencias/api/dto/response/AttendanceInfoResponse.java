@@ -3,25 +3,25 @@ package com.IEASmart.sistemaAsistencias.api.dto.response;
 import java.time.LocalDate;
 
 public class AttendanceInfoResponse {
-    Long id;
+    String id;
     String fullName;
     LocalDate date;
     String grade;
 
     public AttendanceInfoResponse() {}
 
-    public AttendanceInfoResponse(Long id, String fullName, LocalDate date, String grade) {
+    public AttendanceInfoResponse(String id, String fullName, LocalDate date, String grade) {
         this.id = id;
         this.fullName = fullName;
         this.date = date;
         this.grade = grade;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

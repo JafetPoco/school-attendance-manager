@@ -32,7 +32,7 @@ public class JustificationRepositoryImpl implements JustificationRepository {
     }
 
     @Override
-    public Optional<Justification> findByAttendanceId(Long attendanceId) {
+    public Optional<Justification> findByAttendanceId(String attendanceId) {
         return jpaRepository.findByAttendance_Id(attendanceId).map(mapper::toDomain);
     }
 

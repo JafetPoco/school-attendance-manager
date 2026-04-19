@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class Attendance {
-    private Long id;
+    private String id;
     private LocalTime time;
     private LocalDate date;
     private AttendanceType attendanceType;
@@ -14,7 +14,7 @@ public class Attendance {
 
     public Attendance() {}
 
-    public Attendance(Long id, LocalTime time, LocalDate date, AttendanceType attendanceType, Student student) {
+    public Attendance(String id, LocalTime time, LocalDate date, AttendanceType attendanceType, Student student) {
         this.id = id;
         this.time = time;
         this.date = date;
@@ -22,11 +22,11 @@ public class Attendance {
         this.student = student;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

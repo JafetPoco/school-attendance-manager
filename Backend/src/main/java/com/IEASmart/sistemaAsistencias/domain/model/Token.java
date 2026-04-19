@@ -4,12 +4,12 @@ import java.time.LocalDateTime;
 
 public class Token {
     private String token;
-    private Long attendanceId;
+    private String attendanceId;
     private LocalDateTime expiryDate;
     private LocalDateTime createdAt;
     private boolean used;
 
-    public Token(String token, Long attendanceId, LocalDateTime expiryDate, LocalDateTime createdAt, boolean used) {
+    public Token(String token, String attendanceId, LocalDateTime expiryDate, LocalDateTime createdAt, boolean used) {
         this.token = token;
         this.attendanceId = attendanceId;
         this.expiryDate = expiryDate;
@@ -27,11 +27,11 @@ public class Token {
         this.token = token;
     }
 
-    public Long getAttendanceId() {
+    public String getAttendanceId() {
         return attendanceId;
     }
 
-    public void setAttendanceId(Long attendanceId) {
+    public void setAttendanceId(String attendanceId) {
         this.attendanceId = attendanceId;
     }
 

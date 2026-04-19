@@ -22,5 +22,5 @@ public interface AttendanceRepository {
     long countByStudentDniAndAttendanceTypeAndDateBetween(String dni, AttendanceType type, LocalDate startDate, LocalDate endDate);
     List<AttendanceStats> getAttendanceStats(School school, LocalDate date);
     List<Attendance> findByStudentAndDateBetween(String dni, LocalDate startDate, LocalDate endDate);
-    Optional<Attendance> findById(Long id);
+    Optional<Attendance> findById(String id);
 }
