@@ -31,14 +31,11 @@
             <h3 class="text-sm font-medium text-red-800">Error de configuración</h3>
             <p class="text-xs text-red-600 mt-1">{{ errorMessage }}</p>
           </div>
-          <button @click="errorMessage = ''" class="text-red-400 hover:text-red-600">
-            <X class="w-4 h-4" />
-          </button>
         </div>
       </transition>
 
       <!-- Vista previa de la configuración actual -->
-      <div class="mb-8 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div v-if="!loading && !errorMessage" class="mb-8 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
           <div class="flex items-center space-x-3">
             <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
@@ -101,7 +98,7 @@
           <!-- Días máximos para justificar -->
           <div class="space-y-2">
             <div class="flex items-center justify-between">
-              <label class="block text-sm font-medium text-slate-700">
+              <label for="daysJustify" class="block text-sm font-medium text-slate-700">
                 Días máximos para justificar falta
               </label>
               <span class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-full">
@@ -127,7 +124,7 @@
           <!-- Hora límite de tardanza -->
           <div class="space-y-2">
             <div class="flex items-center justify-between">
-              <label class="block text-sm font-medium text-slate-700">
+              <label for="lateTime" class="block text-sm font-medium text-slate-700">
                 Hora a partir de la cual se considera tarde
               </label>
               <span class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-full">
@@ -187,7 +184,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import Header from '@/components/Header.vue'
-import { updateSchoolPolicies, getSchoolPolicy } from '@/services/schoolPolicyService'
+import { updateSchoolPolicies, getSchoolPolicy, addSchoolPolicies } from '@/services/schoolPolicyService'
 import type { SchoolPolicyRequest, SchoolPolicyResponse } from '@/types/SchoolPolicy'
 import {
   Settings,
@@ -291,6 +288,28 @@ const saveChanges = async () => {
   }
 }
 
+const createInicialConfig = async () => {
+  loading.value = true
+  errorMessage.value = ''
+
+  try {
+    const response = await addSchoolPolicies({
+      justificationExpirationDays: 1,
+      lateAttendaceTime: '08:00'
+    })
+
+    if (response.success) {
+      currentConfig.value = response.data
+    } else {
+      errorMessage.value = response.error.message
+    }
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'Error de conexión'
+  } finally {
+    loading.value = false
+  }
+}
+
 // Cargar configuración actual
 const loadCurrentConfig = async () => {
   loading.value = true
@@ -301,9 +320,15 @@ const loadCurrentConfig = async () => {
 
     if (response.success) {
       currentConfig.value = response.data
-    } else {
-      errorMessage.value = response.error.message
+      return
     }
+
+    if (response.error.status === 404) {
+      await createInicialConfig()
+      return
+    }
+
+    errorMessage.value = response.error.message
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : 'Error de conexión'
   } finally {
