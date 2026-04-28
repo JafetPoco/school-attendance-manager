@@ -15,6 +15,7 @@ public interface JustificationRepository {
     Optional<Justification> findByAttendanceId(String attendanceId);
     List<Justification> findAllByStatus(JustificationStatus status, School school);
     Page<Justification> findAllByFilter(School school, JustificationStatus justificationStatus, LocalDate startDate, LocalDate endDate, Pageable pageable);
+    Page<Justification> findAllByFilter(School school, JustificationStatus justificationStatus, LocalDate date, String name, Pageable pageable);
     Justification save(Justification justification);
     long countByStatus(JustificationStatus status, School school);
 }

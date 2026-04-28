@@ -53,6 +53,18 @@ public class JustificationRepositoryImpl implements JustificationRepository {
     }
 
     @Override
+    public Page<Justification> findAllByFilter(School school, JustificationStatus justificationStatus, LocalDate date, String name, Pageable pageable){
+        Specification<JustificationEntity> spec = Specification
+                .where(JustificationSpecifications.hasSchool(school))
+                .and(JustificationSpecifications.hasJustificationStatus(justificationStatus))
+                .and(JustificationSpecifications.hasDate(date))
+                .and(JustificationSpecifications.hasName(name));
+
+        Page<JustificationEntity> page = jpaRepository.findAll(spec, pageable);
+        return page.map(mapper::toDomain);
+    }
+
+    @Override
     public Justification save(Justification justification) {
         return mapper.toDomain(jpaRepository.save(mapper.toEntity(justification)));
     }

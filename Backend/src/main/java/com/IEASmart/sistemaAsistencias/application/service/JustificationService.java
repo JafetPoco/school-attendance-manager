@@ -197,5 +197,24 @@ public class JustificationService {
         justification.setStatus(JustificationStatus.RECHAZADA);
         justificationRepository.save(justification);
         return justificationApiMapper.toResponse(justification);
-     }
+    }
+
+    public PageResponse<JustificationResponse> getAllJustifications(School school, LocalDate dateFilter, String nameFilter, Pageable pageable){
+        String name = (nameFilter != null && !nameFilter.isBlank()) ? nameFilter.trim() : null;
+
+        Page<Justification> justificationPage = justificationRepository.findAllByFilter(school, JustificationStatus.ACEPTADA, dateFilter, name, pageable);
+        List<JustificationResponse> content = justificationPage
+                .getContent()
+                .stream()
+                .map(justificationApiMapper::toResponse)
+                .toList();
+
+        return new PageResponse<JustificationResponse>(
+                content,
+                justificationPage.getTotalElements(),
+                justificationPage.getTotalPages(),
+                justificationPage.getNumber(),
+                justificationPage.getSize()
+        );
+    }
 }

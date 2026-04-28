@@ -22,3 +22,8 @@ export interface JustificationResponse {
 export interface JustificationFilter {
     dateFilter?: 'TODAY' | 'WEEK' | 'MONTH' 
 }
+
+export interface AceptJustificationFilter {
+    date: string
+    name: string
+}

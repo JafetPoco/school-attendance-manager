@@ -14,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @RestController
 @RequestMapping("/api/justifications")
 public class JustificationController {
@@ -33,6 +35,16 @@ public class JustificationController {
     public ResponseEntity<AttendanceInfoResponse> getJustificationForm(@PathVariable String token) {
         String attendanceId = tokenService.getAttendanceIdFromToken(token);
         return ResponseEntity.ok(attendanceService.getAttendanceById(attendanceId));
+    }
+
+    @GetMapping()
+    public PageResponse<JustificationResponse> getJustifications(
+            @RequestParam(required = false) LocalDate date,
+            @RequestParam(required = false) String name,
+            Pageable pageable
+    ) {
+        School school = authorizationService.getUserSchool();
+        return justificationService.getAllJustifications(school, date, name, pageable);
     }
 
     @PostMapping("/public/submit")

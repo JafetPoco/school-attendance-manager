@@ -83,7 +83,7 @@ const router = createRouter({
     {
       path: '/pendingJustifications',
       name: 'pendingJustifications',
-      component: () => import('@/views/PendingJustifications.vue'),
+      component: () => import('@/views/JustificationsView.vue'),
       meta: { requiresAuth: true}
     },
     {
