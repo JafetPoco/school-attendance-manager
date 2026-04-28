@@ -21,9 +21,28 @@ async function safeParseJson(response: Response): Promise<unknown> {
   }
 }
 
+async function parseSuccessfulResponse<T>(
+  response: Response,
+  responseType: 'json' | 'blob' | 'text'
+): Promise<T> {
+  if (response.status === 204) {
+    return null as T
+  }
+
+  if (responseType === 'blob') {
+    return response.blob() as Promise<T>
+  }
+
+  if (responseType === 'text') {
+    return response.text() as Promise<T>
+  }
+
+  return response.json() as Promise<T>
+}
+
 export async function http<T>(
   endpoint: string,
-  options: RequestInit = {},
+  options: (RequestInit & { responseType?: 'json' | 'blob' | 'text' }) = {},
   timeout = 10000
 ): Promise<T> {
   const controller = new AbortController()
@@ -39,11 +58,13 @@ export async function http<T>(
       defaultHeaders['Content-Type'] = 'application/json'
     }
 
+    const { responseType = 'json', ...requestOptions } = options
+
     const response = await fetch(`${BASE_URL}${endpoint}`, {
       credentials: 'include',
       headers: defaultHeaders,
       signal: controller.signal,
-      ...options
+      ...requestOptions
     })
 
     clearTimeout(timeoutId)
@@ -66,12 +87,7 @@ export async function http<T>(
       )
     }
 
-    // Verificar si hay contenido antes de parsear JSON
-    if (response.status === 204) {
-      return null as T
-    }
-
-    return response.json() as Promise<T>
+    return parseSuccessfulResponse<T>(response, responseType)
   } catch (error) {
     clearTimeout(timeoutId)
     

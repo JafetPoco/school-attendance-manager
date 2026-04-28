@@ -69,13 +69,10 @@
 
       <!-- Footer con acciones rápidas (opcional) -->
       <div class="mt-6 flex justify-end space-x-3">
-        <button class="flex items-center space-x-2 px-4 py-2 text-sm text-slate-600 hover:text-slate-800 hover:bg-white rounded-lg transition-all duration-300">
+        <button class="flex items-center space-x-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-all duration-300 transform hover:scale-105 shadow-md"
+                @click="exportReport">
           <Download class="w-4 h-4" />
           <span>Exportar reporte</span>
-        </button>
-        <button class="flex items-center space-x-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-all duration-300 transform hover:scale-105 shadow-md">
-          <Printer class="w-4 h-4" />
-          <span>Imprimir</span>
         </button>
       </div>
     </div>
@@ -146,13 +143,12 @@ import {
   Info,
   Clock,
   Download,
-  Printer,
   CalendarClock,
   Check,
   X,
   MessageCircleX
 } from 'lucide-vue-next'
-import { createMissedAttendance } from '@/services/attendancesService'
+import { createMissedAttendance, getMonthlyExcel } from '@/services/attendancesService'
 
 const monthView = ref(true)
 const errorMessage = ref('')
@@ -169,6 +165,36 @@ const currentDate = computed(() => {
     day: 'numeric'
   })
 })
+
+const exportReport = async () => {
+  errorMessage.value = ''
+
+  try {
+    const now = new Date()
+    const month = now.getMonth() + 1
+    const year = now.getFullYear()
+
+    const response = await getMonthlyExcel(month, year)
+
+    if (response.success) {
+      const downloadUrl = URL.createObjectURL(response.data)
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.download = `reporte-asistencias-${year}-${String(month).padStart(2, '0')}.xlsx`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(downloadUrl)
+      return
+    }
+
+    if (!response.success) {
+      errorMessage.value = response.error.message
+    }
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'Error de conexión'
+  }
+}
 
 const closeAttendance = async () => {
   errorMessage.value = ''

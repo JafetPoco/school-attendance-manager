@@ -7,10 +7,14 @@ import com.IEASmart.sistemaAsistencias.api.dto.response.*;
 import com.IEASmart.sistemaAsistencias.application.service.AttendanceService;
 import com.IEASmart.sistemaAsistencias.application.service.AuthorizationService;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RestController
@@ -47,6 +51,40 @@ public class AttendanceController {
         School school = authorizationService.getUserSchool();
         List<MonthlyAttendanceResponse> response = attendanceService.getMonthlyAttendance(school, filter);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/monthly/excel")
+    public ResponseEntity<byte[]> exportAllSectionsMonthlyExcel(
+            @RequestParam int month,
+            @RequestParam int year) {
+
+        // Validaciones básicas
+        if (month < 1 || month > 12 || year <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        School school = authorizationService.getUserSchool();
+        byte[] excelBytes;
+        try {
+            excelBytes = attendanceService.getMonthlyAttendanceExcelAllSections(school, month, year);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+
+        if (excelBytes == null || excelBytes.length == 0) {
+            return ResponseEntity.noContent().build();
+        }
+
+        String safeSchool = school.toString().replaceAll("[^a-zA-Z0-9-_\\. ]", "_");
+        String filename = String.format("asistencia_colegio_%s_%d_%02d.xlsx", safeSchool, year, month);
+        String encoded = URLEncoder.encode(filename, StandardCharsets.UTF_8);
+        String contentDisposition = "attachment; filename=\"" + filename + "\"; filename*=UTF-8''" + encoded;
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .contentLength(excelBytes.length)
+                .body(excelBytes);
     }
 
     @GetMapping("/{id}")

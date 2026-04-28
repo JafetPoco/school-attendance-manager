@@ -88,3 +88,23 @@ export async function contactStudent(id: number): Promise<ServiceResult<ContactR
     }
   }
 }
+
+export async function getMonthlyExcel(month: number, year: number): Promise<ServiceResult<Blob, ApiHttpError>> {
+  try {
+    const queryParams = new URLSearchParams({
+      month: String(month),
+      year: String(year),
+    })
+
+    const data = await http<Blob>(`/attendances/monthly/excel?${queryParams.toString()}`, {
+      method: 'GET',
+      responseType: 'blob',
+    })  
+    return { success: true, data }
+  } catch (error) {
+    return {
+      success: false,
+      error: mapApiError(error)
+    }
+  }
+}
