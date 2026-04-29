@@ -1,6 +1,6 @@
 import type { ApiHttpError } from '@/api/ApiHttpError'
 import { http } from '@/api/http'
-import type { AttendanceStats } from '@/types/Attendance'
+import type { DashboardResponse } from '@/types/Attendance'
 import type { AuthUser } from '@/types/AuthUser'
 import type { ServiceResult } from '@/types/ServiceResult'
 import { mapApiError } from '@/utils/apiErrorMapper'
@@ -15,9 +15,9 @@ export async function logout(): Promise<void> {
   })
 }
 
-export async function attendancesStats(): Promise<ServiceResult<AttendanceStats, ApiHttpError>> {
+export async function attendancesStats(): Promise<ServiceResult<DashboardResponse, ApiHttpError>> {
   try {
-    const data = await http<AttendanceStats>(`/attendances/info`, {
+    const data = await http<DashboardResponse>(`/dashboard`, {
       method: 'GET'
     })
 

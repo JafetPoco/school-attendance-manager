@@ -106,12 +106,4 @@ public class AttendanceController {
         ContactResponse response = attendanceService.getContactInfo(attendanceId);
         return ResponseEntity.ok(response);
     }
-
-    @GetMapping("/info")
-    public ResponseEntity<AttendanceTodayDashboard> getTodayAttendanceInfo() {
-        School school = authorizationService.getUserSchool();
-        AttendanceTodayDashboard response = attendanceService.getTodayAttendanceInfo(school);
-        return ResponseEntity.ok(response);
-    }
-
 }

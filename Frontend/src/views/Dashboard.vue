@@ -5,10 +5,10 @@
       <div class="p-6 border-b border-slate-200">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center shadow-md">
-            <img src="/logo-dark.svg" alt="Logo" class="w-6 h-6" />
+            <GraduationCap class="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 class="font-bold text-slate-800">{{ auth.user?.schoolName }}</h2>
+            <h2 class="font-bold text-slate-800">{{ auth.user?.schoolName || 'Colegio' }}</h2>
             <p class="text-xs text-slate-500">Portal Docente</p>
           </div>
         </div>
@@ -31,7 +31,6 @@
           <UserCheck class="w-5 h-5" />
           <span class="font-medium text-sm">Ver Asistencias</span>
         </router-link>
-        
         
         <router-link 
           to="/markAttendance" 
@@ -68,16 +67,22 @@
       
       <div class="absolute bottom-0 left-0 right-0 p-6 border-t border-slate-200 bg-white">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-slate-200 rounded-xl flex items-center justify-center">
-            <img class="h-10 w-10 rounded-xl border-2 border-slate-200 group-hover:border-slate-400 transition-all duration-300" 
-                :src="auth.user?.urlPicture" 
-                :alt="auth.user?.names" @error="useFallback">
+          <div class="w-10 h-10 bg-slate-200 rounded-xl flex items-center justify-center overflow-hidden">
+            <img 
+              class="h-10 w-10 object-cover" 
+              :src="getUserAvatar()" 
+              :alt="getUserFullName()"
+              @error="handleImageError"
+            />
           </div>
           <div class="flex-1">
-            <p class="text-sm font-medium text-slate-800">{{ auth.user?.names + ' ' + auth.user?.firstLastName + ' ' +auth.user?.secondLastName}}</p>
-            <p class="text-xs text-slate-500">{{ auth.user?.userType }}</p>
+            <p class="text-sm font-medium text-slate-800">{{ getUserFullName() }}</p>
+            <p class="text-xs text-slate-500">{{ getUserRole() }}</p>
           </div>
-          <LogOut class="w-5 h-5 text-slate-400 cursor-pointer hover:text-red-500 transition-colors" />
+          <LogOut 
+            class="w-5 h-5 text-slate-400 cursor-pointer hover:text-red-500 transition-colors" 
+            @click="handleLogout"
+          />
         </div>
       </div>
     </aside>
@@ -89,7 +94,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 class="text-2xl font-bold text-slate-800">Dashboard</h1>
-            <p class="text-slate-500 text-sm mt-1">Bienvenida de vuelta, {{ auth.user?.names }}</p>
+            <p class="text-slate-500 text-sm mt-1">Bienvenido de vuelta, {{ getUserFirstName() }}</p>
           </div>
         </div>
       </div>
@@ -108,6 +113,9 @@
             <h3 class="text-sm font-medium text-red-800">Error al cargar los datos</h3>
             <p class="text-xs text-red-600 mt-1">{{ errorMessage }}</p>
           </div>
+          <button @click="loadStats" class="text-red-400 hover:text-red-600">
+            <RotateCw class="w-4 h-4" />
+          </button>
         </div>
 
         <!-- Tarjetas KPI -->
@@ -122,7 +130,7 @@
             </div>
             <p class="text-3xl font-bold text-slate-800">{{ presentPorcent }}%</p>
             <p class="text-slate-500 text-sm mt-1">Asistencia hoy</p>
-            <p class="text-xs text-slate-400 mt-2">{{ attendancesStatsModel?.totalPresences }} de {{ attendancesStatsModel?.totalAttendances }} presentes</p>
+            <p class="text-xs text-slate-400 mt-2">{{ todayStats?.totalPresences || 0 }} de {{ dashboardStats?.totalStudents || 0 }} presentes</p>
           </div>
 
           <!-- Tardes registradas -->
@@ -133,7 +141,7 @@
               </div>
               <AlertCircle class="w-5 h-5 text-amber-500" />
             </div>
-            <p class="text-3xl font-bold text-slate-800">{{ attendancesStatsModel?.totalLate || 0 }}</p>
+            <p class="text-3xl font-bold text-slate-800">{{ todayStats?.totalLate || 0 }}</p>
             <p class="text-slate-500 text-sm mt-1">Tardes registradas</p>
           </div>
 
@@ -145,7 +153,7 @@
               </div>
               <AlertCircle class="w-5 h-5 text-red-500" />
             </div>
-            <p class="text-3xl font-bold text-slate-800">{{ attendancesStatsModel?.totalAbsences || 0 }}</p>
+            <p class="text-3xl font-bold text-slate-800">{{ todayStats?.totalAbsences || 0 }}</p>
             <p class="text-slate-500 text-sm mt-1">Ausencias sin justificar</p>
           </div>
 
@@ -157,7 +165,7 @@
               </div>
               <ChevronRight class="w-5 h-5 text-slate-400 group-hover:translate-x-1 transition-transform" />
             </div>
-            <p class="text-3xl font-bold text-slate-800">{{ attendancesStatsModel?.totalPendingJustifications || 0 }}</p>
+            <p class="text-3xl font-bold text-slate-800">{{ todayStats?.totalPendingJustification || 0 }}</p>
             <p class="text-slate-500 text-sm mt-1">Justificaciones pendientes</p>
           </div>
         </div>
@@ -170,10 +178,6 @@
               <div>
                 <h3 class="font-semibold text-slate-800">Evolución de asistencia</h3>
                 <p class="text-xs text-slate-500 mt-1">Última semana</p>
-              </div>
-              <div class="flex gap-2">
-                <button class="text-xs px-2 py-1 rounded-lg bg-emerald-50 text-emerald-600">Presentes</button>
-                <button class="text-xs px-2 py-1 rounded-lg text-slate-600 hover:bg-slate-50">Tardes</button>
               </div>
             </div>
             <div ref="weeklyChartRef" class="w-full h-80"></div>
@@ -188,46 +192,30 @@
               </div>
               <Medal class="w-5 h-5 text-amber-500" />
             </div>
-            <div class="space-y-3">
-              <div v-for="(student, index) in topLateStudents" :key="student.name" 
+            <div v-if="studentsTopLate && studentsTopLate.length > 0" class="space-y-3">
+              <div v-for="(student, index) in studentsTopLate" :key="student.fullName" 
                    class="flex items-center justify-between p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
                 <div class="flex items-center gap-3">
                   <div class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm" 
-                       :class="index === 0 ? 'bg-amber-100 text-amber-700' : index === 1 ? 'bg-slate-300 text-slate-700' : 'bg-orange-100 text-orange-700'">
+                       :class="index === 0 ? 'bg-amber-100 text-amber-700' : index === 1 ? 'bg-slate-300 text-slate-700' : index === 2 ? 'bg-orange-100 text-orange-700' : 'bg-slate-200 text-slate-600'">
                     {{ index + 1 }}
                   </div>
                   <div>
-                    <p class="font-medium text-slate-800">{{ student.name }}</p>
-                    <p class="text-xs text-slate-500">{{ student.group }}</p>
+                    <p class="font-medium text-slate-800">{{ student.fullName }}</p>
+                    <p class="text-xs text-slate-500">{{ student.grade || 'Sin grado' }}</p>
                   </div>
                 </div>
                 <div class="flex items-center gap-4">
                   <div class="text-right">
-                    <p class="text-lg font-bold text-amber-600">{{ student.lates }}</p>
+                    <p class="text-lg font-bold text-amber-600">{{ student.totalLate }}</p>
                     <p class="text-xs text-slate-500">tardes</p>
                   </div>
-                  <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">Contactar</button>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        <!-- Sección adicional: Resumen de justificaciones -->
-        <div class="grid grid-cols-1 gap-6">
-          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-            <div class="flex justify-between items-center mb-6">
-              <div>
-                <h3 class="font-semibold text-slate-800">Resumen de justificaciones</h3>
-                <p class="text-xs text-slate-500 mt-1">Distribución de justificaciones del mes</p>
-              </div>
-              <div class="flex gap-2">
-                <span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full">Aprobadas: {{ approvedJustifications }}</span>
-                <span class="px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-full">Pendientes: {{ attendancesStatsModel?.totalPendingJustifications || 0 }}</span>
-                <span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full">Rechazadas: 2</span>
-              </div>
+            <div v-else class="text-center py-8">
+              <p class="text-sm text-slate-500">No hay datos de tardes registradas</p>
             </div>
-            <div ref="justificationsChartRef" class="w-full h-80"></div>
           </div>
         </div>
       </div>
@@ -236,7 +224,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch, nextTick } from 'vue'
+import { ref, onMounted, computed, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import * as echarts from 'echarts'
 import {
@@ -254,61 +242,122 @@ import {
   TrendingUp,
   AlertCircle,
   Medal,
-  Loader2
+  Loader2,
+  RotateCw,
+  GraduationCap
 } from 'lucide-vue-next'
-import type { AttendanceStats } from '@/types/Attendance'
+import type { DashboardResponse, StudentsTopLate } from '@/types/Attendance'
 import { attendancesStats } from '@/services/dashBoardService'
 import { useAuthStore } from '@/stores/authStore'
 
 const router = useRouter()
+const auth = useAuthStore()
 
 // Estado
-const pendingJustifications = ref(4)
-const attendancesStatsModel = ref<AttendanceStats | null>(null)
+const dashboardStats = ref<DashboardResponse | null>(null)
+const studentsTopLate = ref<StudentsTopLate[]>([])
 const loading = ref(false)
 const errorMessage = ref('')
-const approvedJustifications = ref(12)
 
 // Referencias para gráficos
 const weeklyChartRef = ref<HTMLElement | null>(null)
-const justificationsChartRef = ref<HTMLElement | null>(null)
 let weeklyChart: echarts.ECharts | null = null
-let justificationsChart: echarts.ECharts | null = null
-
-const auth = useAuthStore()
 
 // Computed
 const presentPorcent = computed(() => {
-  if (!attendancesStatsModel.value) return 0
-  const { totalAttendances, totalPresences } = attendancesStatsModel.value
-  return totalAttendances > 0 ? Math.round((totalPresences / totalAttendances) * 100) : 0
+  if (!dashboardStats.value || dashboardStats.value.totalStudents === 0) return 0
+  const totalStudents = dashboardStats.value.totalStudents
+  const totalPresences = dashboardStats.value.statisticsToday?.totalPresences || 0
+  return Math.round((totalPresences / totalStudents) * 100)
 })
 
-// Datos
-const topLateStudents = ref([
-  { name: 'Carlos López', group: '3°A - Sección A', lates: 5 },
-  { name: 'Ana Martínez', group: '3°B - Sección B', lates: 4 },
-  { name: 'Luis Fernández', group: '3°A - Sección A', lates: 3 },
-  { name: 'Sofía Ramírez', group: '4°C - Sección C', lates: 3 }
-])
+const todayStats = computed(() => {
+  return dashboardStats.value?.statisticsToday || null
+})
 
-const useFallback = (event: Event) => {
-  const img = (event.currentTarget ?? event.target) as HTMLImageElement | null
-  const username = auth.user?.names ?? 'Usuario'
-  const name = username.replace(/\s+/g, '+')
-  if (img) {
-    img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=334155&color=fff&size=128`
+const weekPresents = computed(() => {
+  if (!dashboardStats.value?.weekSumary) return [0, 0, 0, 0, 0]
+  const values = [0, 0, 0, 0, 0]
+  dashboardStats.value.weekSumary.forEach(day => {
+    const total = day.attendances + day.absences + day.late
+    if (total > 0 && day.day >= 1 && day.day <= 5) {
+      values[day.day - 1] = (day.attendances / total) * 100
+    }
+  })
+  return values
+})
+
+const weekLates = computed(() => {
+  if (!dashboardStats.value?.weekSumary) return [0, 0, 0, 0, 0]
+  const values = [0, 0, 0, 0, 0]
+  dashboardStats.value.weekSumary.forEach(day => {
+    const total = day.attendances + day.absences + day.late
+    if (total > 0 && day.day >= 1 && day.day <= 5) {
+      values[day.day - 1] = (day.late / total) * 100
+    }
+  })
+  return values
+})
+
+const weekAbsences = computed(() => {
+  if (!dashboardStats.value?.weekSumary) return [0, 0, 0, 0, 0]
+  const values = [0, 0, 0, 0, 0]
+  dashboardStats.value.weekSumary.forEach(day => {
+    const total = day.attendances + day.absences + day.late
+    if (total > 0 && day.day >= 1 && day.day <= 5) {
+      values[day.day - 1] = (day.absences / total) * 100
+    }
+  })
+  return values
+})
+
+// Funciones de usuario
+const getUserFullName = (): string => {
+  const user = auth.user
+  if (!user) return 'Usuario'
+  return `${user.names || ''} ${user.firstLastName || ''} ${user.secondLastName || ''}`.trim() || 'Usuario'
+}
+
+const getUserFirstName = (): string => {
+  const user = auth.user
+  if (!user || !user.names) return 'Usuario'
+  return user.names.split(' ')[0]
+}
+
+const getUserRole = (): string => {
+  const user = auth.user
+  if (!user) return 'Docente'
+  return user.userType === 'TEACHER' ? 'Docente' : user.userType || 'Usuario'
+}
+
+const getUserAvatar = (): string => {
+  const user = auth.user
+  if (user?.urlPicture) {
+    return user.urlPicture
   }
-};
+  const name = getUserFullName().replace(/\s+/g, '+')
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=334155&color=fff&size=128`
+}
+
+const handleImageError = (event: Event) => {
+  const img = event.target as HTMLImageElement
+  const name = getUserFullName().replace(/\s+/g, '+')
+  img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=334155&color=fff&size=128`
+}
+
+const handleLogout = () => {
+  auth.logout()
+  router.push('/login')
+}
 
 // Inicializar gráficos
 const initCharts = () => {
-  if (!weeklyChartRef.value || !justificationsChartRef.value) return
+  if (!weeklyChartRef.value) return
 
-  // Gráfico semanal
   if (weeklyChart) {
     weeklyChart.dispose()
   }
+  
   weeklyChart = echarts.init(weeklyChartRef.value)
   weeklyChart.setOption({
     tooltip: { 
@@ -321,13 +370,13 @@ const initCharts = () => {
     grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
     xAxis: { 
       type: 'category', 
-      data: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'], 
+      data: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'], 
       axisLabel: { fontSize: 12, color: '#64748b' },
       axisLine: { lineStyle: { color: '#e2e8f0' } }
     },
     yAxis: { 
       type: 'value', 
-      name: 'Asistencia (%)', 
+      name: 'Porcentaje (%)', 
       max: 100, 
       axisLabel: { formatter: '{value}%', color: '#64748b' },
       splitLine: { lineStyle: { color: '#e2e8f0', type: 'dashed' } }
@@ -336,7 +385,7 @@ const initCharts = () => {
       {
         name: 'Presentes',
         type: 'line',
-        data: [82, 88, 85, 78, 90, 87],
+        data: weekPresents.value,
         smooth: true,
         lineStyle: { width: 3, color: '#10b981' },
         areaStyle: { opacity: 0.1, color: '#10b981' },
@@ -347,54 +396,41 @@ const initCharts = () => {
       {
         name: 'Tardes',
         type: 'line',
-        data: [12, 8, 10, 15, 7, 9],
+        data: weekLates.value,
         smooth: true,
         lineStyle: { width: 3, color: '#f59e0b' },
         areaStyle: { opacity: 0.1, color: '#f59e0b' },
         symbol: 'circle',
         symbolSize: 8,
         itemStyle: { color: '#f59e0b' }
+      },
+      {
+        name: 'Faltas',
+        type: 'line',
+        data: weekAbsences.value,
+        smooth: true,
+        lineStyle: { width: 3, color: '#f87171' },
+        areaStyle: { opacity: 0.1, color: '#f87171' },
+        symbol: 'circle',
+        symbolSize: 8,
+        itemStyle: { color: '#f87171' }
       }
     ]
   })
-
-  // Gráfico de justificaciones
-  if (justificationsChart) {
-    justificationsChart.dispose()
-  }
-  justificationsChart = echarts.init(justificationsChartRef.value)
-  justificationsChart.setOption({
-    tooltip: { 
-      trigger: 'item',
-      backgroundColor: '#1e293b',
-      borderColor: '#334155',
-      textStyle: { color: '#f1f5f9', fontSize: 12 }
-    },
-    legend: { 
-      orient: 'vertical', 
-      left: 'left',
-      textStyle: { fontSize: 12, color: '#64748b' }
-    },
-    series: [{
-      name: 'Justificaciones',
-      type: 'pie',
-      radius: '55%',
-      data: [
-        { value: approvedJustifications.value, name: 'Aprobadas', itemStyle: { color: '#10b981' } },
-        { value: attendancesStatsModel.value?.totalPendingJustifications || 0, name: 'Pendientes', itemStyle: { color: '#f59e0b' } },
-        { value: 2, name: 'Rechazadas', itemStyle: { color: '#ef4444' } }
-      ],
-      emphasis: { scale: true },
-      label: { show: true, formatter: '{b}: {d}%', color: '#475569' }
-    }]
-  })
-
-  // Responsive
-  window.addEventListener('resize', () => {
-    weeklyChart?.resize()
-    justificationsChart?.resize()
-  })
 }
+
+// Actualizar gráficos cuando los datos cambien
+watch([weekPresents, weekLates, weekAbsences], () => {
+  if (weeklyChart) {
+    weeklyChart.setOption({
+      series: [
+        { data: weekPresents.value },
+        { data: weekLates.value },
+        { data: weekAbsences.value }
+      ]
+    })
+  }
+})
 
 // Cargar datos
 const loadStats = async () => {
@@ -404,25 +440,14 @@ const loadStats = async () => {
   try {
     const response = await attendancesStats()
 
-    if (response.success) {
-      attendancesStatsModel.value = response.data
-      pendingJustifications.value = response.data.totalPendingJustifications
-      // Actualizar gráfico después de cargar datos
-      nextTick(() => {
-        if (justificationsChart && attendancesStatsModel.value) {
-          justificationsChart.setOption({
-            series: [{
-              data: [
-                { value: approvedJustifications.value, name: 'Aprobadas', itemStyle: { color: '#10b981' } },
-                { value: attendancesStatsModel.value.totalPendingJustifications, name: 'Pendientes', itemStyle: { color: '#f59e0b' } },
-                { value: 2, name: 'Rechazadas', itemStyle: { color: '#ef4444' } }
-              ]
-            }]
-          })
-        }
-      })
+    if (response.success && response.data) {
+      dashboardStats.value = response.data
+      studentsTopLate.value = response.data.studentsTopLate || []
+      // Actualizar gráficos después de cargar datos
+      await nextTick()
+      initCharts()
     } else {
-      errorMessage.value = response.error.message
+      errorMessage.value = response.error?.message || 'Error al cargar los datos'
     }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : 'Error de conexión'
@@ -439,26 +464,6 @@ const goToJustifications = () => {
 // Lifecycle
 onMounted(() => {
   loadStats()
-  setTimeout(() => {
-    initCharts()
-  }, 100)
-})
-
-// Watch para cuando los datos cambien
-watch(attendancesStatsModel, () => {
-  nextTick(() => {
-    if (justificationsChart && attendancesStatsModel.value) {
-      justificationsChart.setOption({
-        series: [{
-          data: [
-            { value: approvedJustifications.value, name: 'Aprobadas', itemStyle: { color: '#10b981' } },
-            { value: attendancesStatsModel.value.totalPendingJustifications, name: 'Pendientes', itemStyle: { color: '#f59e0b' } },
-            { value: 2, name: 'Rechazadas', itemStyle: { color: '#ef4444' } }
-          ]
-        }]
-      })
-    }
-  })
 })
 </script>
 

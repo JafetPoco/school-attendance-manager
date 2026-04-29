@@ -1,28 +1,18 @@
 package com.IEASmart.sistemaAsistencias.api.dto.response;
 
-public class AttendanceTodayDashboard {
-    private long totalAttendances;
+public class StatisticsToday {
     private long totalPresences;
     private long totalAbsences;
     private long totalPendingJustifications;
     private long totalLate;
 
-    public AttendanceTodayDashboard() {}
+    public StatisticsToday() {}
 
-    public AttendanceTodayDashboard(long totalAttendances, long totalPresences, long totalAbsences, long totalPendingJustifications, long totalLate) {
-        this.totalAttendances = totalAttendances;
+    public StatisticsToday(long totalPresences, long totalAbsences, long totalPendingJustifications, long totalLate) {
         this.totalPresences = totalPresences;
         this.totalAbsences = totalAbsences;
         this.totalPendingJustifications = totalPendingJustifications;
         this.totalLate = totalLate;
-    }
-
-    public long getTotalAttendances() {
-        return totalAttendances;
-    }
-
-    public void setTotalAttendances(long totalAttendances) {
-        this.totalAttendances = totalAttendances;
     }
 
     public long getTotalPresences() {

@@ -8,6 +8,8 @@ import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
 import com.IEASmart.sistemaAsistencias.domain.repository.AttendanceRepository;
 import com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity.AttendanceEntity;
 import com.IEASmart.sistemaAsistencias.infrastructure.jpa.projection.AttendanceStats;
+import com.IEASmart.sistemaAsistencias.infrastructure.jpa.projection.TopLateInfo;
+import com.IEASmart.sistemaAsistencias.infrastructure.jpa.projection.WeekAttendanceStats;
 import com.IEASmart.sistemaAsistencias.infrastructure.jpa.specification.AttendanceSpecifications;
 import com.IEASmart.sistemaAsistencias.infrastructure.mapper.AttendanceMapper;
 import org.springframework.data.domain.Page;
@@ -86,5 +88,15 @@ public class AttendanceRepositoryImpl implements AttendanceRepository {
     @Override
     public Optional<Attendance> findById(String id) {
         return attendanceJpaRepository.findById(id).map(mapper::toDomain);
+    }
+
+    @Override
+    public List<WeekAttendanceStats> getWeekAttendanceStats(School school, LocalDate startDate, LocalDate endDate){
+        return attendanceJpaRepository.getDailyStatistics(school, startDate, endDate);
+    }
+
+    @Override
+    public List<TopLateInfo> getTopLateStudents(School school, LocalDate startDate, LocalDate endDate){
+        return attendanceJpaRepository.getTopLateStudents(school, startDate, endDate);
     }
 }

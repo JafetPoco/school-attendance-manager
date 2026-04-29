@@ -51,10 +51,31 @@ export interface ContactResponse {
     token: string
 }
 
-export interface AttendanceStats {
-    totalAttendances: number
+export interface StatisticsToday {
     totalPresences: number
     totalAbsences: number
-    totalPendingJustifications: number
     totalLate: number
+    totalPendingJustification: number
+}
+
+export interface WeekSumary {
+    day: number
+    attendances: number
+    absences: number
+    late: number
+    
+}
+
+export interface StudentsTopLate {
+    fullName: string
+    grade: string
+    totalLate: number
+}
+
+export interface DashboardResponse {
+    statisticsToday: StatisticsToday
+    weekSumary: WeekSumary[]
+    studentsTopLate: StudentsTopLate[]
+    totalStudents: number
+    
 }
