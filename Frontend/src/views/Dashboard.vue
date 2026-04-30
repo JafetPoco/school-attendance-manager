@@ -345,9 +345,13 @@ const handleImageError = (event: Event) => {
   img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=334155&color=fff&size=128`
 }
 
-const handleLogout = () => {
-  auth.logout()
-  router.push('/login')
+const handleLogout = async () => {
+  try {
+    await auth.logout()
+  } finally {
+    localStorage.removeItem('authToken')
+    await router.push('/')
+  }
 }
 
 // Inicializar gráficos

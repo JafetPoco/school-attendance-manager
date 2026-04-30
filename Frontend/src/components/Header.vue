@@ -191,10 +191,17 @@ const handleUserMenuItem = (item: any) => {
   showUserMenu.value = false
 }
 
-const logout = () => {
-  emit('logout')
-  console.log('Cerrando sesión...')
-  // Aquí iría la lógica de logout
+const logout = async () => {
+  showUserMenu.value = false
+  showMobileMenu.value = false
+
+  try {
+    await auth.logout()
+  } finally {
+    localStorage.removeItem('authToken')
+    emit('logout')
+    await router.push('/')
+  }
 }
 
 // Menú móvil

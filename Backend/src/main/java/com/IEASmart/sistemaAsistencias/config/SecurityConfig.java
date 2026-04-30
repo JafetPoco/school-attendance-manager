@@ -61,8 +61,15 @@ public class SecurityConfig {
                 // deshabilitamos el formLogin: sólo OAuth2
                 .formLogin(form -> form.disable())
                 // activamos oauth2Login y usamos un success handler que redirige al front
-                .oauth2Login(oauth2 -> oauth2.successHandler(authenticationSuccessHandler()));
-
+                .oauth2Login(oauth2 -> oauth2.successHandler(authenticationSuccessHandler()))
+                // cerrar sesión redirigiendo al front
+                .logout(logout -> logout
+                        .logoutUrl("/api/logout")
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            response.setStatus(HttpServletResponse.SC_OK); // Solo responde 200 OK
+                        })
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID"));
         return http.build();
     }
 }
