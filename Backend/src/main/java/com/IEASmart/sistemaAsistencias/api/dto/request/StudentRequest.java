@@ -11,9 +11,9 @@ public class StudentRequest {
     private String secondLastName;
     private Level level;
     private Grade grade;
-    private Section section;
+    private String section;
 
-    public StudentRequest(String dni, String name, String firstLastName, String secondLastName, Level level, Grade grade, Section section) {
+    public StudentRequest(String dni, String name, String firstLastName, String secondLastName, Level level, Grade grade, String section) {
         this.dni = dni;
         this.name = name;
         this.firstLastName = firstLastName;
@@ -73,11 +73,11 @@ public class StudentRequest {
         this.grade = grade;
     }
 
-    public Section getSection() {
+    public String getSection() {
         return section;
     }
 
-    public void setSection(Section section) {
+    public void setSection(String section) {
         this.section = section;
     }
 }
