@@ -3,6 +3,7 @@ package com.IEASmart.sistemaAsistencias.api.mapper;
 import com.IEASmart.sistemaAsistencias.api.dto.request.StudentRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.response.StudentResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.StudentSuggestionResponse;
+import com.IEASmart.sistemaAsistencias.domain.model.Class;
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
 import org.springframework.stereotype.Component;
 
@@ -15,9 +16,9 @@ public class StudentApiMapper {
         studentResponse.setName(student.getName());
         studentResponse.setFirstLastName(student.getFirstLastName());
         studentResponse.setSecondLastName(student.getSecondLastName());
-        studentResponse.setLevel(student.getLevel());
-        studentResponse.setGrade(student.getGrade());
-        studentResponse.setSection(student.getSection());
+        studentResponse.setLevel(student.getClassSchool().getLevel());
+        studentResponse.setGrade(student.getClassSchool().getGrade());
+        studentResponse.setSection(student.getClassSchool().getSection());
         return studentResponse;
     }
 
@@ -28,9 +29,12 @@ public class StudentApiMapper {
         student.setName(studentRequest.getName());
         student.setFirstLastName(studentRequest.getFirstLastName());
         student.setSecondLastName(studentRequest.getSecondLastName());
-        student.setLevel(studentRequest.getLevel());
-        student.setGrade(studentRequest.getGrade());
-        student.setSection(studentRequest.getSection());
+
+        Class classSchool = new Class();
+        classSchool.setLevel(studentRequest.getLevel());
+        classSchool.setGrade(studentRequest.getGrade());
+        classSchool.setSection(studentRequest.getSection());
+        student.setClassSchool(classSchool);
         return student;
     }
 
