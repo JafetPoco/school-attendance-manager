@@ -2,6 +2,7 @@ package com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity;
 
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Grade;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Level;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import jakarta.persistence.*;
 
 @Entity
@@ -24,16 +25,21 @@ public class ClassEntity {
     @Column(name = "level", nullable = false, length = 50)
     private Level level;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "school", nullable = false, length = 50)
+    private School school;
+
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
     public ClassEntity() {}
 
-    public ClassEntity(Long id, String section, Grade grade, Level level, String name) {
+    public ClassEntity(Long id, String section, Grade grade, Level level, School school, String name) {
         this.id = id;
         Section = section;
         this.grade = grade;
         this.level = level;
+        this.school = school;
         this.name = name;
     }
 
@@ -67,6 +73,14 @@ public class ClassEntity {
 
     public void setLevel(Level level) {
         this.level = level;
+    }
+
+    public School getSchool() {
+        return school;
+    }
+
+    public void setSchool(School school) {
+        this.school = school;
     }
 
     public String getName() {

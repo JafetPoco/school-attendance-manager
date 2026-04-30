@@ -1,29 +1,18 @@
 package com.IEASmart.sistemaAsistencias.domain.model;
 
-import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Grade;
-import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Level;
-import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
-import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
-
 public class Student {
     private String dni;
     private String name;
     private String firstLastName;
     private String secondLastName;
-    private Level level;
-    private Grade grade;
-    private Section section;
-    private School school;
+    private Class classSchool;
 
-    public Student(String dni, String name, String firstLastName, String secondLastName, Level level, Grade grade, Section section, School school) {
+    public Student(String dni, String name, String firstLastName, String secondLastName, Class classSchool) {
         this.dni = dni;
         this.name = name;
         this.firstLastName = firstLastName;
         this.secondLastName = secondLastName;
-        this.level = level;
-        this.grade = grade;
-        this.section = section;
-        this.school = school;
+        this.classSchool = classSchool;
     }
 
     public Student() {}
@@ -60,35 +49,11 @@ public class Student {
         this.secondLastName = secondLastName;
     }
 
-    public Level getLevel() {
-        return level;
+    public Class getClassSchool() {
+        return classSchool;
     }
 
-    public void setLevel(Level level) {
-        this.level = level;
-    }
-
-    public Grade getGrade() {
-        return grade;
-    }
-
-    public void setGrade(Grade grade) {
-        this.grade = grade;
-    }
-
-    public Section getSection() {
-        return section;
-    }
-
-    public void setSection(Section section) {
-        this.section = section;
-    }
-
-    public School getSchool() {
-        return school;
-    }
-
-    public void setSchool(School school) {
-        this.school = school;
+    public void setClassSchool(Class classSchool) {
+        this.classSchool = classSchool;
     }
 }

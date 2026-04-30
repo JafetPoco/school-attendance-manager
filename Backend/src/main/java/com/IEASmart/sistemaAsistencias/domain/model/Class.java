@@ -2,6 +2,7 @@ package com.IEASmart.sistemaAsistencias.domain.model;
 
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Grade;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Level;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 
 public class Class {
     private Long id;
@@ -9,15 +10,17 @@ public class Class {
     private Grade grade;
     private Level level;
     private String name;
+    private School school;
 
     public Class() {}
 
-    public Class(Long id, String section, Grade grade, Level level, String name) {
+    public Class(Long id, String section, Grade grade, Level level, String name, School school) {
         this.id = id;
         Section = section;
         this.grade = grade;
         this.level = level;
         this.name = name;
+        this.school = school;
     }
 
     public Long getId() {
@@ -58,5 +61,13 @@ public class Class {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public School getSchool() {
+        return school;
+    }
+
+    public void setSchool(School school) {
+        this.school = school;
     }
 }
