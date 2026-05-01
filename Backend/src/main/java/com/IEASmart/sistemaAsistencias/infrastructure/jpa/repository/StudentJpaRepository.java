@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface StudentJpaRepository extends JpaRepository<StudentEntity, String>, JpaSpecificationExecutor<StudentEntity> {
     // Obtener todos los estudiantes de una escuela (la escuela está en classInfo.school)
@@ -25,4 +26,7 @@ public interface StudentJpaRepository extends JpaRepository<StudentEntity, Strin
     List<StudentEntity> findAllByClassInfo_Id(Long classId);
 
     long countByClassInfo_School(School school);
+
+    @Query("SELECT s.dni FROM StudentEntity s WHERE s.classInfo.school = :school")
+    Set<String> findExistingDnis(@Param("school") School school);
 }

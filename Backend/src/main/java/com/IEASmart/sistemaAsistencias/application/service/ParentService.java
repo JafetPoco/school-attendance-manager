@@ -148,22 +148,13 @@ public class ParentService {
         throw new InvalidArgumentException("Parent with id " + parentId + " not found", "parentId");
     }
 
-    @Transactional
     public void importFromExcel(MultipartFile file, School school) {
-        if (file == null || file.isEmpty()) {
-            throw new ConflictException("Archivo no especificado", "NO_FILE_PROVIDED");
-        }
-
-        String filename = Optional.ofNullable(file.getOriginalFilename()).orElse("").toLowerCase();
-        if (!filename.endsWith(".xlsx") && !filename.endsWith(".xls")) {
-            throw new ConflictException(
-                    "Archivo no soportado. Solo se permiten archivos .xlsx o .xls",
-                    "UNSUPPORTED_FILE_TYPE");
-        }
+        validateFile(file);
 
         Map<String, Parent> parentsCache = new HashMap<>(); // phone -> Parent
-        Set<String> seenDnis = new HashSet<>();
         List<String> importErrors = new ArrayList<>();
+
+        Set<String> databaseStudents = studentRepository.findAllDnisBySchool(school);
 
         try (InputStream is = file.getInputStream();
              Workbook workbook = WorkbookFactory.create(is)) {
@@ -182,8 +173,8 @@ public class ParentService {
                     continue;
                 }
 
-                if (seenDnis.contains(dni)) {
-                    importErrors.add("Fila " + (r+1) + ": DNI duplicado en el archivo -> " + dni);
+                if (databaseStudents.contains(dni)) {
+                    importErrors.add("Fila " + (r+1) + ": el estudiante con DNI " + dni + " ya existe");
                     continue;
                 }
 
@@ -213,12 +204,7 @@ public class ParentService {
                     continue;
                 }
 
-                if (studentRepository.findById(dni, school).isPresent()) {
-                    importErrors.add("Fila " + (r+1) + ": el estudiante con DNI " + dni + " ya existe");
-                    continue;
-                }
-
-                seenDnis.add(dni);
+                databaseStudents.add(dni);
 
                 Optional<Class> classOpt = classRepository.findByClassInformation(sectionRaw, grade, level, school);
                 if (classOpt.isEmpty()) {
@@ -258,6 +244,22 @@ public class ParentService {
             throw ce;
         } catch (Exception e) {
             throw new ConflictException("Error al procesar el archivo Excel: " + e.getMessage(), "EXCEL_PROCESSING_ERROR");
+        }
+    }
+
+    private void validateFile(MultipartFile file){
+        if (file == null || file.isEmpty()) {
+            throw new ConflictException("Archivo no especificado", "NO_FILE_PROVIDED");
+        }
+
+        String filename = Optional.ofNullable(file.getOriginalFilename())
+                .orElse("")
+                .toLowerCase();
+        if (!filename.endsWith(".xlsx") && !filename.endsWith(".xls")) {
+            throw new ConflictException(
+                    "Archivo no soportado. Solo se permiten archivos .xlsx o .xls",
+                    "UNSUPPORTED_FILE_TYPE"
+            );
         }
     }
 

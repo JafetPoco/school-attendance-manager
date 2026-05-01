@@ -10,6 +10,7 @@ import org.springframework.data.domain.Sort;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface StudentRepository {
     Optional<Student> findById(String dni, School school);
@@ -20,4 +21,5 @@ public interface StudentRepository {
     List<Student> findAllWithoutAttendanceOnDate(School school, LocalDate date);
     long countStudentsBySchool(School school);
     List<Student> findByNameContainingIgnoreCase(String query, School school);
+    Set<String> findAllDnisBySchool(School school);
 }

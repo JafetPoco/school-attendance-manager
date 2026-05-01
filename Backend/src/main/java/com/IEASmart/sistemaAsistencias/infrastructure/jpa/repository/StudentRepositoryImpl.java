@@ -17,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public class StudentRepositoryImpl implements StudentRepository {
@@ -84,5 +85,10 @@ public class StudentRepositoryImpl implements StudentRepository {
         Specification<StudentEntity> spec = buildSpecification(school, criteria);
         List<StudentEntity> list = jpaRepository.findAll(spec);
         return list.stream().map(studentMapper::toDomain).toList();
+    }
+
+    @Override
+    public Set<String> findAllDnisBySchool(School school){
+        return jpaRepository.findExistingDnis(school);
     }
 }
