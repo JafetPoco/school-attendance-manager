@@ -31,7 +31,7 @@ public class AttendanceApiMapper {
         response.setId(attendance.getId());
         response.setDate(attendance.getDate());
         response.setFullName(attendance.getStudent().getName() + " " + attendance.getStudent().getFirstLastName() + " " + attendance.getStudent().getSecondLastName());
-        response.setGrade(attendance.getStudent().getLevel() + " - " + attendance.getStudent().getGrade() + " - " + attendance.getStudent().getSection());
+        response.setGrade(attendance.getStudent().getClassSchool().getLevel() + " - " + attendance.getStudent().getClassSchool().getGrade() + " - " + attendance.getStudent().getClassSchool().getSection());
         return response;
     }
 

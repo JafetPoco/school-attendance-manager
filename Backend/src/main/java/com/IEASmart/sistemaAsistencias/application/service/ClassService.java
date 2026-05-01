@@ -7,9 +7,11 @@ import com.IEASmart.sistemaAsistencias.domain.exception.InvalidArgumentException
 import com.IEASmart.sistemaAsistencias.domain.model.Class;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import com.IEASmart.sistemaAsistencias.domain.repository.ClassRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class ClassService {
     private final ClassRepository classRepository;
     private final ClassApiMapper classApiMapper;

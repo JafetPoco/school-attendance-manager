@@ -22,8 +22,9 @@ public class StudentEntity {
     @Column(name = "second_last_name", nullable = false, length = 50)
     private String secondLastName;
 
-    @JoinColumn(name = "class_id", unique = true, nullable = false)
-    private ClassEntity classEntity;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "class_id", nullable = false)
+    private ClassEntity classInfo;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
@@ -71,12 +72,12 @@ public class StudentEntity {
         this.secondLastName = secondLastName;
     }
 
-    public ClassEntity getClassEntity() {
-        return classEntity;
+    public ClassEntity getClassInfo() {
+        return classInfo;
     }
 
-    public void setClassEntity(ClassEntity classEntity) {
-        this.classEntity = classEntity;
+    public void setClassInfo(ClassEntity classInfo) {
+        this.classInfo = classInfo;
     }
 
     public ParentEntity getParent() {

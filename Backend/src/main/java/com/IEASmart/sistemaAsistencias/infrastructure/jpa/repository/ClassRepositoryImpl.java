@@ -50,7 +50,7 @@ public class ClassRepositoryImpl implements ClassRepository {
 
     @Override
     public Optional<Class> findByClassInformation(String section, Grade grade, Level level, School school) {
-        return classJpaRepository.findBySectionAndGradeAndLevelAndSchool(section, grade, level, school)
+        return classJpaRepository.findBySectionAndGradeAndLevelAndSchoolAllIgnoreCase(section, grade, level, school)
                 .map(mapper::toDomain);
     }
 }

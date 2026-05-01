@@ -20,7 +20,7 @@ public interface AttendanceRepository {
     Attendance save(Attendance attendance);
     List<Attendance> saveAll(List<Attendance> attendances);
     Page<Attendance> findAllByFilter(School school, AttendanceCriteria criteria, Pageable pageable);
-    List<Attendance> findByStudentSchoolAndSectionAndDateBetween(School school, Section section, LocalDate startDate, LocalDate endDate);
+    List<Attendance> findByClassIdAndDateBetween(Long classId, LocalDate startDate, LocalDate endDate);
     long countByStudentDniAndAttendanceTypeAndDateBetween(String dni, AttendanceType type, LocalDate startDate, LocalDate endDate);
     List<Attendance> findByStudentAndDateBetween(String dni, LocalDate startDate, LocalDate endDate);
     Optional<Attendance> findById(String id);

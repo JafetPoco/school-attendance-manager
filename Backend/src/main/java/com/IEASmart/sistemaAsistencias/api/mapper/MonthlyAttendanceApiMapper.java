@@ -11,8 +11,12 @@ public class MonthlyAttendanceApiMapper {
         response.setDni(student.getDni());
         response.setName(student.getName());
         response.setLastName(student.getFirstLastName() + " " + student.getSecondLastName());
-        response.setSection(student.getSection().toString());
 
+        if(student.getClassSchool().getSection().length() == 1){
+            response.setSection(student.getClassSchool().getSection()+"-"+student.getClassSchool().getGrade()+"-"+student.getClassSchool().getLevel());
+        } else {
+            response.setSection(student.getClassSchool().getSection());
+        }
         return response;
     }
 }

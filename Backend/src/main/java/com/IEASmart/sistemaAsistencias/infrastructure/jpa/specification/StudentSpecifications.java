@@ -25,18 +25,18 @@ public final class StudentSpecifications {
     }
 
     public static Specification<StudentEntity> hasLevel(Level level) {
-        return (root, query, criteriaBuilder) -> level == null ? null : criteriaBuilder.equal(root.get("level"), level);
+        return (root, query, criteriaBuilder) -> level == null ? null : criteriaBuilder.equal(root.get("classInfo").get("level"), level);
     }
 
     public static Specification<StudentEntity> hasGrade(Grade grade) {
-        return (root, query, criteriaBuilder) -> grade == null ? null : criteriaBuilder.equal(root.get("grade"), grade);
+        return (root, query, criteriaBuilder) -> grade == null ? null : criteriaBuilder.equal(root.get("classInfo").get("grade"), grade);
     }
 
-    public static Specification<StudentEntity> hasSection(Section section) {
-        return (root, query, criteriaBuilder) -> section == null ? null : criteriaBuilder.equal(root.get("section"), section);
+    public static Specification<StudentEntity> hasSection(String section) {
+        return (root, query, criteriaBuilder) -> section == null ? null : criteriaBuilder.equal(root.get("classInfo").get("section"), section);
     }
 
     public static Specification<StudentEntity> hasSchool(School school) {
-        return (root, query, criteriaBuilder) -> school == null ? null : criteriaBuilder.equal(root.get("school"), school);
+        return (root, query, criteriaBuilder) -> school == null ? null : criteriaBuilder.equal(root.get("classInfo").get("school"), school);
     }
 }

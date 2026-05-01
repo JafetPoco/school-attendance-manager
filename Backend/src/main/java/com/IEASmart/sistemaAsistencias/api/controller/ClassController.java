@@ -8,6 +8,7 @@ import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,7 +33,7 @@ public class ClassController {
     }
 
     @PostMapping()
-    public ResponseEntity<ClassResponse> createClasses(ClassRequest request) {
+    public ResponseEntity<ClassResponse> createClasses(@RequestBody ClassRequest request) {
         School school = authorizationService.getUserSchool();
         ClassResponse response = classService.createClass(request, school);
         return ResponseEntity.ok(response);

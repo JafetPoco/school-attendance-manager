@@ -44,8 +44,9 @@ public class AttendanceService {
     private final TokenService tokenService;
     private final TokenRepository tokenRepository;
     private final ExcelExportPort excelExportPort;
+    private final ClassRepository classRepository;
 
-    public AttendanceService(AttendanceRepository attendanceRepository, StudentRepository studentRepository, ParentRepository parentRepository, AttendanceApiMapper mapper, MonthlyAttendanceApiMapper monthlyAttendanceApiMapper, StudentApiMapper studentApiMapper, TokenService tokenService, TokenRepository tokenRepository, ExcelExportPort excelExportPort) {
+    public AttendanceService(AttendanceRepository attendanceRepository, StudentRepository studentRepository, ParentRepository parentRepository, AttendanceApiMapper mapper, MonthlyAttendanceApiMapper monthlyAttendanceApiMapper, StudentApiMapper studentApiMapper, TokenService tokenService, TokenRepository tokenRepository, ExcelExportPort excelExportPort, ClassRepository classRepository) {
         this.attendanceRepository = attendanceRepository;
         this.studentRepository = studentRepository;
         this.parentRepository = parentRepository;
@@ -55,6 +56,7 @@ public class AttendanceService {
         this.tokenService = tokenService;
         this.tokenRepository = tokenRepository;
         this.excelExportPort = excelExportPort;
+        this.classRepository = classRepository;
     }
 
     public AttendanceResponse markAttendance(AttendanceRequest request, School school) {
@@ -76,10 +78,10 @@ public class AttendanceService {
 
     public PageResponse<AttendanceResponse> getAllAttendaces(School school, AttendanceFilter filter, Pageable page) {
         LocalDate date = filter.date() == null ? null : LocalDate.parse(filter.date());
-        Section section = filter.section() == null ? null : Section.from(filter.section());
+        Long classId = filter.classId() == null ? null : filter.classId();
         AttendanceType attendanceType = filter.attendanceType() == null ? null : AttendanceType.from(filter.attendanceType());
 
-        AttendanceCriteria criteria = new AttendanceCriteria(date, filter.name(), section, attendanceType);
+        AttendanceCriteria criteria = new AttendanceCriteria(date, filter.name(), classId, attendanceType);
         Page<Attendance> attendances = attendanceRepository.findAllByFilter(school, criteria, page);
         List<AttendanceResponse> content = attendances
                 .getContent()
@@ -97,23 +99,18 @@ public class AttendanceService {
     }
 
     @Transactional(readOnly = true)
-    public List<MonthlyAttendanceResponse> getMonthlyAttendance(School school, AttendanceMonthlyFilter filter) {
-        if (filter.section() == null) {
-            throw new ConflictException("El filtro de sección es obligatorio", "SECTION_REQUIRED");
-        }
+    public List<MonthlyAttendanceResponse> getMonthlyAttendance(AttendanceMonthlyFilter filter) {
         if (filter.month() == null || filter.month() < 1 || filter.month() > 12) {
             throw new ConflictException("Valor de mes invalido: " + filter.month() + ". El mes debe ser entre 1 y 12", "INVALID_MONTH_VALUE");
         }
 
-        Section section = Section.from(filter.section());
         LocalDate startDate = LocalDate.of(LocalDate.now().getYear(), filter.month(), 1);
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
 
-        StudentCriteria studentCriteria = new StudentCriteria(null, null, null, section);
-        List<Student> students = studentRepository.findAllByFilters(school, studentCriteria, Sort.by(Sort.Order.asc("firstLastName"), Sort.Order.asc("secondLastName")));
+        List<Student> students = studentRepository.findAllByClassId(filter.classId());
 
         // Obtener sólo las asistencias del rango de fechas y de la sección solicitada
-        List<Attendance> attendances = attendanceRepository.findByStudentSchoolAndSectionAndDateBetween(school, section, startDate, endDate);
+        List<Attendance> attendances = attendanceRepository.findByClassIdAndDateBetween(filter.classId(), startDate, endDate);
 
         Map<String, Map<Integer, String>> dailyByDni = new HashMap<>();
         for (Attendance a : attendances) {
@@ -134,83 +131,30 @@ public class AttendanceService {
     }
 
     @Transactional(readOnly = true)
-    private Map<Section, List<MonthlyAttendanceResponse>> getMonthlyAttendanceAllSections(
-            School school, int month, int year) {
+    private Map<Long, List<MonthlyAttendanceResponse>> getMonthlyAttendanceAllSections(
+            School school, Integer month) {
 
         // Validar mes y año
         if (month < 1 || month > 12) {
             throw new ConflictException("Mes inválido: " + month, "INVALID_MONTH_VALUE");
         }
-        if (year <= 0) {
-            throw new ConflictException("Año inválido: " + year, "INVALID_YEAR_VALUE");
-        }
 
         // Obtener todas las secciones del colegio
-        List<Section> sections;
-        if(school == School.GJS) {
-            sections = List.of(Section.BENJAMIN, Section.NOE, Section.MOISES, Section.JACOB, Section.ENOC, Section.JOSE,
-                    Section.GEDEON, Section.JOSUE, Section.ELIAS, Section.ELISEO, Section.DANIEL, Section.ESTEBAN,
-                    Section.MATEO, Section.SALOMON, Section.DAVID, Section.JONATAN);
-        } else if (school == School.EFF) {
-            sections = List.of(Section.JOSUE);
-        } else {
-            throw new ConflictException("Colegio no reconocido: " + school.getFullName(), "SCHOOL_NOT_RECOGNIZED");
-        }
+        List<Long> classIds = classRepository.findAllIdsBySchool(school);
+        Map<Long, List<MonthlyAttendanceResponse>> result = new LinkedHashMap<>();
 
-
-        Map<Section, List<MonthlyAttendanceResponse>> result = new LinkedHashMap<>();
-
-        for (Section section : sections) {
-            List<MonthlyAttendanceResponse> sectionData = getMonthlyAttendanceForSection(school, month, year, section);
-            result.put(section, sectionData);
+        for (Long classId : classIds) {
+            AttendanceMonthlyFilter filter = new AttendanceMonthlyFilter(month, classId);
+            List<MonthlyAttendanceResponse> sectionData = getMonthlyAttendance(filter);
+            result.put(classId, sectionData);
         }
 
         return result;
     }
 
-    // Nuevo helper que usa el año proporcionado
-    @Transactional(readOnly = true)
-    private List<MonthlyAttendanceResponse> getMonthlyAttendanceForSection(School school, int month, int year, Section section) {
-        if (section == null) {
-            throw new ConflictException("Sección inválida", "SECTION_INVALID");
-        }
-        if (month < 1 || month > 12) {
-            throw new ConflictException("Valor de mes invalido: " + month + ". El mes debe ser entre 1 y 12", "INVALID_MONTH_VALUE");
-        }
-        if (year <= 0) {
-            throw new ConflictException("Año inválido: " + year, "INVALID_YEAR_VALUE");
-        }
-
-        LocalDate startDate = LocalDate.of(year, month, 1);
-        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
-
-        StudentCriteria studentCriteria = new StudentCriteria(null, null, null, section);
-        List<Student> students = studentRepository.findAllByFilters(school, studentCriteria, Sort.by(Sort.Order.asc("firstLastName"), Sort.Order.asc("secondLastName")));
-
-        // Obtener sólo las asistencias del rango de fechas y de la sección solicitada
-        List<Attendance> attendances = attendanceRepository.findByStudentSchoolAndSectionAndDateBetween(school, section, startDate, endDate);
-
-        Map<String, Map<Integer, String>> dailyByDni = new HashMap<>();
-        for (Attendance a : attendances) {
-            String dni = a.getStudent().getDni();
-            int day = a.getDate().getDayOfMonth();
-            dailyByDni.computeIfAbsent(dni, k -> new HashMap<>()).put(day, a.getAttendanceType().getFullName());
-        }
-
-        return students.stream()
-                .map(s -> {
-                    MonthlyAttendanceResponse resp = monthlyAttendanceApiMapper.toResponse(s);
-                    // Asignar mapa (vacío si no hay registros para el alumno)
-                    Map<Integer, String> daily = dailyByDni.get(s.getDni());
-                    resp.setDailyAttendance(Objects.requireNonNullElseGet(daily, Map::of));
-                    return resp;
-                })
-                .toList();
-    }
-
-    public byte[] getMonthlyAttendanceExcelAllSections(School school, int month, int year) {
-        Map<Section, List<MonthlyAttendanceResponse>> dataBySection =
-                getMonthlyAttendanceAllSections(school, month, year);
+    public byte[] getMonthlyAttendanceExcelAllSections(School school, Integer month) {
+        Map<Long, List<MonthlyAttendanceResponse>> dataBySection =
+                getMonthlyAttendanceAllSections(school, month);
 
         // Usar el exportador con múltiples hojas
         return excelExportPort.exportToExcelMultiSheet(dataBySection);

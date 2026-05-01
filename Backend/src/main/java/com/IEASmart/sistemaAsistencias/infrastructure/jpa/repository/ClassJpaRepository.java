@@ -13,8 +13,10 @@ import java.util.Optional;
 
 public interface ClassJpaRepository extends JpaRepository<ClassEntity, Long> {
     List<ClassEntity> findAllBySchool(School school);
-    Optional<ClassEntity> findBySectionAndGradeAndLevelAndSchool(String section, Grade grade, Level level,School school);
+    Optional<ClassEntity> findBySectionAndGradeAndLevelAndSchoolAllIgnoreCase(String section, Grade grade, Level level,School school);
 
     @Query("SELECT c.id FROM ClassEntity c WHERE c.school = :school")
     List<Long> findAllIdsBySchool(@Param("school") School school);
+
+    ClassEntity save(ClassEntity classEntity);
 }

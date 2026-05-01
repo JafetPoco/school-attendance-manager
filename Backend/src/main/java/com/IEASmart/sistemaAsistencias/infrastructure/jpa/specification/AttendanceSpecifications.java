@@ -27,15 +27,15 @@ public class AttendanceSpecifications {
     }
 
     public static Specification<AttendanceEntity> hasSchool(School school){
-        return (root, query, criteriaBuilder) -> school == null ? null : criteriaBuilder.equal(root.get("student").get("school"), school);
+        return (root, query, criteriaBuilder) -> school == null ? null : criteriaBuilder.equal(root.get("student").get("classId").get("school"), school);
     }
 
     public static Specification<AttendanceEntity> hasDate(LocalDate date){
         return (root, query, criteriaBuilder) -> date == null ? null : criteriaBuilder.equal(root.get("date"), date);
     }
 
-    public static Specification<AttendanceEntity> hasSection(Section section){
-        return (root, query, criteriaBuilder) -> section == null ? null : criteriaBuilder.equal(root.get("student").get("section"), section);
+    public static Specification<AttendanceEntity> hasClass(Long classId){
+        return (root, query, criteriaBuilder) -> classId == null ? null : criteriaBuilder.equal(root.get("student").get("classInfo").get("id"), classId);
     }
 
     public static Specification<AttendanceEntity> hasAttendanceType(AttendanceType attendanceType){

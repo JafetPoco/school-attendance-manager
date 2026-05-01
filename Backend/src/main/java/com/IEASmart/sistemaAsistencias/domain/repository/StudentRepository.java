@@ -16,7 +16,7 @@ public interface StudentRepository {
     List<Student> getAllStudents(School school);
     Student save(Student student);
     Page<Student> findAllByFilters(School school, StudentCriteria criteria, Pageable pageable);
-    List<Student> findAllByFilters(School school, StudentCriteria criteria, Sort sort);
+    List<Student> findAllByClassId(Long classId);
     List<Student> findAllWithoutAttendanceOnDate(School school, LocalDate date);
     long countStudentsBySchool(School school);
     List<Student> findByNameContainingIgnoreCase(String query, School school);

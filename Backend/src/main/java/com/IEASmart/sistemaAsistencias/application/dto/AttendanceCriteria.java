@@ -8,7 +8,7 @@ import java.time.LocalDate;
 public record AttendanceCriteria(
         LocalDate date,
         String name,
-        Section section,
+        Long classId,
         AttendanceType attendanceType
 ) {
 }

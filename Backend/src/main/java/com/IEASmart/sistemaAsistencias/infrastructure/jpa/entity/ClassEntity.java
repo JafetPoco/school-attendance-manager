@@ -15,7 +15,7 @@ public class ClassEntity {
     private Long id;
 
     @Column(name = "section", nullable = false, length = 50)
-    private String Section;
+    private String section;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "grade", nullable = false, length = 50)
@@ -29,18 +29,14 @@ public class ClassEntity {
     @Column(name = "school", nullable = false, length = 50)
     private School school;
 
-    @Column(name = "name", nullable = false, length = 100)
-    private String name;
-
     public ClassEntity() {}
 
-    public ClassEntity(Long id, String section, Grade grade, Level level, School school, String name) {
+    public ClassEntity(Long id, String section, Grade grade, Level level, School school) {
         this.id = id;
-        Section = section;
+        this.section = section;
         this.grade = grade;
         this.level = level;
         this.school = school;
-        this.name = name;
     }
 
     public Long getId() {
@@ -52,11 +48,11 @@ public class ClassEntity {
     }
 
     public String getSection() {
-        return Section;
+        return section;
     }
 
     public void setSection(String section) {
-        Section = section;
+        this.section = section;
     }
 
     public Grade getGrade() {
@@ -81,13 +77,5 @@ public class ClassEntity {
 
     public void setSchool(School school) {
         this.school = school;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 }

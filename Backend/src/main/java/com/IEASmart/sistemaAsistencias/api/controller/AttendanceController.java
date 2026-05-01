@@ -48,25 +48,23 @@ public class AttendanceController {
     public ResponseEntity<List<MonthlyAttendanceResponse>> getMonthlyAttendance(
             AttendanceMonthlyFilter filter
     ) {
-        School school = authorizationService.getUserSchool();
-        List<MonthlyAttendanceResponse> response = attendanceService.getMonthlyAttendance(school, filter);
+        List<MonthlyAttendanceResponse> response = attendanceService.getMonthlyAttendance(filter);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/monthly/excel")
     public ResponseEntity<byte[]> exportAllSectionsMonthlyExcel(
-            @RequestParam int month,
-            @RequestParam int year) {
+            @RequestParam Integer month) {
 
         // Validaciones básicas
-        if (month < 1 || month > 12 || year <= 0) {
+        if (month < 1 || month > 12) {
             return ResponseEntity.badRequest().build();
         }
 
         School school = authorizationService.getUserSchool();
         byte[] excelBytes;
         try {
-            excelBytes = attendanceService.getMonthlyAttendanceExcelAllSections(school, month, year);
+            excelBytes = attendanceService.getMonthlyAttendanceExcelAllSections(school, month);
         } catch (Exception e) {
             return ResponseEntity.status(500).build();
         }
@@ -76,7 +74,7 @@ public class AttendanceController {
         }
 
         String safeSchool = school.toString().replaceAll("[^a-zA-Z0-9-_\\. ]", "_");
-        String filename = String.format("asistencia_colegio_%s_%d_%02d.xlsx", safeSchool, year, month);
+        String filename = String.format("asistencia_colegio_%s_%02d.xlsx", safeSchool, month);
         String encoded = URLEncoder.encode(filename, StandardCharsets.UTF_8);
         String contentDisposition = "attachment; filename=\"" + filename + "\"; filename*=UTF-8''" + encoded;
 

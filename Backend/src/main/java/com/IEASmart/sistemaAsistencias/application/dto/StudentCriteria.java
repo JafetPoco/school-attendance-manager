@@ -8,5 +8,5 @@ public record StudentCriteria(
         String name,
         Level level,
         Grade grade,
-        Section section
+        String section
 ) {}

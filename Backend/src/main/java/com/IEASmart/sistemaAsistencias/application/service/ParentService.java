@@ -11,12 +11,13 @@ import com.IEASmart.sistemaAsistencias.api.mapper.StudentApiMapper;
 import com.IEASmart.sistemaAsistencias.domain.exception.InvalidArgumentException;
 import com.IEASmart.sistemaAsistencias.domain.exception.ConflictException;
 import com.IEASmart.sistemaAsistencias.domain.exception.ResourceNotFoundException;
+import com.IEASmart.sistemaAsistencias.domain.model.Class;
 import com.IEASmart.sistemaAsistencias.domain.model.Parent;
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Grade;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Level;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
-import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
+import com.IEASmart.sistemaAsistencias.domain.repository.ClassRepository;
 import com.IEASmart.sistemaAsistencias.domain.repository.ParentRepository;
 import com.IEASmart.sistemaAsistencias.domain.repository.StudentRepository;
 import org.apache.poi.ss.usermodel.*;
@@ -34,13 +35,20 @@ public class ParentService {
     private final ParentApiMapper parentApiMapper;
     private final StudentApiMapper studentApiMapper;
     private final ParentWithChildApiMapper parentWithChildApiMapper;
+    private final ClassRepository classRepository;
 
-    public ParentService(ParentRepository parentRepository, StudentRepository studentRepository, ParentApiMapper parentApiMapper, StudentApiMapper studentApiMapper, ParentWithChildApiMapper parentWithChildApiMapper) {
+    public ParentService(ParentRepository parentRepository,
+                         StudentRepository studentRepository,
+                         ParentApiMapper parentApiMapper,
+                         StudentApiMapper studentApiMapper,
+                         ParentWithChildApiMapper parentWithChildApiMapper,
+                         ClassRepository classRepository) {
         this.parentRepository = parentRepository;
         this.studentRepository = studentRepository;
         this.parentApiMapper = parentApiMapper;
         this.studentApiMapper = studentApiMapper;
         this.parentWithChildApiMapper = parentWithChildApiMapper;
+        this.classRepository = classRepository;
     }
 
     public StudentResponse addChildToParent(Long parentId, StudentRequest student, School school) {
@@ -55,7 +63,7 @@ public class ParentService {
             Parent parent = parentOpt.get();
 
             Student domainStudent = studentApiMapper.toDomain(student);
-            domainStudent.setSchool(school);
+            domainStudent.getClassSchool().setSchool(school);
 
             parent.addChild(domainStudent);
             Parent savedParent = parentRepository.save(parent);
@@ -99,9 +107,9 @@ public class ParentService {
         Parent parent = parentWithChildApiMapper.toDomain(request);
         parent.setSchool(school);
         for(Student child : parent.getChildren()) {
-            child.setSchool(school);
+            child.getClassSchool().setSchool(school);
 
-            if(child.getSchool() == null) {
+            if(child.getClassSchool().getSchool() == null) {
                 throw new IllegalStateException("Child debe tener una escuela asignada antes de ser persistido");
             }
         }
@@ -125,7 +133,7 @@ public class ParentService {
             Parent parent = parentOpt.get();
 
             for(Student child : parent.getChildren()) {
-                child.setSchool(school);
+                child.getClassSchool().setSchool(school);
             }
 
             List<Student> studentEntities = students.stream()
@@ -192,7 +200,6 @@ public class ParentService {
 
                 Level level = null;
                 Grade grade = null;
-                Section section = null;
                 try {
                     if (!levelRaw.isBlank()) level = Level.from(levelRaw);
                 } catch (Exception ex) {
@@ -205,12 +212,6 @@ public class ParentService {
                     importErrors.add("Fila " + (r+1) + ": grade inválido -> '" + gradeRaw + "'");
                     continue;
                 }
-                try {
-                    if (!sectionRaw.isBlank()) section = Section.from(sectionRaw);
-                } catch (Exception ex) {
-                    importErrors.add("Fila " + (r+1) + ": section inválida -> '" + sectionRaw + "'");
-                    continue;
-                }
 
                 if (studentRepository.findById(dni, school).isPresent()) {
                     importErrors.add("Fila " + (r+1) + ": el estudiante con DNI " + dni + " ya existe");
@@ -218,7 +219,14 @@ public class ParentService {
                 }
 
                 seenDnis.add(dni);
-                Student student = new Student(dni, name, firstLast, secondLast, level, grade, section, school);
+
+                Optional<Class> classOpt = classRepository.findByClassInformation(sectionRaw, grade, level, school);
+                if (classOpt.isEmpty()) {
+                    importErrors.add("Fila " + (r+1) + ": no se encontró una clase que coincida con nivel='" + levelRaw + "', grado='" + gradeRaw + "', seccion='" + sectionRaw + "'");
+                    continue;
+                }
+
+                Student student = new Student(dni, name, firstLast, secondLast, classOpt.get());
 
                 if (parentPhone.isBlank()){
                     importErrors.add("Fila " + (r+1) + ": el padre no tiene número de teléfono");
@@ -240,12 +248,12 @@ public class ParentService {
                 parent.addChild(student);
             }
 
+            List<Parent> listParents = new ArrayList<>(parentsCache.values());
+            parentRepository.saveAll(listParents);
+
             if (!importErrors.isEmpty()) {
                 throw new ConflictException("Errores en import: " + String.join("; ", importErrors), "EXCEL_VALIDATION_ERROR");
             }
-
-            List<Parent> listParents = new ArrayList<>(parentsCache.values());
-            parentRepository.saveAll(listParents);
         } catch (ConflictException ce) {
             throw ce;
         } catch (Exception e) {

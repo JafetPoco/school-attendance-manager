@@ -17,7 +17,6 @@ public class ClassMapper {
         entity.setGrade(domain.getGrade());
         entity.setLevel(domain.getLevel());
         entity.setSchool(domain.getSchool());
-        entity.setName(domain.getName());
         return entity;
     }
 
@@ -32,7 +31,6 @@ public class ClassMapper {
         domain.setGrade(entity.getGrade());
         domain.setLevel(entity.getLevel());
         domain.setSchool(entity.getSchool());
-        domain.setName(entity.getName());
         return domain;
     }
 }

@@ -9,17 +9,15 @@ public class Class {
     private String Section;
     private Grade grade;
     private Level level;
-    private String name;
     private School school;
 
     public Class() {}
 
-    public Class(Long id, String section, Grade grade, Level level, String name, School school) {
+    public Class(Long id, String section, Grade grade, Level level, School school) {
         this.id = id;
         Section = section;
         this.grade = grade;
         this.level = level;
-        this.name = name;
         this.school = school;
     }
 
@@ -53,14 +51,6 @@ public class Class {
 
     public void setLevel(Level level) {
         this.level = level;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public School getSchool() {

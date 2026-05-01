@@ -2,5 +2,5 @@ package com.IEASmart.sistemaAsistencias.api.dto.request;
 
 public record AttendanceMonthlyFilter(
         Integer month,
-        String section
+        Long classId
 ) {}
