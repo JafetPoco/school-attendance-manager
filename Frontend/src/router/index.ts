@@ -3,6 +3,7 @@ import { useAuthStore } from '@/stores/authStore'
 
 import page404 from '@/views/error/Error404.vue'
 import { getJustificationFormInfo } from '@/services/justificationsService'
+import { useSectionStore } from '@/stores/sectionStore'
 
 
 const router = createRouter({
@@ -92,6 +93,12 @@ const router = createRouter({
       component: () => import('@/views/error/JustificationNotFound.vue'),
     },
     {
+      path: '/classes',
+      name: 'classes',
+      component: () => import('@/views/ClassManager.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/:pathMatch(.*)*',
       component: page404,
     }
@@ -100,12 +107,14 @@ const router = createRouter({
 
 router.beforeEach(async (to, _from, next) => {
   const auth = useAuthStore()
+  const section = useSectionStore()
 
   // If route requires auth, ensure store is populated before deciding
   if (to.meta.requiresAuth) {
     if (!auth.isAuthenticated) {
       try {
         await auth.fetchUser()
+        await section.fetchSections()
       } catch (e) {
         // ignore - fetchUser handles errors and keeps user=null
       }

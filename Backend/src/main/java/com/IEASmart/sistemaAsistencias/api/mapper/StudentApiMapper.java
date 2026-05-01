@@ -3,7 +3,6 @@ package com.IEASmart.sistemaAsistencias.api.mapper;
 import com.IEASmart.sistemaAsistencias.api.dto.request.StudentRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.response.StudentResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.StudentSuggestionResponse;
-import com.IEASmart.sistemaAsistencias.domain.model.Class;
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
 import org.springframework.stereotype.Component;
 
@@ -29,12 +28,6 @@ public class StudentApiMapper {
         student.setName(studentRequest.getName());
         student.setFirstLastName(studentRequest.getFirstLastName());
         student.setSecondLastName(studentRequest.getSecondLastName());
-
-        Class classSchool = new Class();
-        classSchool.setLevel(studentRequest.getLevel());
-        classSchool.setGrade(studentRequest.getGrade());
-        classSchool.setSection(studentRequest.getSection());
-        student.setClassSchool(classSchool);
         return student;
     }
 

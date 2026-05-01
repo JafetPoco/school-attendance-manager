@@ -1,26 +1,18 @@
 package com.IEASmart.sistemaAsistencias.api.dto.request;
 
-import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Grade;
-import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Level;
-import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
-
 public class StudentRequest {
     private String dni;
     private String name;
     private String firstLastName;
     private String secondLastName;
-    private Level level;
-    private Grade grade;
-    private String section;
+    private Long classId;
 
-    public StudentRequest(String dni, String name, String firstLastName, String secondLastName, Level level, Grade grade, String section) {
+    public StudentRequest(String dni, String name, String firstLastName, String secondLastName, Long classId) {
         this.dni = dni;
         this.name = name;
         this.firstLastName = firstLastName;
         this.secondLastName = secondLastName;
-        this.level = level;
-        this.grade = grade;
-        this.section = section;
+        this.classId = classId;
     }
 
     public StudentRequest() {}
@@ -57,27 +49,11 @@ public class StudentRequest {
         this.secondLastName = secondLastName;
     }
 
-    public Level getLevel() {
-        return level;
+    public Long getClassId() {
+        return classId;
     }
 
-    public void setLevel(Level level) {
-        this.level = level;
-    }
-
-    public Grade getGrade() {
-        return grade;
-    }
-
-    public void setGrade(Grade grade) {
-        this.grade = grade;
-    }
-
-    public String getSection() {
-        return section;
-    }
-
-    public void setSection(String section) {
-        this.section = section;
+    public void setClassId(Long classId) {
+        this.classId = classId;
     }
 }

@@ -13,4 +13,5 @@ public interface ClassRepository {
    List<Long> findAllIdsBySchool(School school);
    Class save(Class newClass);
    Optional<Class> findByClassInformation(String section, Grade grade, Level level, School school);
+   Class getRefernceById(Long classId);
 }

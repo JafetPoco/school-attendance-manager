@@ -53,4 +53,9 @@ public class ClassRepositoryImpl implements ClassRepository {
         return classJpaRepository.findBySectionAndGradeAndLevelAndSchoolAllIgnoreCase(section, grade, level, school)
                 .map(mapper::toDomain);
     }
+
+    @Override
+    public Class getRefernceById(Long classId){
+        return mapper.toDomain(classJpaRepository.getReferenceById(classId));
+    }
 }

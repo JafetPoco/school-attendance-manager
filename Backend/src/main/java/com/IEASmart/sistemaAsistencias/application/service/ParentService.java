@@ -87,13 +87,13 @@ public class ParentService {
     }
 
     public ParentResponse addParentWithChildren(ParentWithChildRequest request, School school) {
-        if(request == null) throw new InvalidArgumentException("Request cannot be null", "request");
+        if(request == null) throw new InvalidArgumentException("Request no puede ser null", "request");
 
         if (request.getChildren() != null) {
             for (StudentRequest s : request.getChildren()) {
                 if (s == null) continue;
                 if (s.getDni() == null || s.getDni().isBlank()) {
-                    throw new InvalidArgumentException("Each student must have a non-empty DNI to be persisted", "children");
+                    throw new InvalidArgumentException("Cada estudiante debe tener un DNI", "children");
                 }
 
                 if (studentRepository != null && s.getDni() != null) {
@@ -106,11 +106,14 @@ public class ParentService {
 
         Parent parent = parentWithChildApiMapper.toDomain(request);
         parent.setSchool(school);
-        for(Student child : parent.getChildren()) {
-            child.getClassSchool().setSchool(school);
 
-            if(child.getClassSchool().getSchool() == null) {
-                throw new IllegalStateException("Child debe tener una escuela asignada antes de ser persistido");
+        for(int i = 0; i < parent.getChildren().size(); i++) {
+            Class classProxy = classRepository.getRefernceById(request.getChildren().get(i).getClassId());
+            Student child = parent.getChildren().get(i);
+            child.setClassSchool(classProxy);
+
+            if (child.getDni() == null || child.getDni().isBlank()) {
+                throw new InvalidArgumentException("Cada estudiante debe tener un DNI", "children[" + i + "]");
             }
         }
 
