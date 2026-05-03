@@ -13,7 +13,7 @@ export interface StudentResponse {
     secondLastName: string
     level: 'PRIMARIA' | 'SECUNDARIA'
     grade: 'PRIMERO' | 'SEGUNDO' | 'TERCERO' | 'CUARTO' | 'QUINTO' | 'SEXTO'
-    section: 'BENJAMIN' | 'NOE' | 'MOISES' | 'DAVID' | 'SALOMON' | 'JACOB' | 'ENOC' | 'JOSE' | 'GEDEON' | 'JOSUE' | 'ELIAS' | 'ELISEO' | 'DANIEL' | 'ESTEBAN' | 'MATEO' | 'JONATAN'
+    section: string
 }
 
 export interface StudentFilter {
