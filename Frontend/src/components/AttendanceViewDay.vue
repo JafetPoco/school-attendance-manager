@@ -17,12 +17,12 @@
         <!-- Filtro por sección -->
         <div class="relative min-w-0">
           <Layers class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <select v-model="filter.section"
+          <select v-model="filter.classId"
                   :disabled="loading"
                   class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent appearance-none cursor-pointer disabled:opacity-50">
-            <option value="">Todas las secciones</option>
-            <option v-for="section in sections" :key="section.value" :value="section.value">
-              {{ section.label }}
+            <option :value="null">Todas las secciones</option>
+            <option v-for="section in sections.sections" :key="section.id" :value="section.id">
+              {{ section.name }}
             </option>
           </select>
         </div>
@@ -312,29 +312,10 @@ import {
 import type { JustificationProfessorRequest } from '@/types/Justification'
 import { addProfessorJustification } from '@/services/justificationsService'
 import { useToast } from '@/composables/useToast'
+import { useSectionStore } from '@/stores/sectionStore'
 
 // Constantes
 const PAGE_SIZE = 15
-
-// Definición de columnas
-const sections = [
-  { value: 'BENJAMIN', label: 'Benjamin' },
-  { value: 'NOE', label: 'Noé' },
-  { value: 'MOISES', label: 'Moisés' },
-  { value: 'DAVID', label: 'David' },
-  { value: 'SALOMON', label: 'Salomón' },
-  { value: 'JACOB', label: 'Jacob' },
-  { value: 'ENOC', label: 'Enoc' },
-  { value: 'JOSE', label: 'José' },
-  { value: 'GEDEON', label: 'Gedeón' },
-  { value: 'JOSUE', label: 'Josué' },
-  { value: 'ELIAS', label: 'Elías' },
-  { value: 'ELISEO', label: 'Eliseo' },
-  { value: 'DANIEL', label: 'Daniel' },
-  { value: 'ESTEBAN', label: 'Esteban' },
-  { value: 'MATEO', label: 'Mateo' },
-  { value: 'JONATAN', label: 'Jonatán' }
-]
 
 const columns = [
   { key: 'studentDni', label: 'DNI' },
@@ -370,7 +351,7 @@ const selectedName = ref('')
 const filter = ref<AttendanceFilter>({
   date: getTodayDate(),
   name: '',
-  section: '',
+  classId: null,
   attendanceType: ''
 })
 
@@ -381,11 +362,12 @@ const sort = ref<Sort>({
 
 // Inicializar toast
 const toast = useToast()
+const sections = useSectionStore()
 
 // Computed properties
 const hasActiveFilters = computed(() => {
   return filter.value.name !== '' || 
-         filter.value.section !== '' || 
+         filter.value.classId !== null || 
          filter.value.attendanceType !== ''
 })
 
@@ -442,7 +424,7 @@ const clearAllFilters = () => {
   filter.value = {
     date: getTodayDate(),
     name: '',
-    section: '',
+    classId: null,
     attendanceType: ''
   }
   currentPage.value = 0
