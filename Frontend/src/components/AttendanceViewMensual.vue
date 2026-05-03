@@ -30,27 +30,12 @@
         <!-- Selector de sección -->
         <div class="relative">
           <Layers class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <select v-model="filter.section"
+          <select v-model="filter.classId"
                   :disabled="loading"
                   class="pl-10 pr-8 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent appearance-none cursor-pointer disabled:opacity-50 min-w-40">
-            <option value="BENJAMIN">Benjamin</option>
-            <option value="NOE">Noé</option>
-            <option value="MOISES">Moisés</option>
-            <option value="DAVID">David</option>
-            <option value="SALOMON">Salomón</option>
-            <option value="JACOB">Jacob</option>
-            <option value="ENOC">Enoc</option>
-            <option value="JOSE">José</option>
-            <option value="GEDEON">Gedeón</option>
-            <option value="JOSUE">Josué</option>
-            <option value="ELIAS">Elías</option>
-            <option value="ELISEO">Eliseo</option>
-            <option value="DANIEL">Daniel</option>
-            <option value="ESTEBAN">Esteban</option>
-            <option value="MATEO">Mateo</option>
-            <option value="SALOMON">Salomón</option>
-            <option value="DAVID">David</option>
-            <option value="JONATAN">Jonatán</option>
+            <option v-for="section in sections.sections" :key="section.id" :value="section.id">
+              {{ section.name }}
+            </option>
           </select>
         </div>
       </div>
@@ -193,6 +178,7 @@ import {
   RotateCw,
   ClipboardList
 } from 'lucide-vue-next'
+import { useSectionStore } from '@/stores/sectionStore'
 
 // Estado
 const loading = ref(false)
@@ -200,9 +186,11 @@ const errorMessage = ref('')
 const attendances = ref<MonthlyAttendance[]>([])
 const selectedDate = ref(new Date())
 
+const sections = useSectionStore()
+
 const filter = ref<MonthlyAttendanceFilter>({
   month: new Date().getMonth() + 1,
-  section: 'BENJAMIN'
+  classId: 1
 })
 
 // Computed properties
@@ -304,7 +292,7 @@ watch(monthNumber, (newMonth) => {
   loadAttendances()
 })
 
-watch(() => filter.value.section, () => {
+watch(() => filter.value.classId, () => {
   loadAttendances()
 })
 

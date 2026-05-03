@@ -62,7 +62,7 @@ public class StudentRepositoryImpl implements StudentRepository {
 
     @Override
     public List<Student> findAllByClassId(Long classId) {
-        return jpaRepository.findAllByClassInfo_Id(classId).stream()
+        return jpaRepository.findAllByClassInfo_IdOrderByFirstLastNameAsc(classId).stream()
                 .map(studentMapper::toDomain)
                 .toList();
     }
