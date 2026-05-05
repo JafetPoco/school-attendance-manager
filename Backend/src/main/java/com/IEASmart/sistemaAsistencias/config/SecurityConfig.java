@@ -47,15 +47,8 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        http.cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((request, response, authException) -> {
-                            response.setContentType("application/json");
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.getWriter().write("{\"error\": \"No autenticado\"}");
-                        })
-                )
                 .authorizeHttpRequests(requests -> requests
                         // permitir explícitamente la raíz y recursos estáticos
                         .requestMatchers(HttpMethod.GET, "/", "/index", "/api/justifications/public/**").permitAll()
