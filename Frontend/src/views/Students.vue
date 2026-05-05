@@ -46,6 +46,7 @@
             <select v-model="filter.level"
                     class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent appearance-none cursor-pointer">
               <option value="">Todos los niveles</option>
+              <option value="INICIAL">Inicial</option>
               <option value="PRIMARIA">Primaria</option>
               <option value="SECUNDARIA">Secundaria</option>
             </select>
@@ -57,6 +58,9 @@
             <select v-model="filter.grade"
                     class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent appearance-none cursor-pointer">
               <option value="">Todos los grados</option>
+              <option value="TRES_AÑOS">3 años</option>
+              <option value="CUATRO_AÑOS">4 años</option>
+              <option value="CINCO_AÑOS">5 años</option>
               <option value="PRIMERO">Primero</option>
               <option value="SEGUNDO">Segundo</option>
               <option value="TERCERO">Tercero</option>
@@ -72,7 +76,7 @@
             <select v-model="filter.section"
                     class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent appearance-none cursor-pointer">
               <option value="">Todas las secciones</option>
-              <option v-for="section in sections.sections" :key="section.id" :value="section.name">
+              <option v-for="section in sectionsLoaded" :key="section.id" :value="section.name">
                 {{ section.name }}
               </option>
             </select>
@@ -424,6 +428,22 @@ const sort = ref<Sort>({
 const toast = useToast()
 const sections = useSectionStore()
 
+const sectionsLoaded = computed(() => {
+  const hasCompositeSection = sections.sections.some((section) => {
+    return String(section.id).includes('-') || String(section.name).includes('-')
+  })
+  
+
+  if (hasCompositeSection) {
+    return [
+      { id: 'A', name: 'A' },
+      { id: 'B', name: 'B' }
+    ]
+  }
+
+  return sections.sections
+})
+
 // Computed properties
 const hasActiveFilters = computed(() => {
   return Object.values(filter.value).some(value => value !== '')
@@ -437,11 +457,23 @@ const paginationInfo = computed(() => {
 
 // Funciones de utilidad
 const formatLevel = (level: string) => {
-  return level === 'PRIMARIA' ? 'Primaria' : 'Secundaria'
+  switch (level) {
+    case 'INICIAL':
+      return 'Inicial'
+    case 'PRIMARIA':
+      return 'Primaria'
+    case 'SECUNDARIA':
+      return 'Secundaria'
+    default:
+      return level
+  }
 }
 
 const formatGrade = (grade: string) => {
   const grades: Record<string, string> = {
+    'TRES_AÑOS': '3 años',
+    'CUATRO_AÑOS': '4 años',
+    'CINCO_AÑOS': '5 años',
     'PRIMERO': '1°',
     'SEGUNDO': '2°',
     'TERCERO': '3°',
@@ -453,9 +485,16 @@ const formatGrade = (grade: string) => {
 }
 
 const getLevelBadgeClass = (level: string) => {
-  return level === 'PRIMARIA' 
-    ? 'bg-blue-50 text-blue-700' 
-    : 'bg-purple-50 text-purple-700'
+  switch (level) {
+    case 'PRIMARIA':
+      return 'bg-blue-50 text-blue-700'
+    case 'SECUNDARIA':
+      return 'bg-purple-50 text-purple-700'
+    case 'INICIAL':
+      return 'bg-green-50 text-green-700'
+    default:
+      return 'bg-gray-50 text-gray-700'
+  }
 }
 
 // Funciones de ordenamiento
