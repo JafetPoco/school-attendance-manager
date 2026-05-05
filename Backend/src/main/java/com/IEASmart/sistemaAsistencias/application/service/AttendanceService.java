@@ -8,23 +8,19 @@ import com.IEASmart.sistemaAsistencias.api.mapper.AttendanceApiMapper;
 import com.IEASmart.sistemaAsistencias.api.mapper.MonthlyAttendanceApiMapper;
 import com.IEASmart.sistemaAsistencias.api.mapper.StudentApiMapper;
 import com.IEASmart.sistemaAsistencias.application.dto.AttendanceCriteria;
-import com.IEASmart.sistemaAsistencias.application.dto.StudentCriteria;
 import com.IEASmart.sistemaAsistencias.domain.exception.ConflictException;
 import com.IEASmart.sistemaAsistencias.domain.exception.ResourceNotFoundException;
 import com.IEASmart.sistemaAsistencias.domain.model.Attendance;
+import com.IEASmart.sistemaAsistencias.domain.model.Class;
 import com.IEASmart.sistemaAsistencias.domain.model.Parent;
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
 import com.IEASmart.sistemaAsistencias.domain.model.Token;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.AttendanceType;
-import com.IEASmart.sistemaAsistencias.domain.model.valueObject.JustificationStatus;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
-import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
 import com.IEASmart.sistemaAsistencias.domain.repository.*;
 import com.IEASmart.sistemaAsistencias.domain.ports.ExcelExportPort;
-import com.IEASmart.sistemaAsistencias.infrastructure.jpa.projection.AttendanceStats;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -104,6 +100,10 @@ public class AttendanceService {
             throw new ConflictException("Valor de mes invalido: " + filter.month() + ". El mes debe ser entre 1 y 12", "INVALID_MONTH_VALUE");
         }
 
+        if(filter.classId() == null) {
+            throw new ConflictException("El id de clase es requerido", "CLASS_ID_REQUIRED");
+        }
+
         LocalDate startDate = LocalDate.of(LocalDate.now().getYear(), filter.month(), 1);
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
 
@@ -131,29 +131,48 @@ public class AttendanceService {
     }
 
     @Transactional(readOnly = true)
-    private Map<Long, List<MonthlyAttendanceResponse>> getMonthlyAttendanceAllSections(
+    private Map<String, List<MonthlyAttendanceResponse>> getMonthlyAttendanceAllSections(
             School school, Integer month) {
 
-        // Validar mes y año
-        if (month < 1 || month > 12) {
+        if (month == null || month < 1 || month > 12) {
             throw new ConflictException("Mes inválido: " + month, "INVALID_MONTH_VALUE");
         }
 
-        // Obtener todas las secciones del colegio
-        List<Long> classIds = classRepository.findAllIdsBySchool(school);
-        Map<Long, List<MonthlyAttendanceResponse>> result = new LinkedHashMap<>();
+        List<Class> classes = classRepository.findAllBySchool(school);
+        Map<Long, String> idToLabel = new LinkedHashMap<>();
+        for (Class c : classes) {
+            String section = c.getSection();
+            String label;
+            if (section != null && section.length() == 1) {
+                String grade = c.getGrade() == null ? "" : c.getGrade().name();
+                String level = c.getLevel() == null ? "" : c.getLevel().name();
+                label = String.format("%s-%s-%s", section, grade, level).trim();
+            } else {
+                label = section == null ? "" : section;
+            }
+            idToLabel.put(c.getId(), label);
+        }
 
-        for (Long classId : classIds) {
+        // Para cada clase generar la información mensual
+        Map<String, List<MonthlyAttendanceResponse>> result = new LinkedHashMap<>();
+        for (Map.Entry<Long, String> entry : idToLabel.entrySet()) {
+            Long classId = entry.getKey();
+            String label = entry.getValue();
+            String displayLabel = label.isEmpty() ? String.valueOf(classId) : label;
+            // Evitar colisiones de etiqueta: si ya existe, anexar el id para garantizar unicidad
+            if (result.containsKey(displayLabel)) {
+                displayLabel = displayLabel + " (" + classId + ")";
+            }
             AttendanceMonthlyFilter filter = new AttendanceMonthlyFilter(month, classId);
             List<MonthlyAttendanceResponse> sectionData = getMonthlyAttendance(filter);
-            result.put(classId, sectionData);
+            result.put(displayLabel, sectionData);
         }
 
         return result;
     }
 
     public byte[] getMonthlyAttendanceExcelAllSections(School school, Integer month) {
-        Map<Long, List<MonthlyAttendanceResponse>> dataBySection =
+        Map<String, List<MonthlyAttendanceResponse>> dataBySection =
                 getMonthlyAttendanceAllSections(school, month);
 
         // Usar el exportador con múltiples hojas
@@ -197,7 +216,7 @@ public class AttendanceService {
     public AttendanceInfoResponse getAttendanceById(String id) {
         Optional<Attendance> attendanceOpt = attendanceRepository.findById(id);
         if (attendanceOpt.isEmpty()) {
-            throw new ResourceNotFoundException("Asistencia", id.toString());
+            throw new ResourceNotFoundException("Asistencia", id);
         }
         return mapper.toInfoResponse(attendanceOpt.get());
     }

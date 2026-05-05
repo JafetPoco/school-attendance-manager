@@ -3,6 +3,9 @@ package com.IEASmart.sistemaAsistencias.domain.model.valueObject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum Grade {
+    TRES_AÑOS,
+    CUATRO_AÑOS,
+    CINCO_AÑOS,
     PRIMERO,
     SEGUNDO,
     TERCERO,

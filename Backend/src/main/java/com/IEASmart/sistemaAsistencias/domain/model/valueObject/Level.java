@@ -3,6 +3,7 @@ package com.IEASmart.sistemaAsistencias.domain.model.valueObject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum Level {
+    INICIAL,
     PRIMARIA,
     SECUNDARIA;
 
