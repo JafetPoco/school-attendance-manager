@@ -4,7 +4,7 @@
     <div class="max-w-4xl w-full animate-fade-in">
       <!-- Tarjeta de error -->
       <div class="bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden">
-        <div class="grid grid-cols-1 lg:grid-cols-2 min-h-[500px]">
+        <div class="grid grid-cols-1 lg:grid-cols-2 min-h-125">
           <!-- Lado izquierdo - Información del error -->
           <div class="p-8 lg:p-12 flex flex-col justify-between">
             <div>
@@ -34,7 +34,7 @@
               <!-- Acciones sugeridas -->
               <div class="space-y-4 mb-8">
                 <div class="flex items-start space-x-3">
-                  <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
                     <Search class="w-4 h-4 text-slate-600" />
                   </div>
                   <div>
@@ -44,7 +44,7 @@
                 </div>
                 
                 <div class="flex items-start space-x-3">
-                  <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
                     <Home class="w-4 h-4 text-slate-600" />
                   </div>
                   <div>
@@ -54,7 +54,7 @@
                 </div>
                 
                 <div class="flex items-start space-x-3">
-                  <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
                     <LifeBuoy class="w-4 h-4 text-slate-600" />
                   </div>
                   <div>
@@ -76,7 +76,7 @@
           </div>
 
           <!-- Lado derecho - Ilustración/Elemento visual -->
-          <div class="relative bg-gradient-to-br from-slate-800 to-slate-900 p-8 lg:p-12 flex items-center justify-center overflow-hidden">
+          <div class="relative bg-linear-to-br from-slate-800 to-slate-900 p-8 lg:p-12 flex items-center justify-center overflow-hidden">
             <!-- Patrón de fondo -->
             <div class="absolute inset-0 opacity-10">
               <div class="absolute top-0 left-0 w-40 h-40 bg-white rounded-full mix-blend-overlay filter blur-3xl"></div>
@@ -125,7 +125,7 @@
             </div>
 
             <!-- Efecto de gradiente animado -->
-            <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-slate-900 to-transparent"></div>
+            <div class="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-slate-900 to-transparent"></div>
           </div>
         </div>
       </div>
@@ -142,12 +142,9 @@ import {
   Home,
   LifeBuoy,
   ArrowLeft,
-  MessageSquare,
-  ChevronRight,
   BookOpen,
   Users,
-  Clock,
-  X
+  Clock
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -160,8 +157,8 @@ const reportData = ref({
 })
 
 onMounted(() => {
-  currentUrl.value = window.location.href
-  reportData.value.url = window.location.href
+  currentUrl.value = globalThis.location.href
+  reportData.value.url = globalThis.location.href
 })
 
 const goToDashboard = () => {
