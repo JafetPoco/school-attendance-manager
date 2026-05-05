@@ -27,7 +27,7 @@ public class SecurityConfig {
     public AuthenticationSuccessHandler authenticationSuccessHandler(){
         return (request, response, authentication) -> {
             // Evitar NPE y redirigir a raíz si no hay frontendUrl configurado
-            String target = (frontendUrl == null || frontendUrl.isBlank()) ? "/" : frontendUrl + "/dashboard";
+            String target = (frontendUrl == null || frontendUrl.isBlank()) ? "/" : frontendUrl.replaceAll("/$", "") + "/dashboard";
             response.sendRedirect(target);
         };
     }
@@ -39,6 +39,7 @@ public class SecurityConfig {
         config.setAllowedMethods(List.of("GET", "POST", "PATCH",  "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
+        config.setExposedHeaders(List.of("Set-Cookie"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
@@ -46,8 +47,15 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.cors(Customizer.withDefaults())
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setContentType("application/json");
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("{\"error\": \"No autenticado\"}");
+                        })
+                )
                 .authorizeHttpRequests(requests -> requests
                         // permitir explícitamente la raíz y recursos estáticos
                         .requestMatchers(HttpMethod.GET, "/", "/index", "/api/justifications/public/**").permitAll()
