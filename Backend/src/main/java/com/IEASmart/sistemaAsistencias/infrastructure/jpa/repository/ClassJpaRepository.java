@@ -1,5 +1,6 @@
 package com.IEASmart.sistemaAsistencias.infrastructure.jpa.repository;
 
+import com.IEASmart.sistemaAsistencias.domain.model.Class;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Grade;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Level;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;

@@ -58,4 +58,9 @@ public class ClassRepositoryImpl implements ClassRepository {
     public Class getRefernceById(Long classId){
         return mapper.toDomain(classJpaRepository.getReferenceById(classId));
     }
+
+    @Override
+    public Optional<Class> findById(Long classId){
+        return classJpaRepository.findById(classId).map(mapper::toDomain);
+    }
 }

@@ -9,3 +9,10 @@ export interface ClassResponse {
     name: string;
 
 }
+
+export interface ClassFullInfoResponse {
+    id: number;
+    level: string;
+    grade: string;
+    section: string;
+}

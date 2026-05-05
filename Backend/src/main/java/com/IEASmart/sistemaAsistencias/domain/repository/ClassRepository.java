@@ -14,4 +14,5 @@ public interface ClassRepository {
    Class save(Class newClass);
    Optional<Class> findByClassInformation(String section, Grade grade, Level level, School school);
    Class getRefernceById(Long classId);
+   Optional<Class> findById(Long classId);
 }
