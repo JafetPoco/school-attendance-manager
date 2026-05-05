@@ -50,7 +50,7 @@
       <!-- Grid de tarjetas -->
       <div v-if="!loading && !errorMessage" class="animate-fade-in-up">
         <!-- Estadísticas -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
           <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
             <div class="flex items-center justify-between">
               <div>
@@ -59,6 +59,18 @@
               </div>
               <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
                 <BookOpen class="w-5 h-5 text-slate-600" />
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-xs text-slate-500">Inicial</p>
+                <p class="text-2xl font-bold text-green-600">{{ getCountByLevel('INICIAL') }}</p>
+              </div>
+              <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <GraduationCap class="w-5 h-5 text-green-600" />
               </div>
             </div>
           </div>
@@ -208,6 +220,7 @@
                 <select v-model="formData.level" id="level"
                         class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent appearance-none cursor-pointer">
                   <option value="">Selecciona un nivel</option>
+                  <option value="INICIAL">Inicial</option>
                   <option value="PRIMARIA">Primaria</option>
                   <option value="SECUNDARIA">Secundaria</option>
                 </select>
@@ -224,6 +237,9 @@
                 <select v-model="formData.grade" id="grade"
                         class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent appearance-none cursor-pointer">
                   <option value="">Selecciona un grado</option>
+                  <option value="TRES_AÑOS">3 Años</option>
+                  <option value="CUATRO_AÑOS">4 Años</option>
+                  <option value="CINCO_AÑOS">5 Años</option>
                   <option value="PRIMERO">Primero</option>
                   <option value="SEGUNDO">Segundo</option>
                   <option value="TERCERO">Tercero</option>
@@ -243,7 +259,6 @@
                 <Grid3x3 class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input type="text" id="section"
                        v-model="formData.section"
-                       maxlength="1"
                        class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent"
                        :class="errors.section ? 'border-red-300 bg-red-50' : 'hover:border-slate-300'"
                        placeholder="Ej: A, B, Benjamin...">
@@ -285,27 +300,6 @@
         </div>
       </div>
     </transition>
-
-    <!-- Sistema de Toasts -->
-    <transition-group name="toast" tag="div" class="fixed bottom-4 right-4 z-50 space-y-2">
-      <div v-for="toast in toasts" 
-           :key="toast.id"
-           :class="[
-             'flex items-center space-x-3 px-4 py-3 rounded-lg shadow-lg min-w-75 max-w-md animate-slide-in-right',
-             toast.type === 'success' ? 'bg-emerald-600 text-white' : '',
-             toast.type === 'error' ? 'bg-red-600 text-white' : '',
-             toast.type === 'info' ? 'bg-blue-600 text-white' : ''
-           ]">
-        <component :is="toast.icon" class="w-5 h-5 shrink-0" />
-        <div class="flex-1">
-          <p class="text-sm font-medium">{{ toast.title }}</p>
-          <p class="text-xs opacity-90">{{ toast.message }}</p>
-        </div>
-        <button @click="removeToast(toast.id)" class="opacity-70 hover:opacity-100 transition-opacity">
-          <X class="w-4 h-4" />
-        </button>
-      </div>
-    </transition-group>
   </div>
 </template>
 
@@ -323,24 +317,15 @@ import {
   Edit,
   PenBox,
   X,
-  CheckCircle,
-  XCircle,
-  Info,
   GraduationCap,
   Layers,
   Grid3x3,
   Save,
   Users
 } from 'lucide-vue-next'
+import { useToast } from '@/composables/useToast'
 
-// Interfaces
-interface ToastMessage {
-  id: number
-  type: 'success' | 'error' | 'info'
-  title: string
-  message: string
-  icon: any
-}
+const toast = useToast()
 
 // Estado
 const loading = ref(false)
@@ -350,8 +335,6 @@ const allClasses = ref<ClassFullInfoResponse[]>([])
 const showModal = ref(false)
 const isEditing = ref(false)
 const editingId = ref<number | null>(null)
-const toasts = ref<ToastMessage[]>([])
-let nextToastId = 1
 
 const formData = reactive<ClassRequest>({
   level: '',
@@ -363,31 +346,23 @@ const errors = reactive({
   section: ''
 })
 
-// Funciones de Toast
-const addToast = (type: ToastMessage['type'], title: string, message: string, duration: number = 3000) => {
-  const icon = type === 'success' ? CheckCircle : type === 'error' ? XCircle : Info
-  const toast: ToastMessage = {
-    id: nextToastId++,
-    type,
-    title,
-    message,
-    icon
-  }
-  toasts.value.push(toast)
-  setTimeout(() => removeToast(toast.id), duration)
-}
-
-const removeToast = (id: number) => {
-  toasts.value = toasts.value.filter(t => t.id !== id)
-}
-
 // Funciones de utilidad
 const formatLevel = (level: string) => {
-  return level === 'PRIMARIA' ? 'Primaria' : 'Secundaria'
+  switch (level) {
+    case 'PRIMARIA':
+      return 'Primaria'
+    case 'SECUNDARIA':
+      return 'Secundaria'
+    case 'INICIAL':
+      return 'Inicial'
+  }
 }
 
 const formatGrade = (grade: string) => {
   const grades: Record<string, string> = {
+    'TRES_AÑOS': '3 años',
+    'CUATRO_AÑOS': '4 años',
+    'CINCO_AÑOS': '5 años',
     'PRIMERO': '1°',
     'SEGUNDO': '2°',
     'TERCERO': '3°',
@@ -399,9 +374,16 @@ const formatGrade = (grade: string) => {
 }
 
 const getHeaderGradientClass = (level: string) => {
-  return level === 'PRIMARIA' 
-    ? 'bg-gradient-to-r from-blue-600 to-blue-500' 
-    : 'bg-gradient-to-r from-purple-600 to-purple-500'
+  switch (level) {
+    case 'PRIMARIA':
+      return 'bg-gradient-to-r from-blue-600 to-blue-500'
+    case 'SECUNDARIA':
+      return 'bg-gradient-to-r from-purple-600 to-purple-500'
+    case 'INICIAL':
+      return 'bg-gradient-to-r from-green-600 to-green-500'
+    default:
+      return 'bg-slate-800'
+  }
 }
 
 const getLevelBadgeClass = (level: string) => {
@@ -421,10 +403,7 @@ const validateSection = () => {
     errors.section = 'La sección es obligatoria'
     return false
   }
-  if (!/^[A-Z]$/.test(section)) {
-    errors.section = 'La sección debe ser una sola letra mayúscula'
-    return false
-  }
+
   errors.section = ''
   formData.section = section
   return true
@@ -463,7 +442,7 @@ const resetForm = () => {
 const submitClass = async () => {
   if (!validateSection()) return
   if (!formData.level || !formData.grade) {
-    addToast('error', 'Campos incompletos', 'Por favor completa todos los campos')
+    toast.showError('Error', 'Nivel y grado son obligatorios')
     return
   }
 
@@ -478,15 +457,14 @@ const submitClass = async () => {
     }
 
     if (response.success) {
-      addToast('success', isEditing.value ? 'Clase actualizada' : 'Clase creada', 
-               isEditing.value ? 'La clase ha sido actualizada correctamente' : 'La clase ha sido creada correctamente')
+      toast.showSuccess('Éxito', `Clase ${isEditing.value ? 'actualizada' : 'creada'} correctamente`)
       await getAllClasses()
       closeModal()
     } else {
-      addToast('error', 'Error', response.error.message)
+      toast.showError('Error', response.error.message)
     }
   } catch (error) {
-    addToast('error', 'Error de conexión', error instanceof Error ? error.message : 'Error desconocido')
+    toast.showError('Error', error instanceof Error ? error.message : 'Error de conexión')
   } finally {
     submitting.value = false
   }
