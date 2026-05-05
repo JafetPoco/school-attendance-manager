@@ -190,7 +190,7 @@ const sections = useSectionStore()
 
 const filter = ref<MonthlyAttendanceFilter>({
   month: new Date().getMonth() + 1,
-  classId: 1
+  classId: sections.sections?.length > 0 ? sections.sections[0].id : 0
 })
 
 // Computed properties
