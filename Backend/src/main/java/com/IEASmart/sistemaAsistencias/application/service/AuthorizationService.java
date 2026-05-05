@@ -1,7 +1,9 @@
 package com.IEASmart.sistemaAsistencias.application.service;
 
+import com.IEASmart.sistemaAsistencias.api.dto.request.ProfessorRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.request.UserRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.response.CreateUserResponse;
+import com.IEASmart.sistemaAsistencias.api.dto.response.UserInfoResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.UserResponse;
 import com.IEASmart.sistemaAsistencias.api.mapper.UserApiMapper;
 import com.IEASmart.sistemaAsistencias.domain.exception.ConflictException;
@@ -144,7 +146,42 @@ public class AuthorizationService {
         return mapper.toCreateResponse(savedEntity);
     }
 
+    public UserInfoResponse createProfessor(ProfessorRequest professor, School school) {
+        if (professor.getEmail() == null || professor.getEmail().isBlank()) {
+            throw InvalidArgumentException.required("email");
+        }
+
+        boolean emailExists = adminRepository.findByEmail(professor.getEmail()).isPresent()
+                || professorRepository.findByEmail(professor.getEmail()).isPresent();
+        if (emailExists) {
+            throw new ConflictException("Ya existe un usuario con el email: " + professor.getEmail(), "EMAIL_ALREADY_EXISTS");
+        }
+
+        Professor p = new Professor();
+        p.setNames(professor.getNames());
+        p.setFirstLastName(professor.getFirstLastName());
+        p.setSecondLastName(professor.getSecondLastName());
+        p.setEmail(professor.getEmail());
+        p.setSchool(school);
+        p.setUserType(UserType.PROFESSOR);
+
+        p = professorRepository.save(p);
+
+        return mapper.toInfoResponse(p);
+    }
+
     public boolean isAdmin() {
         return resolveUserByEmail().getUserType() == UserType.ADMIN;
+    }
+
+    public List<UserInfoResponse> getAllUsers(School school) {
+        List<Admin> admins = adminRepository.findAllBySchool(school);
+        List<Professor> professors = professorRepository.findAllBySchool(school);
+
+        List<UserInfoResponse> responses = new ArrayList<>(admins.size() + professors.size());
+        responses.addAll(admins.stream().map(mapper::toInfoResponse).toList());
+        responses.addAll(professors.stream().map(mapper::toInfoResponse).toList());
+
+        return responses;
     }
 }

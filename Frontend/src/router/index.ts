@@ -99,6 +99,12 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/createUsers',
+      name: 'createUsers',
+      component: () => import('@/views/CreateUsers.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/:pathMatch(.*)*',
       component: page404,
     }

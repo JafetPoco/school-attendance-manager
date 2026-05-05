@@ -1,6 +1,7 @@
 package com.IEASmart.sistemaAsistencias.infrastructure.jpa.repository;
 
 import com.IEASmart.sistemaAsistencias.domain.model.Professor;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import com.IEASmart.sistemaAsistencias.domain.repository.ProfessorRepository;
 import com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity.ProfessorEntity;
 import com.IEASmart.sistemaAsistencias.infrastructure.mapper.ProfessorMapper;
@@ -20,8 +21,8 @@ public class ProfessorRepositoryImpl implements ProfessorRepository {
     }
 
     @Override
-    public List<Professor> findAll(){
-        return jpaRepository.findAll().stream()
+    public List<Professor> findAllBySchool(School school){
+        return jpaRepository.findAllBySchool(school).stream()
                 .map(mapper::toDomain)
                 .toList();
     }

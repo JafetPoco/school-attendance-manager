@@ -1,6 +1,7 @@
 package com.IEASmart.sistemaAsistencias.infrastructure.jpa.repository;
 
 import com.IEASmart.sistemaAsistencias.domain.model.Admin;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
 import com.IEASmart.sistemaAsistencias.domain.repository.AdminRepository;
 import com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity.AdminEntity;
 import com.IEASmart.sistemaAsistencias.infrastructure.mapper.AdminMapper;
@@ -20,8 +21,8 @@ public class AdminRepositoryImpl implements AdminRepository {
     }
 
     @Override
-    public List<Admin> findAll() {
-        return jpaRepository.findAll().stream().map(mapper::toDomain).toList();
+    public List<Admin> findAllBySchool(School school) {
+        return jpaRepository.findAllBySchool(school).stream().map(mapper::toDomain).toList();
     }
 
     @Override

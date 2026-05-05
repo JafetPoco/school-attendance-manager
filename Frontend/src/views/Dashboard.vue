@@ -67,7 +67,7 @@
 
         <router-link 
           v-if ="auth.user?.userType === 'ADMIN'"
-          to="/classes" 
+          to="/createUsers" 
           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800"
         >
           <UserLockIcon class="w-5 h-5" />
