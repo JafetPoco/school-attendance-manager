@@ -14,8 +14,7 @@ export interface AttendanceResponse {
     studentSecondLastName: string
     attendanceType: AttendanceType
     date: string
-    token: string
-    idAttendance: bigint
+    idAttendance: string
 }
 
 export interface AttendanceFilter {

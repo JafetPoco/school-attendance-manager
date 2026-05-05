@@ -1,7 +1,25 @@
 <template>
   <div class="min-h-screen bg-slate-50">
-    <!-- Sidebar moderno -->
-    <aside class="fixed left-0 top-0 h-full w-72 bg-white border-r border-slate-200 shadow-sm z-50">
+    <!-- Botón de menú móvil -->
+    <button 
+      @click="toggleMobileMenu"
+      class="fixed top-4 left-4 z-50 lg:hidden p-2 bg-white rounded-lg shadow-md border border-slate-200"
+    >
+      <Menu class="w-5 h-5 text-slate-600" />
+    </button>
+
+    <!-- Overlay para móvil -->
+    <div 
+      v-if="mobileMenuOpen"
+      class="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300"
+      @click="toggleMobileMenu"
+    ></div>
+
+    <!-- Sidebar moderno - responsive -->
+    <aside 
+      class="fixed left-0 top-0 h-full w-72 bg-white border-r border-slate-200 shadow-sm z-50 transition-transform duration-300 lg:translate-x-0"
+      :class="mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+    >
       <div class="p-6 border-b border-slate-200">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center shadow-md">
@@ -14,11 +32,12 @@
         </div>
       </div>
       
-      <nav class="p-4 space-y-1">
+      <nav class="p-4 space-y-1 overflow-y-auto" style="max-height: calc(100vh - 180px)">
         <router-link 
           to="/dashboard" 
           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200"
           :class="$route.path === '/dashboard' ? 'bg-slate-100 text-slate-800' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'"
+          @click="closeMobileMenu"
         >
           <LayoutDashboard class="w-5 h-5" />
           <span class="font-medium text-sm">Dashboard</span>
@@ -27,6 +46,7 @@
         <router-link 
           to="/attendances" 
           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800"
+          @click="closeMobileMenu"
         >
           <UserCheck class="w-5 h-5" />
           <span class="font-medium text-sm">Ver Asistencias</span>
@@ -35,6 +55,7 @@
         <router-link 
           to="/markAttendance" 
           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800"
+          @click="closeMobileMenu"
         >
           <ClipboardList class="w-5 h-5" />
           <span class="font-medium text-sm">Tomar Asistencia</span>
@@ -43,6 +64,7 @@
         <router-link 
           to="/pendingJustifications" 
           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800"
+          @click="closeMobileMenu"
         >
           <FileCheck class="w-5 h-5" />
           <span class="font-medium text-sm">Justificaciones</span>
@@ -51,24 +73,27 @@
         <router-link 
           to="/students" 
           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800"
+          @click="closeMobileMenu"
         >
           <Users class="w-5 h-5" />
           <span class="font-medium text-sm">Mis Alumnos</span>
         </router-link>
 
         <router-link 
-          v-if ="auth.user?.userType === 'ADMIN'"
+          v-if="auth.user?.userType === 'ADMIN'"
           to="/classes" 
           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800"
+          @click="closeMobileMenu"
         >
           <School class="w-5 h-5" />
           <span class="font-medium text-sm">Mis Clases</span>
         </router-link>
 
         <router-link 
-          v-if ="auth.user?.userType === 'ADMIN'"
+          v-if="auth.user?.userType === 'ADMIN'"
           to="/createUsers" 
           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800"
+          @click="closeMobileMenu"
         >
           <UserLockIcon class="w-5 h-5" />
           <span class="font-medium text-sm">Administrar Cuentas</span>
@@ -77,6 +102,7 @@
         <router-link 
           to="/settings" 
           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800"
+          @click="closeMobileMenu"
         >
           <Settings class="w-5 h-5" />
           <span class="font-medium text-sm">Configuración</span>
@@ -93,12 +119,12 @@
               @error="handleImageError"
             />
           </div>
-          <div class="flex-1">
-            <p class="text-sm font-medium text-slate-800">{{ getUserFullName() }}</p>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-slate-800 truncate">{{ getUserFullName() }}</p>
             <p class="text-xs text-slate-500">{{ getUserRole() }}</p>
           </div>
           <LogOut 
-            class="w-5 h-5 text-slate-400 cursor-pointer hover:text-red-500 transition-colors" 
+            class="w-5 h-5 text-slate-400 cursor-pointer hover:text-red-500 transition-colors shrink-0" 
             @click="handleLogout"
           />
         </div>
@@ -106,18 +132,18 @@
     </aside>
 
     <!-- Contenido principal -->
-    <main class="ml-72">
+    <main class="lg:ml-72">
       <!-- Header superior -->
-      <div class="bg-white border-b border-slate-200 sticky top-0 z-40 px-8 py-4">
+      <div class="bg-white border-b border-slate-200 sticky top-0 z-40 px-4 sm:px-8 py-4">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 class="text-2xl font-bold text-slate-800">Dashboard</h1>
+          <div class="pl-12 lg:pl-0">
+            <h1 class="text-xl sm:text-2xl font-bold text-slate-800">Dashboard</h1>
             <p class="text-slate-500 text-sm mt-1">Bienvenido de vuelta, {{ getUserFirstName() }}</p>
           </div>
         </div>
       </div>
 
-      <div class="px-8 py-8">
+      <div class="px-4 sm:px-8 py-6 sm:py-8">
         <!-- Estado de carga -->
         <div v-if="loading" class="flex flex-col items-center justify-center py-12">
           <Loader2 class="w-8 h-8 text-slate-400 animate-spin mb-3" />
@@ -136,94 +162,94 @@
           </button>
         </div>
 
-        <!-- Tarjetas KPI -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Tarjetas KPI - responsive grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
           <!-- Asistencia hoy -->
-          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 hover:shadow-md transition-all duration-300 group">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
-                <UserCheck class="w-6 h-6 text-emerald-600" />
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6 hover:shadow-md transition-all duration-300 group">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <UserCheck class="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
               </div>
-              <TrendingUp class="w-5 h-5 text-emerald-500" />
+              <TrendingUp class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
             </div>
-            <p class="text-3xl font-bold text-slate-800">{{ presentPorcent }}%</p>
-            <p class="text-slate-500 text-sm mt-1">Asistencia hoy</p>
+            <p class="text-2xl sm:text-3xl font-bold text-slate-800">{{ presentPorcent }}%</p>
+            <p class="text-slate-500 text-xs sm:text-sm mt-1">Asistencia hoy</p>
             <p class="text-xs text-slate-400 mt-2">{{ todayStats?.totalPresences || 0 }} de {{ dashboardStats?.totalStudents || 0 }} presentes</p>
           </div>
 
           <!-- Tardes registradas -->
-          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 hover:shadow-md transition-all duration-300">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-                <Clock class="w-6 h-6 text-amber-600" />
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6 hover:shadow-md transition-all duration-300">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                <Clock class="w-5 h-5 sm:w-6 sm:h-6 text-amber-600" />
               </div>
-              <AlertCircle class="w-5 h-5 text-amber-500" />
+              <AlertCircle class="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
             </div>
-            <p class="text-3xl font-bold text-slate-800">{{ todayStats?.totalLate || 0 }}</p>
-            <p class="text-slate-500 text-sm mt-1">Tardes registradas</p>
+            <p class="text-2xl sm:text-3xl font-bold text-slate-800">{{ todayStats?.totalLate || 0 }}</p>
+            <p class="text-slate-500 text-xs sm:text-sm mt-1">Tardes registradas</p>
           </div>
 
           <!-- Ausencias sin justificar -->
-          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 hover:shadow-md transition-all duration-300">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-                <UserX class="w-6 h-6 text-red-600" />
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6 hover:shadow-md transition-all duration-300">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                <UserX class="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />
               </div>
-              <AlertCircle class="w-5 h-5 text-red-500" />
+              <AlertCircle class="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
             </div>
-            <p class="text-3xl font-bold text-slate-800">{{ todayStats?.totalAbsences || 0 }}</p>
-            <p class="text-slate-500 text-sm mt-1">Ausencias sin justificar</p>
+            <p class="text-2xl sm:text-3xl font-bold text-slate-800">{{ todayStats?.totalAbsences || 0 }}</p>
+            <p class="text-slate-500 text-xs sm:text-sm mt-1">Ausencias sin justificar</p>
           </div>
 
           <!-- Justificaciones pendientes -->
-          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 hover:shadow-md transition-all duration-300 cursor-pointer group" @click="goToJustifications">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                <FileText class="w-6 h-6 text-purple-600" />
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6 hover:shadow-md transition-all duration-300 cursor-pointer group" @click="goToJustifications">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                <FileText class="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
               </div>
-              <ChevronRight class="w-5 h-5 text-slate-400 group-hover:translate-x-1 transition-transform" />
+              <ChevronRight class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 group-hover:translate-x-1 transition-transform" />
             </div>
-            <p class="text-3xl font-bold text-slate-800">{{ todayStats?.totalPendingJustification || 0 }}</p>
-            <p class="text-slate-500 text-sm mt-1">Justificaciones pendientes</p>
+            <p class="text-2xl sm:text-3xl font-bold text-slate-800">{{ todayStats?.totalPendingJustification || 0 }}</p>
+            <p class="text-slate-500 text-xs sm:text-sm mt-1">Justificaciones pendientes</p>
           </div>
         </div>
 
-        <!-- Gráficos -->
+        <!-- Gráficos - responsive -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <!-- Evolución semanal -->
-          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-            <div class="flex justify-between items-center mb-6">
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6">
+            <div class="flex justify-between items-center mb-4 sm:mb-6">
               <div>
-                <h3 class="font-semibold text-slate-800">Evolución de asistencia</h3>
+                <h3 class="font-semibold text-slate-800 text-sm sm:text-base">Evolución de asistencia</h3>
                 <p class="text-xs text-slate-500 mt-1">Última semana</p>
               </div>
             </div>
-            <div ref="weeklyChartRef" class="w-full h-80"></div>
+            <div ref="weeklyChartRef" class="w-full h-64 sm:h-80"></div>
           </div>
 
           <!-- Top alumnos con más tardes -->
-          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6">
             <div class="flex justify-between items-center mb-4">
               <div>
-                <h3 class="font-semibold text-slate-800">Top alumnos con más tardes</h3>
+                <h3 class="font-semibold text-slate-800 text-sm sm:text-base">Top alumnos con más tardes</h3>
                 <p class="text-xs text-slate-500 mt-1">Acumulado del mes</p>
               </div>
-              <Medal class="w-5 h-5 text-amber-500" />
+              <Medal class="w-5 h-5 text-amber-500 shrink-0" />
             </div>
             <div v-if="studentsTopLate && studentsTopLate.length > 0" class="space-y-3">
-              <div v-for="(student, index) in studentsTopLate" :key="student.fullName" 
-                   class="flex items-center justify-between p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
+              <div v-for="(student, index) in studentsTopLate.slice(0, 5)" :key="student.fullName" 
+                   class="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors gap-2">
                 <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm" 
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shrink-0" 
                        :class="index === 0 ? 'bg-amber-100 text-amber-700' : index === 1 ? 'bg-slate-300 text-slate-700' : index === 2 ? 'bg-orange-100 text-orange-700' : 'bg-slate-200 text-slate-600'">
                     {{ index + 1 }}
                   </div>
-                  <div>
-                    <p class="font-medium text-slate-800">{{ student.fullName }}</p>
+                  <div class="min-w-0">
+                    <p class="font-medium text-slate-800 text-sm sm:text-base truncate">{{ student.fullName }}</p>
                     <p class="text-xs text-slate-500">{{ student.grade || 'Sin grado' }}</p>
                   </div>
                 </div>
-                <div class="flex items-center gap-4">
+                <div class="flex items-center justify-between sm:justify-end gap-4 pl-11 sm:pl-0">
                   <div class="text-right">
                     <p class="text-lg font-bold text-amber-600">{{ student.totalLate }}</p>
                     <p class="text-xs text-slate-500">tardes</p>
@@ -264,7 +290,8 @@ import {
   RotateCw,
   GraduationCap,
   School,
-  UserLockIcon
+  UserLockIcon,
+  Menu
 } from 'lucide-vue-next'
 import type { DashboardResponse, StudentsTopLate } from '@/types/Attendance'
 import { attendancesStats } from '@/services/dashBoardService'
@@ -278,6 +305,7 @@ const dashboardStats = ref<DashboardResponse | null>(null)
 const studentsTopLate = ref<StudentsTopLate[]>([])
 const loading = ref(false)
 const errorMessage = ref('')
+const mobileMenuOpen = ref(false)
 
 // Referencias para gráficos
 const weeklyChartRef = ref<HTMLElement | null>(null)
@@ -374,6 +402,15 @@ const handleLogout = async () => {
   }
 }
 
+// Funciones de menú móvil
+const toggleMobileMenu = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value
+}
+
+const closeMobileMenu = () => {
+  mobileMenuOpen.value = false
+}
+
 // Inicializar gráficos
 const initCharts = () => {
   if (!weeklyChartRef.value) return
@@ -440,6 +477,11 @@ const initCharts = () => {
         itemStyle: { color: '#f87171' }
       }
     ]
+  })
+  
+  // Manejar redimensionamiento
+  window.addEventListener('resize', () => {
+    weeklyChart?.resize()
   })
 }
 
@@ -516,5 +558,13 @@ onMounted(() => {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Animación para el menú móvil */
+@media (max-width: 1023px) {
+  .sidebar-enter-active,
+  .sidebar-leave-active {
+    transition: transform 0.3s ease;
+  }
 }
 </style>

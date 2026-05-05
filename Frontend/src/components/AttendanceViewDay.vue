@@ -172,7 +172,7 @@
                     <button v-if="attendance.attendanceType.toLocaleLowerCase() === 'ausente'"
                             class="p-2 text-slate-300 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all duration-200 hover:scale-110"
                             title="Notificar Padre"
-                            @click="getContactInfo(Number(attendance.idAttendance), `${attendance.studentName} ${attendance.studentFirstLastName} ${attendance.studentSecondLastName}`)">
+                            @click="getContactInfo(attendance.idAttendance, `${attendance.studentName} ${attendance.studentFirstLastName} ${attendance.studentSecondLastName}`)">
                       <Send class="w-4 h-4" />
                     </button>
                   </div>
@@ -313,9 +313,12 @@ import type { JustificationProfessorRequest } from '@/types/Justification'
 import { addProfessorJustification } from '@/services/justificationsService'
 import { useToast } from '@/composables/useToast'
 import { useSectionStore } from '@/stores/sectionStore'
+import { useAuthStore } from '@/stores/authStore'
 
 // Constantes
 const PAGE_SIZE = 15
+
+const auth = useAuthStore()
 
 const columns = [
   { key: 'studentDni', label: 'DNI' },
@@ -541,7 +544,7 @@ const executeJustification = async () => {
 }
 
 // Notificar padre
-const getContactInfo = async (id: number, studentName: string) => {
+const getContactInfo = async (id: string, studentName: string) => {
   try {
     const response = await contactStudent(id)
 
@@ -562,17 +565,17 @@ const sendMensageToParent = async (contactInfo: ContactResponse) => {
   try {
     const justificationUrl = `https://school-attendance-manager-dun.vercel.app/justifications/${contactInfo.token}`
     const mensage = encodeURIComponent(
-      `🚨 Aviso de Asistencia Escolar
-Estimado(a) Padre/Madre de Familia 👨‍👩‍👧‍👦:
-Reciba un cordial saludo 🤝.
-Le informamos que su hijo(a) *${contactInfo.studentName}* 📌 no registra ingreso al colegio el día de hoy. 
+      `⚠️ Aviso de Asistencia Escolar 🎓
+Estimado(a) Padre/Madre de Familia:
+Reciba un cordial saludo 🤝
+Le informamos que su hijo(a) \`${contactInfo.studentName}\` no registra ingreso al colegio el día de hoy. 
 Le solicitamos, por favor, realizar la justificación de la inasistencia mediante el siguiente enlace:
 
-👇 Acceda al formulario:
-${justificationUrl}
+> 👇Acceda al formulario:
+> ${justificationUrl}
 
 Agradecemos su apoyo para mantener actualizada la asistencia del estudiante ✅.
-📍 I.E. Gral. José de San Martin`)
+🏫 I.E. ${auth.user?.schoolName}`)
 
     const url = `https://api.whatsapp.com/send?phone=${contactInfo.number}&text=${mensage}`
     window.open(url, '_blank')

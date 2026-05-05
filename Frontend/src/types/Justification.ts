@@ -6,7 +6,7 @@ export interface JustificationRequest {
 }
 
 export interface JustificationProfessorRequest {
-    idAttendance: bigint
+    idAttendance: string
     description: string
 }
 

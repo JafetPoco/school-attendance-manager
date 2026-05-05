@@ -81,7 +81,7 @@ export async function createMissedAttendance(): Promise<ServiceResult<MissedAtte
   }
 }
 
-export async function contactStudent(id: number): Promise<ServiceResult<ContactResponse, ApiHttpError>> {
+export async function contactStudent(id: string): Promise<ServiceResult<ContactResponse, ApiHttpError>> {
   try {
     const data = await http<ContactResponse>(`/attendances/contact/${id}`, {
       method: 'GET',
