@@ -341,7 +341,7 @@ const getUserFullName = (): string => {
 const getUserFirstName = (): string => {
   const user = auth.user
   if (!user || !user.names) return 'Usuario'
-  return user.names.split(' ')[0]
+  return user.names.trim().split(' ')[0] || 'Usuario'
 }
 
 const getUserRole = (): string => {
@@ -464,14 +464,14 @@ const loadStats = async () => {
   try {
     const response = await attendancesStats()
 
-    if (response.success && response.data) {
+    if (response.success) {
       dashboardStats.value = response.data
       studentsTopLate.value = response.data.studentsTopLate || []
       // Actualizar gráficos después de cargar datos
       await nextTick()
       initCharts()
     } else {
-      errorMessage.value = response.error?.message || 'Error al cargar los datos'
+      errorMessage.value = response.error?.message
     }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : 'Error de conexión'

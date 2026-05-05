@@ -32,17 +32,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import {
   AlertOctagon,
-  AlertCircle,
-  HelpCircle,
-  ChevronRight,
-  ArrowLeft
+  AlertCircle
 } from 'lucide-vue-next'
 
 const route = useRoute()
-const router = useRouter()
 
 const fallbackMessage = 'Lo sentimos, no se pudo encontrar la justificación que estás buscando. Por favor, verifica el enlace o intenta nuevamente.'
 
@@ -53,19 +49,6 @@ const errorMessage = computed(() => {
   }
   return fallbackMessage
 })
-
-// Opcional: Si tienes un código de error en los query params
-const errorCode = computed(() => {
-  const code = route.query.code
-  if (typeof code === 'string' && code.trim().length > 0) {
-    return code
-  }
-  return null
-})
-
-const goBack = () => {
-  router.push('/')
-}
 </script>
 
 <style scoped>

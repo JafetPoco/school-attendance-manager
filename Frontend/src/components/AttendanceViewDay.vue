@@ -560,7 +560,7 @@ const getContactInfo = async (id: number, studentName: string) => {
 
 const sendMensageToParent = async (contactInfo: ContactResponse) => {
   try {
-    const justificationUrl = `https://script.google.com/macros/s/AKfycbxUhy1SJDUn7SPld1ulVmGDcd-kgqpMxFtOCnTpFQ79EVtEXHBc9VDfSQQ7WRQOeym3/exec?id=${contactInfo.token}`
+    const justificationUrl = `https://school-attendance-manager-dun.vercel.app/justifications/${contactInfo.token}`
     const mensage = encodeURIComponent(
       `🚨 Aviso de Asistencia Escolar
 Estimado(a) Padre/Madre de Familia 👨‍👩‍👧‍👦:

@@ -1,6 +1,6 @@
 <script setup></script>
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4">
+  <div class="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 px-4">
     
     <!-- Card -->
     <div class="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-8">
@@ -11,7 +11,7 @@
           Bienvenido
         </h1>
         <p class="text-slate-400 mt-2 text-sm">
-          Accede a tu cuenta empresarial
+          Accede a tu cuenta de Gmail
         </p>
       </div>
 
@@ -46,11 +46,11 @@
     </div>
   </div>
 </template>
-
-<script setup>
+<script setup lang="ts">
 const loginWithGoogle = () => {
-  // Redirige al endpoint de Spring Security
-  window.location.href = "http://localhost:8081/oauth2/authorization/google"
+  const baseUrl = import.meta.env.VITE_API_BASE_URL
+  const oauth2Url = `${baseUrl}/oauth2/authorization/google`
+  
+  globalThis.location.href = oauth2Url
 }
 </script>
-
