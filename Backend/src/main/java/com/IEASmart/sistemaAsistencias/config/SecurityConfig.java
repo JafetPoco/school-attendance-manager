@@ -27,7 +27,7 @@ public class SecurityConfig {
     public AuthenticationSuccessHandler authenticationSuccessHandler(){
         return (request, response, authentication) -> {
             // Evitar NPE y redirigir a raíz si no hay frontendUrl configurado
-            String target = (frontendUrl == null || frontendUrl.isBlank()) ? "/" : frontendUrl + "/dashboard";
+            String target = (frontendUrl == null || frontendUrl.isBlank()) ? "/" : frontendUrl.replaceAll("/$", "") + "/dashboard";
             response.sendRedirect(target);
         };
     }
@@ -39,6 +39,7 @@ public class SecurityConfig {
         config.setAllowedMethods(List.of("GET", "POST", "PATCH",  "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
+        config.setExposedHeaders(List.of("Set-Cookie"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
