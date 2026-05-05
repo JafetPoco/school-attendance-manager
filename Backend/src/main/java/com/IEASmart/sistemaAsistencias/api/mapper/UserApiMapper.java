@@ -1,11 +1,14 @@
 package com.IEASmart.sistemaAsistencias.api.mapper;
 
+import com.IEASmart.sistemaAsistencias.api.dto.request.ProfessorRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.request.UserRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.response.CreateUserResponse;
+import com.IEASmart.sistemaAsistencias.api.dto.response.UserInfoResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.UserResponse;
 import com.IEASmart.sistemaAsistencias.domain.model.Admin;
 import com.IEASmart.sistemaAsistencias.domain.model.Professor;
 import com.IEASmart.sistemaAsistencias.domain.model.User;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.UserType;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -69,6 +72,19 @@ public class UserApiMapper {
         resp.setEmail(user.getEmail());
         resp.setUserType(user.getUserType());
         resp.setSchoolName(user.getSchool().toString());
+        return resp;
+    }
+
+    public UserInfoResponse toInfoResponse(User user) {
+        if (user == null) return null;
+        UserInfoResponse resp = new UserInfoResponse();
+        resp.setDni(user.getEmail());
+        resp.setName(user.getNames());
+        resp.setFirstLastName(user.getFirstLastName());
+        resp.setSecondLastName(user.getSecondLastName());
+        resp.setEmail(user.getEmail());
+        resp.setRole(user.getUserType().toString());
+
         return resp;
     }
 }

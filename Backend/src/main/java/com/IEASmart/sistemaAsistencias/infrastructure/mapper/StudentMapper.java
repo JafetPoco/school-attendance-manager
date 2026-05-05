@@ -1,11 +1,19 @@
 package com.IEASmart.sistemaAsistencias.infrastructure.mapper;
 
+import com.IEASmart.sistemaAsistencias.domain.model.Class;
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
+import com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity.ClassEntity;
 import com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity.StudentEntity;
 import org.springframework.stereotype.Component;
 
 @Component
 public class StudentMapper {
+    private final ClassMapper classMapper;
+
+    public StudentMapper(ClassMapper classMapper) {
+        this.classMapper = classMapper;
+    }
+
     public Student toDomain(StudentEntity entity) {
         if (entity == null) {
             return null;
@@ -16,10 +24,10 @@ public class StudentMapper {
         student.setName(entity.getName());
         student.setFirstLastName(entity.getFirstLastName());
         student.setSecondLastName(entity.getSecondLastName());
-        student.setLevel(entity.getLevel());
-        student.setGrade(entity.getGrade());
-        student.setSection(entity.getSection());
-        student.setSchool(entity.getSchool());
+
+        Class classSchool = classMapper.toDomain(entity.getClassInfo());
+        student.setClassSchool(classSchool);
+
         return student;
     }
 
@@ -32,10 +40,10 @@ public class StudentMapper {
         entity.setName(student.getName());
         entity.setFirstLastName(student.getFirstLastName());
         entity.setSecondLastName(student.getSecondLastName());
-        entity.setLevel(student.getLevel());
-        entity.setGrade(student.getGrade());
-        entity.setSection(student.getSection());
-        entity.setSchool(student.getSchool());
+
+        ClassEntity classEntity = classMapper.toEntity(student.getClassSchool());
+        entity.setClassInfo(classEntity);
+
         return entity;
     }
 }

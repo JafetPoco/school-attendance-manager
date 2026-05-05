@@ -46,6 +46,7 @@
             <select v-model="filter.level"
                     class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent appearance-none cursor-pointer">
               <option value="">Todos los niveles</option>
+              <option value="INICIAL">Inicial</option>
               <option value="PRIMARIA">Primaria</option>
               <option value="SECUNDARIA">Secundaria</option>
             </select>
@@ -57,11 +58,15 @@
             <select v-model="filter.grade"
                     class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent appearance-none cursor-pointer">
               <option value="">Todos los grados</option>
+              <option value="TRES_AÑOS">3 años</option>
+              <option value="CUATRO_AÑOS">4 años</option>
+              <option value="CINCO_AÑOS">5 años</option>
               <option value="PRIMERO">Primero</option>
               <option value="SEGUNDO">Segundo</option>
               <option value="TERCERO">Tercero</option>
               <option value="CUARTO">Cuarto</option>
               <option value="QUINTO">Quinto</option>
+              <option value="SEXTO">Sexto</option>
             </select>
           </div>
 
@@ -71,24 +76,9 @@
             <select v-model="filter.section"
                     class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent appearance-none cursor-pointer">
               <option value="">Todas las secciones</option>
-              <option value="BENJAMIN">Benjamin</option>
-              <option value="NOE">Noé</option>
-              <option value="MOISES">Moisés</option>
-              <option value="DAVID">David</option>
-              <option value="SALOMON">Salomón</option>
-              <option value="JACOB">Jacob</option>
-              <option value="ENOC">Enoc</option>
-              <option value="JOSE">José</option>
-              <option value="GEDEON">Gedeón</option>
-              <option value="JOSUE">Josué</option>
-              <option value="ELIAS">Elías</option>
-              <option value="ELISEO">Eliseo</option>
-              <option value="DANIEL">Daniel</option>
-              <option value="ESTEBAN">Esteban</option>
-              <option value="MATEO">Mateo</option>
-              <option value="SALOMON">Salomón</option>
-              <option value="DAVID">David</option>
-              <option value="JONATAN">Jonatán</option>
+              <option v-for="section in sectionsLoaded" :key="section.id" :value="section.name">
+                {{ section.name }}
+              </option>
             </select>
           </div>
         </div>
@@ -217,6 +207,15 @@
                         <MoveDownIcon v-else-if="sort.field === column.key && sort.direction === 'desc'" class="w-3 h-3" />
                       </span>
                     </button>
+                  </th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 tracking-wider">
+                    Nivel
+                  </th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 tracking-wider">
+                    Grado
+                  </th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 tracking-wider">
+                    Sección
                   </th>
                   <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     Acciones
@@ -389,6 +388,7 @@ import {
 } from 'lucide-vue-next'
 import router from '@/router'
 import { useToast } from '@/composables/useToast'
+import { useSectionStore } from '@/stores/sectionStore'
 
 // Constantes
 const PAGE_SIZE = 15
@@ -398,10 +398,7 @@ const columns = [
   { key: 'dni', label: 'DNI' },
   { key: 'name', label: 'Nombre' },
   { key: 'firstLastName', label: 'Apellido Paterno' },
-  { key: 'secondLastName', label: 'Apellido Materno' },
-  { key: 'level', label: 'Nivel' },
-  { key: 'grade', label: 'Grado' },
-  { key: 'section', label: 'Sección' }
+  { key: 'secondLastName', label: 'Apellido Materno' }
 ] as const
 
 // Estado
@@ -429,6 +426,23 @@ const sort = ref<Sort>({
 
 // Inicializar toast
 const toast = useToast()
+const sections = useSectionStore()
+
+const sectionsLoaded = computed(() => {
+  const hasCompositeSection = sections.sections.some((section) => {
+    return String(section.id).includes('-') || String(section.name).includes('-')
+  })
+  
+
+  if (hasCompositeSection) {
+    return [
+      { id: 'A', name: 'A' },
+      { id: 'B', name: 'B' }
+    ]
+  }
+
+  return sections.sections
+})
 
 // Computed properties
 const hasActiveFilters = computed(() => {
@@ -443,11 +457,23 @@ const paginationInfo = computed(() => {
 
 // Funciones de utilidad
 const formatLevel = (level: string) => {
-  return level === 'PRIMARIA' ? 'Primaria' : 'Secundaria'
+  switch (level) {
+    case 'INICIAL':
+      return 'Inicial'
+    case 'PRIMARIA':
+      return 'Primaria'
+    case 'SECUNDARIA':
+      return 'Secundaria'
+    default:
+      return level
+  }
 }
 
 const formatGrade = (grade: string) => {
   const grades: Record<string, string> = {
+    'TRES_AÑOS': '3 años',
+    'CUATRO_AÑOS': '4 años',
+    'CINCO_AÑOS': '5 años',
     'PRIMERO': '1°',
     'SEGUNDO': '2°',
     'TERCERO': '3°',
@@ -459,9 +485,16 @@ const formatGrade = (grade: string) => {
 }
 
 const getLevelBadgeClass = (level: string) => {
-  return level === 'PRIMARIA' 
-    ? 'bg-blue-50 text-blue-700' 
-    : 'bg-purple-50 text-purple-700'
+  switch (level) {
+    case 'PRIMARIA':
+      return 'bg-blue-50 text-blue-700'
+    case 'SECUNDARIA':
+      return 'bg-purple-50 text-purple-700'
+    case 'INICIAL':
+      return 'bg-green-50 text-green-700'
+    default:
+      return 'bg-gray-50 text-gray-700'
+  }
 }
 
 // Funciones de ordenamiento

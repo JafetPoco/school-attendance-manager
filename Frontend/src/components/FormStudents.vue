@@ -166,53 +166,12 @@
                   childErrors[index]?.secondLastName }}</p>
               </div>
 
-              <!-- Nivel -->
+              <!-- Class Id -->
               <div class="space-y-1">
-                <label for="level" class="block text-xs font-medium text-slate-600">Nivel</label>
-                <select id="level" v-model="child.level"
+                <label for="class" class="block text-xs font-medium text-slate-600">Clase</label>
+                <select id="class" v-model="child.classId"
                   class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent">
-                  <option value="PRIMARIA">Primaria</option>
-                  <option value="SECUNDARIA">Secundaria</option>
-                </select>
-              </div>
-
-              <!-- Grado -->
-              <div class="space-y-1">
-                <label for="grade" class="block text-xs font-medium text-slate-600">Grado</label>
-                <select id="grade" v-model="child.grade"
-                  class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent">
-                  <option value="PRIMERO">Primero</option>
-                  <option value="SEGUNDO">Segundo</option>
-                  <option value="TERCERO">Tercero</option>
-                  <option value="CUARTO">Cuarto</option>
-                  <option value="QUINTO">Quinto</option>
-                  <option value="SEXTO">Sexto</option>
-                </select>
-              </div>
-
-              <!-- Sección -->
-              <div class="space-y-1">
-                <label for="section" class="block text-xs font-medium text-slate-600">Sección</label>
-                <select id="section" v-model="child.section"
-                  class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 focus:border-transparent">
-                  <option value="BENJAMIN">Benjamin</option>
-                  <option value="NOE">Noé</option>
-                  <option value="MOISES">Moisés</option>
-                  <option value="DAVID">David</option>
-                  <option value="SALOMON">Salomón</option>
-                  <option value="JACOB">Jacob</option>
-                  <option value="ENOC">Enoc</option>
-                  <option value="JOSE">José</option>
-                  <option value="GEDEON">Gedeón</option>
-                  <option value="JOSUE">Josué</option>
-                  <option value="ELIAS">Elías</option>
-                  <option value="ELISEO">Eliseo</option>
-                  <option value="DANIEL">Daniel</option>
-                  <option value="ESTEBAN">Esteban</option>
-                  <option value="MATEO">Mateo</option>
-                  <option value="SALOMON">Salomón</option>
-                  <option value="DAVID">David</option>
-                  <option value="JONATAN">Jonatán</option>
+                  <option v-for="s in sections.sections" :key="s.id" :value="s.id">{{ s.name }}</option>
                 </select>
               </div>
             </div>
@@ -254,13 +213,14 @@ import {
 import type { StudentRequest } from '@/types/Student'
 import type { ParentWithChildrenRequest } from '@/types/ParentWithChildren'
 import { addParentWithChildren } from '@/services/addParentWithChildren'
+import { useSectionStore } from '@/stores/sectionStore'
 
 // Toast
 const toast = useToast()
+const sections = useSectionStore()
 
 // Estado
 const loading = ref(false)
-const errorMessage = ref('')
 
 // Formularios
 const createEmptyParent = (): ParentWithChildrenRequest => ({
@@ -394,9 +354,7 @@ const createEmptyChild = (): StudentRequest => ({
   name: '',
   firstLastName: '',
   secondLastName: '',
-  level: 'PRIMARIA',
-  grade: 'PRIMERO',
-  section: 'BENJAMIN'
+  classId: 0
 })
 
 const addChild = () => {

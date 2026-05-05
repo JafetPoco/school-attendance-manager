@@ -17,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public class StudentRepositoryImpl implements StudentRepository {
@@ -30,12 +31,12 @@ public class StudentRepositoryImpl implements StudentRepository {
 
     @Override
     public Optional<Student> findById(String dni, School school){
-        return jpaRepository.findByDniAndSchool(dni, school).map(studentMapper::toDomain);
+        return jpaRepository.findByDniAndClassInfo_School(dni, school).map(studentMapper::toDomain);
     }
 
     @Override
     public List<Student> getAllStudents(School school){
-        return jpaRepository.findAllBySchool(school).stream().map(studentMapper::toDomain).toList();
+        return jpaRepository.findAllByClassInfo_School(school).stream().map(studentMapper::toDomain).toList();
     }
 
     @Override
@@ -60,22 +61,22 @@ public class StudentRepositoryImpl implements StudentRepository {
     }
 
     @Override
-    public List<Student> findAllByFilters(School school, StudentCriteria criteria, Sort sort) {
-        Specification<StudentEntity> spec = buildSpecification(school, criteria);
-        List<StudentEntity> list = jpaRepository.findAll(spec, sort);
-        return list.stream().map(studentMapper::toDomain).toList();
+    public List<Student> findAllByClassId(Long classId) {
+        return jpaRepository.findAllByClassInfo_IdOrderByFirstLastNameAsc(classId).stream()
+                .map(studentMapper::toDomain)
+                .toList();
     }
 
     @Override
     public List<Student> findAllWithoutAttendanceOnDate(School school, LocalDate date) {
-        return jpaRepository.findAllBySchoolAndWithoutAttendanceOnDate(school, date).stream()
+        return jpaRepository.findAllByClassInfo_SchoolAndWithoutAttendanceOnDate(school, date).stream()
                 .map(studentMapper::toDomain)
                 .toList();
     }
 
     @Override
     public long countStudentsBySchool(School school) {
-        return jpaRepository.countBySchool(school);
+        return jpaRepository.countByClassInfo_School(school);
     }
 
     @Override
@@ -84,5 +85,10 @@ public class StudentRepositoryImpl implements StudentRepository {
         Specification<StudentEntity> spec = buildSpecification(school, criteria);
         List<StudentEntity> list = jpaRepository.findAll(spec);
         return list.stream().map(studentMapper::toDomain).toList();
+    }
+
+    @Override
+    public Set<String> findAllDnisBySchool(School school){
+        return jpaRepository.findExistingDnis(school);
     }
 }

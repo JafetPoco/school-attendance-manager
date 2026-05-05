@@ -38,7 +38,7 @@ public class JustificationRepositoryImpl implements JustificationRepository {
 
     @Override
     public List<Justification> findAllByStatus(JustificationStatus status, School school) {
-        return jpaRepository.findAllByStatusAndAttendance_Student_School(status, school).stream().map(mapper::toDomain).toList();
+        return jpaRepository.findAllByStatusAndAttendance_Student_ClassInfo_School(status, school).stream().map(mapper::toDomain).toList();
     }
 
     @Override
@@ -71,6 +71,6 @@ public class JustificationRepositoryImpl implements JustificationRepository {
 
     @Override
     public long countByStatus(JustificationStatus status, School school){
-        return jpaRepository.countByStatusAndAttendance_Student_School(status, school);
+        return jpaRepository.countByStatusAndAttendance_Student_ClassInfo_School(status, school);
     }
 }

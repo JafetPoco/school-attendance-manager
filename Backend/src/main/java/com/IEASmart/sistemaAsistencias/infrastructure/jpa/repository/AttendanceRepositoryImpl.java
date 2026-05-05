@@ -55,7 +55,7 @@ public class AttendanceRepositoryImpl implements AttendanceRepository {
                 .where(AttendanceSpecifications.hasSchool(school))
                 .and(AttendanceSpecifications.hasDate(criteria.date()))
                 .and(AttendanceSpecifications.hasName(criteria.name()))
-                .and(AttendanceSpecifications.hasSection(criteria.section()))
+                .and(AttendanceSpecifications.hasClass(criteria.classId()))
                 .and(AttendanceSpecifications.hasAttendanceType(criteria.attendanceType()));
 
         Page<AttendanceEntity> page = attendanceJpaRepository.findAll(spec, pageable);
@@ -63,8 +63,8 @@ public class AttendanceRepositoryImpl implements AttendanceRepository {
     }
 
     @Override
-    public List<Attendance> findByStudentSchoolAndSectionAndDateBetween(School school, Section section, LocalDate startDate, LocalDate endDate) {
-        return attendanceJpaRepository.findAllByStudent_SchoolAndStudent_SectionAndDateBetween(school, section, startDate, endDate)
+    public List<Attendance> findByClassIdAndDateBetween(Long classId, LocalDate startDate, LocalDate endDate) {
+        return attendanceJpaRepository.findAllByStudent_ClassInfo_IdAndDateBetween(classId, startDate, endDate)
                 .stream()
                 .map(mapper::toDomain)
                 .toList();
@@ -97,6 +97,6 @@ public class AttendanceRepositoryImpl implements AttendanceRepository {
 
     @Override
     public List<TopLateInfo> getTopLateStudents(School school, LocalDate startDate, LocalDate endDate){
-        return attendanceJpaRepository.getTopLateStudents(school, startDate, endDate);
+        return attendanceJpaRepository.getTopLateStudents(school, startDate, endDate, Pageable.ofSize(4));
     }
 }

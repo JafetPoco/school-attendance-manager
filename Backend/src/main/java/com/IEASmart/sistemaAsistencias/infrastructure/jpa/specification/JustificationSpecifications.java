@@ -40,7 +40,7 @@ public class JustificationSpecifications {
     }
 
     public static Specification<JustificationEntity> hasSchool(School school) {
-        return (root, query, criteriaBuilder) -> school == null ? null :  criteriaBuilder.equal(root.get("attendance").get("student").get("school"), school);
+        return (root, query, criteriaBuilder) -> school == null ? null :  criteriaBuilder.equal(root.get("attendance").get("student").get("classInfo").get("school"), school);
     }
 
     public static Specification<JustificationEntity> hasDate(LocalDate date) {

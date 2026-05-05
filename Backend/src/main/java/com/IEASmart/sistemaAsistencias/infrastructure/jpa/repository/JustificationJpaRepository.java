@@ -11,6 +11,6 @@ import java.util.Optional;
 
 public interface JustificationJpaRepository extends JpaRepository<JustificationEntity, Long>, JpaSpecificationExecutor<JustificationEntity> {
     Optional<JustificationEntity> findByAttendance_Id(String attendanceId);
-    List<JustificationEntity> findAllByStatusAndAttendance_Student_School(JustificationStatus status, School school);
-    long countByStatusAndAttendance_Student_School(JustificationStatus status, School school);
+    List<JustificationEntity> findAllByStatusAndAttendance_Student_ClassInfo_School(JustificationStatus status, School school);
+    long countByStatusAndAttendance_Student_ClassInfo_School(JustificationStatus status, School school);
 }

@@ -1,8 +1,10 @@
 import type { StudentResponse } from "./Student"
 
+export type AttendanceType = 'presente' | 'ausente' | 'tarde' | 'justificado'
+
 export interface AttendanceRequest {
     dni: string
-    attendanceType: 'presente' | 'ausente' | 'tarde' | 'justificado'
+    attendanceType: AttendanceType
 }
 
 export interface AttendanceResponse {
@@ -10,7 +12,7 @@ export interface AttendanceResponse {
     studentName: string
     studentFirstLastName: string
     studentSecondLastName: string
-    attendanceType: 'presente' | 'ausente' | 'tarde' | 'justificado'
+    attendanceType: AttendanceType
     date: string
     token: string
     idAttendance: bigint
@@ -19,7 +21,7 @@ export interface AttendanceResponse {
 export interface AttendanceFilter {
     date?: string
     name?: string
-    section?: string
+    classId?: number | null
     attendanceType?: string
 }
 
@@ -30,7 +32,7 @@ export interface StudentAttendanceDetailsResponse {
     totalLate: number
     totalExcusedAbsences: number
     total: number
-    attendances: Map<string, 'presente' | 'ausente' | 'tarde' | 'justificado'> // Mapa de fecha a tipo de asistencia
+    attendances: Map<string, AttendanceType> // Mapa de fecha a tipo de asistencia
 }
 
 export interface MissedAttendance {

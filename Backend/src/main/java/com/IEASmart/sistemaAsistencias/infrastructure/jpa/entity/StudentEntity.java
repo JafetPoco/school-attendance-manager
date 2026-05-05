@@ -22,21 +22,9 @@ public class StudentEntity {
     @Column(name = "second_last_name", nullable = false, length = 50)
     private String secondLastName;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "level", nullable = false)
-    private Level level;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "grade", nullable = false)
-    private Grade grade;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "section", nullable = false)
-    private Section section;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "school", nullable = false)
-    private School school;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "class_id", nullable = false)
+    private ClassEntity classInfo;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
@@ -44,15 +32,11 @@ public class StudentEntity {
 
     public StudentEntity() {}
 
-    public StudentEntity(String dni, String name, String firstLastName, String secondLastName, Level level, Grade grade, Section section, School school, ParentEntity parent) {
+    public StudentEntity(String dni, String name, String firstLastName, String secondLastName, ParentEntity parent) {
         this.dni = dni;
         this.name = name;
         this.firstLastName = firstLastName;
         this.secondLastName = secondLastName;
-        this.level = level;
-        this.grade = grade;
-        this.section = section;
-        this.school = school;
         this.parent = parent;
     }
 
@@ -88,36 +72,12 @@ public class StudentEntity {
         this.secondLastName = secondLastName;
     }
 
-    public Level getLevel() {
-        return level;
+    public ClassEntity getClassInfo() {
+        return classInfo;
     }
 
-    public void setLevel(Level level) {
-        this.level = level;
-    }
-
-    public Grade getGrade() {
-        return grade;
-    }
-
-    public void setGrade(Grade grade) {
-        this.grade = grade;
-    }
-
-    public Section getSection() {
-        return section;
-    }
-
-    public void setSection(Section section) {
-        this.section = section;
-    }
-
-    public School getSchool() {
-        return school;
-    }
-
-    public void setSchool(School school) {
-        this.school = school;
+    public void setClassInfo(ClassEntity classInfo) {
+        this.classInfo = classInfo;
     }
 
     public ParentEntity getParent() {

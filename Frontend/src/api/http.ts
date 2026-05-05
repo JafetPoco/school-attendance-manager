@@ -1,7 +1,7 @@
-const BASE_URL = 'http://localhost:8081/api'
-
 import type { ErrorResponse } from '@/types/Error'
 import { ApiHttpError } from './ApiHttpError'
+
+const BASE_URL = import.meta.env.VITE_API_URL
 
 function isErrorResponse(value: unknown): value is ErrorResponse {
   if (!value || typeof value !== 'object') return false

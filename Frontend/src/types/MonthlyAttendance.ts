@@ -8,5 +8,5 @@ export interface MonthlyAttendance {
 
 export interface MonthlyAttendanceFilter {
     month: number
-    section: string
+    classId: number
 }

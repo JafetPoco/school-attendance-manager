@@ -32,9 +32,9 @@ public class StudentService {
     public PageResponse<StudentResponse> getAllStudents(School school, StudentFilter filter, Pageable pageable) {
         Level levelEnum = filter.level() == null ? null : Level.from(filter.level());
         Grade gradeEnum = filter.grade() == null ? null : Grade.from(filter.grade());
-        Section sectionEnum = filter.section() == null ? null : Section.from(filter.section());
+        String section = filter.section() == null ? null : filter.section();
 
-        StudentCriteria criteria = new StudentCriteria(filter.name(), levelEnum, gradeEnum, sectionEnum);
+        StudentCriteria criteria = new StudentCriteria(filter.name(), levelEnum, gradeEnum, section);
 
         Page<Student> studentsPage = studentRepository.findAllByFilters(school, criteria, pageable);
         List<StudentResponse> content = studentsPage

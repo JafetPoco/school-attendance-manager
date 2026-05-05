@@ -10,10 +10,16 @@ function buildStudentsQuery(filter: AttendanceFilter, page: PageRequest, sort?: 
   const queryParams = new URLSearchParams()
 
   Object.entries(filter).forEach(([key, value]) => {
-    if (typeof value !== 'string') return
-    const normalized = value.trim()
-    if (!normalized) return
-    queryParams.set(key, normalized)
+    if (value === undefined || value === null) return
+
+    if (typeof value === 'string') {
+      const normalized = value.trim()
+      if (!normalized) return
+      queryParams.set(key, normalized)
+      return
+    }
+
+    queryParams.set(key, String(value))
   })
 
   queryParams.set('page', String(page.page))

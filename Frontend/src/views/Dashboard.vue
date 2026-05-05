@@ -55,6 +55,24 @@
           <Users class="w-5 h-5" />
           <span class="font-medium text-sm">Mis Alumnos</span>
         </router-link>
+
+        <router-link 
+          v-if ="auth.user?.userType === 'ADMIN'"
+          to="/classes" 
+          class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800"
+        >
+          <School class="w-5 h-5" />
+          <span class="font-medium text-sm">Mis Clases</span>
+        </router-link>
+
+        <router-link 
+          v-if ="auth.user?.userType === 'ADMIN'"
+          to="/createUsers" 
+          class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800"
+        >
+          <UserLockIcon class="w-5 h-5" />
+          <span class="font-medium text-sm">Administrar Cuentas</span>
+        </router-link>
         
         <router-link 
           to="/settings" 
@@ -244,7 +262,9 @@ import {
   Medal,
   Loader2,
   RotateCw,
-  GraduationCap
+  GraduationCap,
+  School,
+  UserLockIcon
 } from 'lucide-vue-next'
 import type { DashboardResponse, StudentsTopLate } from '@/types/Attendance'
 import { attendancesStats } from '@/services/dashBoardService'
