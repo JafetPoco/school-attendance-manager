@@ -1,0 +1,32 @@
+package com.IEASmart.sistemaAsistencias.infrastructure.jpa.repository;
+
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
+import com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity.StudentEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+public interface StudentJpaRepository extends JpaRepository<StudentEntity, String>, JpaSpecificationExecutor<StudentEntity> {
+    // Obtener todos los estudiantes de una escuela (la escuela está en classInfo.school)
+    List<StudentEntity> findAllByClassInfo_School(School school);
+
+    Optional<StudentEntity> findByDniAndClassInfo_School(String id, School school);
+    List<StudentEntity> findByNameContainingIgnoreCaseAndClassInfo_School(String query, School school);
+
+    // JPQL no permite JOIN ... ON en este contexto; usar NOT EXISTS para buscar estudiantes sin asistencia en una fecha
+    @Query("SELECT s FROM StudentEntity s WHERE s.classInfo.school = :school AND NOT EXISTS (SELECT a FROM AttendanceEntity a WHERE a.student.dni = s.dni AND a.date = :date)")
+    List<StudentEntity> findAllByClassInfo_SchoolAndWithoutAttendanceOnDate(@Param("school") School school, @Param("date") LocalDate date);
+
+    List<StudentEntity> findAllByClassInfo_IdOrderByFirstLastNameAsc(Long classId);
+
+    long countByClassInfo_School(School school);
+
+    @Query("SELECT s.dni FROM StudentEntity s WHERE s.classInfo.school = :school")
+    Set<String> findExistingDnis(@Param("school") School school);
+}

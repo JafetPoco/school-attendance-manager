@@ -1,0 +1,42 @@
+package com.IEASmart.sistemaAsistencias.infrastructure.jpa.specification;
+
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.AttendanceType;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
+import com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity.AttendanceEntity;
+import org.springframework.data.jpa.domain.Specification;
+
+import java.time.LocalDate;
+
+public class AttendanceSpecifications {
+    private AttendanceSpecifications() {}
+
+    public static Specification<AttendanceEntity> hasName(String name) {
+        return (root, query, criteriaBuilder) -> {
+            if (name == null || name.isEmpty()) {
+                return null;
+            }
+            String pattern = name.toLowerCase() + "%";
+            return criteriaBuilder.or(
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("student").get("name")), pattern),
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("student").get("firstLastName")), pattern),
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("student").get("secondLastName")), pattern)
+            );
+        };
+    }
+
+    public static Specification<AttendanceEntity> hasSchool(School school){
+        return (root, query, criteriaBuilder) -> school == null ? null : criteriaBuilder.equal(root.get("student").get("classInfo").get("school"), school);
+    }
+
+    public static Specification<AttendanceEntity> hasDate(LocalDate date){
+        return (root, query, criteriaBuilder) -> date == null ? null : criteriaBuilder.equal(root.get("date"), date);
+    }
+
+    public static Specification<AttendanceEntity> hasClass(Long classId){
+        return (root, query, criteriaBuilder) -> classId == null ? null : criteriaBuilder.equal(root.get("student").get("classInfo").get("id"), classId);
+    }
+
+    public static Specification<AttendanceEntity> hasAttendanceType(AttendanceType attendanceType){
+        return (root, query, criteriaBuilder) -> attendanceType == null ? null : criteriaBuilder.equal(root.get("attendanceType"), attendanceType);
+    }
+}

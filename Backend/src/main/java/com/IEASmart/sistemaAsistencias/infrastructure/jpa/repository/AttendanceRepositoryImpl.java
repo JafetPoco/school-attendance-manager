@@ -1,0 +1,102 @@
+package com.IEASmart.sistemaAsistencias.infrastructure.jpa.repository;
+
+import com.IEASmart.sistemaAsistencias.application.dto.AttendanceCriteria;
+import com.IEASmart.sistemaAsistencias.domain.model.Attendance;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.AttendanceType;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
+import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
+import com.IEASmart.sistemaAsistencias.domain.repository.AttendanceRepository;
+import com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity.AttendanceEntity;
+import com.IEASmart.sistemaAsistencias.infrastructure.jpa.projection.AttendanceStats;
+import com.IEASmart.sistemaAsistencias.infrastructure.jpa.projection.TopLateInfo;
+import com.IEASmart.sistemaAsistencias.infrastructure.jpa.projection.WeekAttendanceStats;
+import com.IEASmart.sistemaAsistencias.infrastructure.jpa.specification.AttendanceSpecifications;
+import com.IEASmart.sistemaAsistencias.infrastructure.mapper.AttendanceMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Repository;
+
+import org.springframework.data.domain.Pageable;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public class AttendanceRepositoryImpl implements AttendanceRepository {
+    private final AttendanceJpaRepository attendanceJpaRepository;
+    private final AttendanceMapper mapper;
+
+    public AttendanceRepositoryImpl(AttendanceJpaRepository attendanceJpaRepository, AttendanceMapper mapper) {
+        this.attendanceJpaRepository = attendanceJpaRepository;
+        this.mapper = mapper;
+    }
+
+    @Override
+    public boolean existsByStudentAndDate(String student, LocalDate date){
+        return attendanceJpaRepository.findByStudent_DniAndDate(student, date).isPresent();
+    }
+
+    @Override
+    public Attendance save(Attendance attendance){
+        return mapper.toDomain(attendanceJpaRepository.save(mapper.toEntity(attendance)));
+    }
+
+    @Override
+    public List<Attendance> saveAll(List<Attendance> attendances){
+        return attendanceJpaRepository.saveAll(attendances.stream().map(mapper::toEntity).toList())
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public Page<Attendance> findAllByFilter(School school, AttendanceCriteria criteria, Pageable pageable) {
+        Specification<AttendanceEntity> spec = Specification
+                .where(AttendanceSpecifications.hasSchool(school))
+                .and(AttendanceSpecifications.hasDate(criteria.date()))
+                .and(AttendanceSpecifications.hasName(criteria.name()))
+                .and(AttendanceSpecifications.hasClass(criteria.classId()))
+                .and(AttendanceSpecifications.hasAttendanceType(criteria.attendanceType()));
+
+        Page<AttendanceEntity> page = attendanceJpaRepository.findAll(spec, pageable);
+        return page.map(mapper::toDomain);
+    }
+
+    @Override
+    public List<Attendance> findByClassIdAndDateBetween(Long classId, LocalDate startDate, LocalDate endDate) {
+        return attendanceJpaRepository.findAllByStudent_ClassInfo_IdAndDateBetween(classId, startDate, endDate)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public long countByStudentDniAndAttendanceTypeAndDateBetween(String dni, AttendanceType type, LocalDate startDate, LocalDate endDate){
+        return attendanceJpaRepository.countByStudent_DniAndAttendanceTypeAndDateBetween(dni, type, startDate, endDate);
+    }
+
+    @Override
+    public List<AttendanceStats> getAttendanceStats(School school, LocalDate date){
+        return attendanceJpaRepository.getAttendanceStatsByDateAndSchool(date, school);
+    }
+
+    @Override
+    public List<Attendance> findByStudentAndDateBetween(String dni, LocalDate startDate, LocalDate endDate){
+        return attendanceJpaRepository.findAllByStudent_DniAndDateBetweenOrderByDateAsc(dni, startDate, endDate).stream().map(mapper::toDomain).toList();
+    }
+
+    @Override
+    public Optional<Attendance> findById(String id) {
+        return attendanceJpaRepository.findById(id).map(mapper::toDomain);
+    }
+
+    @Override
+    public List<WeekAttendanceStats> getWeekAttendanceStats(School school, LocalDate startDate, LocalDate endDate){
+        return attendanceJpaRepository.getDailyStatistics(school, startDate, endDate);
+    }
+
+    @Override
+    public List<TopLateInfo> getTopLateStudents(School school, LocalDate startDate, LocalDate endDate){
+        return attendanceJpaRepository.getTopLateStudents(school, startDate, endDate, Pageable.ofSize(4));
+    }
+}
