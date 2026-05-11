@@ -11,7 +11,7 @@ export async function importStudentsExcel(file: File): Promise<ServiceResult<nul
     const data = await http<null>('/parents/import', {
       method: 'POST',
       body: formData
-    }, 35000)
+    }, 600000)
 
     return { success: true, data }
   } catch (error) {

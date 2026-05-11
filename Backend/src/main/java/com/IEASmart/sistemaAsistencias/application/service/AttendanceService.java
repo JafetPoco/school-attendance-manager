@@ -22,6 +22,7 @@ import com.IEASmart.sistemaAsistencias.domain.ports.ExcelExportPort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -179,7 +180,6 @@ public class AttendanceService {
         return excelExportPort.exportToExcelMultiSheet(dataBySection);
     }
 
-
     public InformationAttendanceResponse getAttendanceByStudentId(String id, School school) {
         Optional<Student> studentOpt = studentRepository.findById(id, school);
         if (studentOpt.isEmpty()) {
@@ -224,29 +224,33 @@ public class AttendanceService {
     @Transactional
     public long addMissedAttendances(School school) {
         LocalDate today = LocalDate.now();
-        List<Student> students = studentRepository.findAllWithoutAttendanceOnDate(school, today);
-        if(students.isEmpty()) {
+        List<String> studentIds = studentRepository.findAllWithoutAttendanceOnDate(school, today);
+        if(studentIds.isEmpty()) {
             throw new ConflictException("No hay estudiantes sin asistencia registrada para la fecha " + today, "NO_STUDENTS_WITHOUT_ATTENDANCE");
         }
-        List<Attendance> attendances = new ArrayList<>();
-        for (Student s : students) {
-            Attendance a = new Attendance();
-            a.setStudent(s);
-            a.setDate(today);
-            a.setTime(LocalTime.now());
-            a.setAttendanceType(AttendanceType.AUSENTE);
-            attendances.add(a);
-        }
+
+        return processStudents(studentIds, today, school);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    private long processStudents(List<String> studentIds, LocalDate today, School school){
+        List<Attendance> attendances = studentIds.stream()
+                .map(student-> createAttendance(student, today))
+                .collect(Collectors.toList());
 
         List<Attendance> saved = attendanceRepository.saveAll(attendances);
-        List<Token> tokens = new ArrayList<>(saved.size());
-        for(Attendance a : saved) {
-            Token t = tokenService.generateToken(a.getId(), school);
-            tokens.add(t);
-        }
-        tokenRepository.saveAll(tokens);
+        List<Token> tokens = tokenService.generateTokens(saved, school);
+        // tokenRepository.saveAll(tokens);
+        return tokens.size();
+    }
 
-        return saved.size();
+    private Attendance createAttendance(String student, LocalDate date) {
+        Attendance a = new Attendance();
+        a.setStudent(studentRepository.getReferenceById(student));
+        a.setDate(date);
+        a.setTime(LocalTime.now());
+        a.setAttendanceType(AttendanceType.AUSENTE);
+        return a;
     }
 
     public ContactResponse getContactInfo(String attendanceId) {

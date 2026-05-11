@@ -7,7 +7,9 @@ import com.IEASmart.sistemaAsistencias.infrastructure.mapper.ParentMapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public class ParentRepositoryImpl implements ParentRepository {
@@ -20,39 +22,46 @@ public class ParentRepositoryImpl implements ParentRepository {
     }
 
     @Override
-    public Optional<Parent> findById(Long id, School school){
+    public Optional<Parent> findById(Long id, School school) {
         return jpaRepository.findByParentIdAndSchool(id, school).map(mapper::toDomain);
     }
 
     @Override
-    public Optional<Parent> findByAlumnoId(String alumnoId){
+    public Optional<Parent> findByAlumnoId(String alumnoId) {
         //return jpaRepository.findByAlumnoId(alumnoId).map(mapper::toDomain);
         return jpaRepository.findByChildren_Dni(alumnoId).map(mapper::toDomain);
     }
 
     @Override
-    public List<Parent> getAll(School school){
+    public List<Parent> getAll(School school) {
         return jpaRepository.findAllBySchool(school).stream().map(mapper::toDomain).toList();
     }
 
     @Override
-    public Optional<Parent> findByPhoneNumber(String phoneNumber, School school){
+    public Optional<Parent> findByPhoneNumber(String phoneNumber, School school) {
         return jpaRepository.findByPhoneNumberAndSchool(phoneNumber, school).map(mapper::toDomain);
     }
 
     @Override
-    public Parent save(Parent parent){
+    public Parent save(Parent parent) {
         return mapper.toDomain(jpaRepository.save(mapper.toEntity(parent)));
     }
 
     @Override
-    public List<Parent> saveAll(List<Parent> parents){
+    public List<Parent> saveAll(List<Parent> parents) {
         return jpaRepository.saveAll(parents.stream().map(mapper::toEntity).toList()).stream().map(mapper::toDomain).toList();
     }
 
     @Override
-    public void delete(Parent parent){
+    public void delete(Parent parent) {
         jpaRepository.delete(mapper.toEntity(parent));
     }
 
+    @Override
+    public Map<String, Parent> findByPhoneNumberIn(Set<String> phones, School school){
+        return jpaRepository.findByPhoneNumberInAndSchool(phones, school)
+                .stream()
+                .map(mapper::toDomain)
+                .collect(java.util.stream.Collectors.toMap(Parent::getPhoneNumber, p -> p, (existing, replacement) -> existing));
+    }
 }
