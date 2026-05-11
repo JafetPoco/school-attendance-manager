@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface ParentJpaRepository extends JpaRepository<ParentEntity, Long> {
     Optional<ParentEntity> findByParentIdAndSchool(Long id, School school);
@@ -17,4 +18,5 @@ public interface ParentJpaRepository extends JpaRepository<ParentEntity, Long> {
     Optional<ParentEntity> findByAlumnoId(@Param("alumnoId") String alumnoId);
     Optional<ParentEntity> findByPhoneNumberAndSchool(String phoneNumber, School school);
     Optional<ParentEntity> findByChildren_Dni(String alumnoId);
+    List<ParentEntity> findByPhoneNumberInAndSchool(Set<String> phoneNumbers, School school);
 }

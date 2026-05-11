@@ -64,15 +64,34 @@
         </div>
       </div>
 
-      <!-- Estado de carga -->
+      <!-- Estado de carga con progreso y tiempo transcurrido -->
       <div v-if="uploading" class="mt-4">
         <div class="flex items-center justify-between text-sm mb-1">
-          <span class="text-slate-600">Subiendo archivo...</span>
+          <div class="flex items-center space-x-2">
+            <Loader2 class="w-4 h-4 animate-spin text-slate-600" />
+            <span class="text-slate-600">{{ statusMessage }}</span>
+          </div>
           <span class="text-slate-600">{{ uploadProgress }}%</span>
         </div>
         <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
           <div class="h-full bg-slate-800 rounded-full transition-all duration-300"
                :style="{ width: uploadProgress + '%' }"></div>
+        </div>
+        
+        <!-- Tiempo transcurrido y advertencia -->
+        <div class="mt-2 flex items-center justify-between text-xs">
+          <div class="text-slate-500">
+            Tiempo transcurrido: {{ formatTime(elapsedTime) }}
+          </div>
+          <div v-if="showTimeWarning" class="text-amber-600 flex items-center space-x-1">
+            <AlertCircle class="w-3 h-3" />
+            <span>La importación está tomando más tiempo de lo esperado</span>
+          </div>
+        </div>
+
+        <!-- Mensaje de paciencia para procesos largos -->
+        <div v-if="uploadProgress > 50 && !showTimeWarning" class="mt-2 text-xs text-slate-400 text-center">
+          <i class="fas fa-info-circle"></i> Procesando, por favor no cierres esta ventana
         </div>
       </div>
 
@@ -104,7 +123,8 @@
       <div class="flex items-center justify-end space-x-3 mt-6 pt-4 border-t border-slate-200">
         <button type="button"
                 @click="resetUpload"
-                class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all duration-300">
+                :disabled="uploading"
+                class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
           Cancelar
         </button>
         <button @click="uploadFile"
@@ -112,10 +132,45 @@
                 class="relative px-6 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-all duration-300 transform hover:scale-105 shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2">
           <Loader2 v-if="uploading" class="w-4 h-4 animate-spin" />
           <Upload v-else class="w-4 h-4" />
-          <span>{{ uploading ? 'Subiendo...' : 'Importar Estudiantes' }}</span>
+          <span>{{ uploading ? 'Procesando...' : 'Importar Estudiantes' }}</span>
         </button>
       </div>
     </div>
+
+    <!-- Modal de progreso detallado (opcional para procesos muy largos) -->
+    <transition name="fade">
+      <div v-if="showProgressModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+          <div class="text-center">
+            <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Loader2 class="w-8 h-8 animate-spin text-slate-800" />
+            </div>
+            <h3 class="text-lg font-semibold text-slate-800 mb-2">Importando estudiantes</h3>
+            <p class="text-sm text-slate-600 mb-4">{{ statusMessage }}</p>
+            
+            <div class="mb-4">
+              <div class="flex justify-between text-sm mb-1">
+                <span>Progreso</span>
+                <span>{{ uploadProgress }}%</span>
+              </div>
+              <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div class="h-full bg-slate-800 rounded-full transition-all duration-300"
+                     :style="{ width: uploadProgress + '%' }"></div>
+              </div>
+            </div>
+            
+            <p class="text-xs text-slate-400">
+              Tiempo transcurrido: {{ formatTime(elapsedTime) }}
+            </p>
+            
+            <button @click="cancelUpload"
+                    class="mt-4 px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg border border-slate-200">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
 
     <!-- Mensaje de éxito -->
     <transition name="slide-up">
@@ -132,7 +187,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { useToast } from '@/composables/useToast'
 import { Upload, FileSpreadsheet, X, Loader2, CheckCircle, Download, AlertCircle } from 'lucide-vue-next'
 import { getTemplate, importStudentsExcel } from '@/services/importStudents'
@@ -147,6 +202,16 @@ const fileError = ref('')
 const isDragging = ref(false)
 const downloadingTemplate = ref(false)
 const successMessage = ref<{ title: string; message: string } | null>(null)
+const showProgressModal = ref(false)
+const statusMessage = ref('Preparando archivo...')
+const elapsedTime = ref(0)
+const showTimeWarning = ref(false)
+
+// Timers
+let progressInterval: number | null = null
+let elapsedTimeInterval: number | null = null
+let warningTimeout: number | null = null
+let uploadStartTime = 0
 
 const formatFileSize = (bytes: number) => {
   if (bytes === 0) return '0 Bytes'
@@ -154,6 +219,15 @@ const formatFileSize = (bytes: number) => {
   const sizes = ['Bytes', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+const formatTime = (seconds: number) => {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  if (mins > 0) {
+    return `${mins} minuto${mins !== 1 ? 's' : ''} ${secs} segundos`
+  }
+  return `${secs} segundo${secs !== 1 ? 's' : ''}`
 }
 
 const validateFile = (file: File) => {
@@ -179,11 +253,73 @@ const validateFile = (file: File) => {
   return true
 }
 
+const updateProgressSimulation = () => {
+  if (!uploading.value) return
+  
+  // Simular progreso para feedback visual
+  if (uploadProgress.value < 95) {
+    const increment = Math.random() * 3
+    uploadProgress.value = Math.min(uploadProgress.value + increment, 95)
+    
+    // Actualizar mensaje según progreso
+    if (uploadProgress.value < 30) {
+      statusMessage.value = 'Validando archivo...'
+    } else if (uploadProgress.value < 60) {
+      statusMessage.value = 'Procesando estudiantes...'
+    } else if (uploadProgress.value < 90) {
+      statusMessage.value = 'Guardando información...'
+    } else {
+      statusMessage.value = 'Finalizando...'
+    }
+  }
+}
+
+const startTimers = () => {
+  uploadStartTime = Date.now()
+  
+  // Simular progreso
+  progressInterval = globalThis.setInterval(updateProgressSimulation, 2000)
+  
+  // Contador de tiempo transcurrido
+  elapsedTimeInterval = globalThis.setInterval(() => {
+    if (uploading.value) {
+      elapsedTime.value = Math.floor((Date.now() - uploadStartTime) / 1000)
+    }
+  }, 1000)
+  
+  // Advertencia después de 30 segundos
+  warningTimeout = globalThis.setTimeout(() => {
+    if (uploading.value) {
+      showTimeWarning.value = true
+      toast.showWarning(
+        'Proceso prolongado',
+        'La importación está tomando más tiempo de lo esperado. Por favor continúa esperando.'
+      )
+    }
+  }, 30000)
+}
+
+const stopTimers = () => {
+  if (progressInterval) {
+    clearInterval(progressInterval)
+    progressInterval = null
+  }
+  if (elapsedTimeInterval) {
+    clearInterval(elapsedTimeInterval)
+    elapsedTimeInterval = null
+  }
+  if (warningTimeout) {
+    clearTimeout(warningTimeout)
+    warningTimeout = null
+  }
+}
+
 const handleFileSelect = (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (file && validateFile(file)) {
     selectedFile.value = file
+    fileError.value = ''
   } else if (file) {
     selectedFile.value = null
   }
@@ -194,6 +330,7 @@ const handleFileDrop = (event: DragEvent) => {
   const file = event.dataTransfer?.files[0]
   if (file && validateFile(file)) {
     selectedFile.value = file
+    fileError.value = ''
   } else if (file) {
     selectedFile.value = null
   }
@@ -201,20 +338,42 @@ const handleFileDrop = (event: DragEvent) => {
 }
 
 const triggerFileInput = () => {
-  fileInput.value?.click()
+  if (!uploading.value) {
+    fileInput.value?.click()
+  }
 }
 
 const removeFile = () => {
-  selectedFile.value = null
-  if (fileInput.value) {
-    fileInput.value.value = ''
+  if (!uploading.value) {
+    selectedFile.value = null
+    if (fileInput.value) {
+      fileInput.value.value = ''
+    }
+    fileError.value = ''
   }
-  fileError.value = ''
 }
 
 const resetUpload = () => {
-  removeFile()
-  uploadProgress.value = 0
+  if (!uploading.value) {
+    removeFile()
+    uploadProgress.value = 0
+    statusMessage.value = 'Preparando archivo...'
+    elapsedTime.value = 0
+    showTimeWarning.value = false
+  }
+}
+
+const cancelUpload = () => {
+  if (uploading.value) {
+    uploading.value = false
+    stopTimers()
+    uploadProgress.value = 0
+    statusMessage.value = 'Importación cancelada'
+    setTimeout(() => {
+      statusMessage.value = 'Preparando archivo...'
+      showProgressModal.value = false
+    }, 2000)
+  }
 }
 
 const uploadFile = async () => {
@@ -226,43 +385,67 @@ const uploadFile = async () => {
   if (!validateFile(selectedFile.value)) {
     return
   }
-
-  const fileName = selectedFile.value.name
   
   uploading.value = true
-  uploadProgress.value = 30
+  uploadProgress.value = 0
   fileError.value = ''
+  statusMessage.value = 'Iniciando importación...'
+  elapsedTime.value = 0
+  showTimeWarning.value = false
+  
+  startTimers()
   
   try {
     const result = await importStudentsExcel(selectedFile.value)
+    
+    // Completar progreso
     uploadProgress.value = 100
+    statusMessage.value = '¡Completado!'
+    
+    stopTimers()
 
     if (!result.success) {
       const backendMessage = result.error.errorResponse?.message
       const errorMessage = backendMessage || result.error.message || 'No se pudo importar el archivo'
       fileError.value = errorMessage
       toast.showError('Error en importación', errorMessage)
+      uploading.value = false
+      showProgressModal.value = false
       return
     }
 
-    successMessage.value = {
-      title: '¡Importación exitosa!',
-      message: `Se importó correctamente el archivo ${fileName}`
-    }
-
-    toast.showSuccess('Importación exitosa', 'Los estudiantes fueron importados correctamente')
+    toast.showSuccess(result.data.status, result.data.message)
 
     setTimeout(() => {
       successMessage.value = null
     }, 5000)
 
-    removeFile()
-  } catch {
-    const errorMessage = 'Ocurrió un problema al importar el archivo'
+    // Pequeña demora para mostrar el 100%
+    setTimeout(() => {
+      uploading.value = false
+      showProgressModal.value = false
+      removeFile()
+      uploadProgress.value = 0
+      // Emitir evento para recargar lista de estudiantes
+      globalThis.dispatchEvent(new CustomEvent('students-imported'))
+    }, 1000)
+    
+  } catch (error: any) {
+    stopTimers()
+    
+    let errorMessage = 'Ocurrió un problema al importar el archivo'
+    
+    // Manejar error de timeout específicamente
+    if (error.name === 'AbortError' || error.message?.includes('timeout')) {
+      errorMessage = 'La importación está tomando demasiado tiempo. Por favor, intenta con un archivo más pequeño o contacta a soporte.'
+    } else if (error.message) {
+      errorMessage = error.message
+    }
+    
     fileError.value = errorMessage
     toast.showError('Error en importación', errorMessage)
-  } finally {
     uploading.value = false
+    showProgressModal.value = false
     uploadProgress.value = 0
   }
 }
@@ -296,6 +479,11 @@ const downloadTemplate = async () => {
     downloadingTemplate.value = false
   }
 }
+
+// Limpiar timers al desmontar componente
+onUnmounted(() => {
+  stopTimers()
+})
 </script>
 
 <style scoped>
@@ -308,5 +496,28 @@ const downloadTemplate = async () => {
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(20px);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
 </style>

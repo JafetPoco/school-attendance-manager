@@ -7,12 +7,10 @@ import com.IEASmart.sistemaAsistencias.domain.repository.StudentRepository;
 import com.IEASmart.sistemaAsistencias.infrastructure.mapper.StudentMapper;
 import com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity.StudentEntity;
 import com.IEASmart.sistemaAsistencias.infrastructure.jpa.specification.StudentSpecifications;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -68,10 +66,8 @@ public class StudentRepositoryImpl implements StudentRepository {
     }
 
     @Override
-    public List<Student> findAllWithoutAttendanceOnDate(School school, LocalDate date) {
-        return jpaRepository.findAllByClassInfo_SchoolAndWithoutAttendanceOnDate(school, date).stream()
-                .map(studentMapper::toDomain)
-                .toList();
+    public List<String> findAllWithoutAttendanceOnDate(School school, LocalDate date) {
+        return jpaRepository.findAllByClassInfo_SchoolAndWithoutAttendanceOnDate(school, date);
     }
 
     @Override
@@ -90,5 +86,10 @@ public class StudentRepositoryImpl implements StudentRepository {
     @Override
     public Set<String> findAllDnisBySchool(School school){
         return jpaRepository.findExistingDnis(school);
+    }
+
+    @Override
+    public Student getReferenceById(String dni){
+        return studentMapper.toDomain(jpaRepository.getReferenceById(dni));
     }
 }

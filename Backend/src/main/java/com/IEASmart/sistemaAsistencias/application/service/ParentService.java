@@ -8,6 +8,7 @@ import com.IEASmart.sistemaAsistencias.api.dto.response.StudentResponse;
 import com.IEASmart.sistemaAsistencias.api.mapper.ParentApiMapper;
 import com.IEASmart.sistemaAsistencias.api.mapper.ParentWithChildApiMapper;
 import com.IEASmart.sistemaAsistencias.api.mapper.StudentApiMapper;
+import com.IEASmart.sistemaAsistencias.application.dto.ImportRowData;
 import com.IEASmart.sistemaAsistencias.domain.exception.InvalidArgumentException;
 import com.IEASmart.sistemaAsistencias.domain.exception.ConflictException;
 import com.IEASmart.sistemaAsistencias.domain.exception.ResourceNotFoundException;
@@ -27,6 +28,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class ParentService {
@@ -154,10 +157,9 @@ public class ParentService {
     public void importFromExcel(MultipartFile file, School school) {
         validateFile(file);
 
-        Map<String, Parent> parentsCache = new HashMap<>(); // phone -> Parent
+        List<ImportRowData> validRows = new ArrayList<>(); // phone -> Parent
         List<String> importErrors = new ArrayList<>();
 
-        Set<String> databaseStudents = studentRepository.findAllDnisBySchool(school);
 
         try (InputStream is = file.getInputStream();
              Workbook workbook = WorkbookFactory.create(is)) {
@@ -166,18 +168,19 @@ public class ParentService {
             if (sheet == null) return;
 
             DataFormatter formatter = new DataFormatter();
+            int lastRow = sheet.getLastRowNum();
 
-            for (int r = 1; r <= sheet.getLastRowNum(); r++) {
+            Set<String> existingDnis = studentRepository.findAllDnisBySchool(school);
+
+            for (int r = 1; r <= lastRow; r++) {
                 Row row = sheet.getRow(r);
                 if (row == null) continue;
 
                 String dni = formatter.formatCellValue(row.getCell(0)).trim();
-                if (dni.isEmpty()) {
-                    continue;
-                }
+                if (dni.isEmpty()) continue;
 
-                if (databaseStudents.contains(dni)) {
-                    importErrors.add("Fila " + (r+1) + ": el estudiante con DNI " + dni + " ya existe");
+                if (existingDnis.contains(dni) || validRows.stream().anyMatch(v -> v.dni().equals(dni))) {
+                    importErrors.add("Fila " + (r + 1) + ": el estudiante con DNI " + dni + " ya existe");
                     continue;
                 }
 
@@ -193,56 +196,34 @@ public class ParentService {
                 String parentPhone = formatter.formatCellValue(row.getCell(8)).trim();
 
                 Level level = null;
-                Grade grade = null;
                 try {
                     if (!levelRaw.isBlank()) level = Level.from(levelRaw);
                 } catch (Exception ex) {
-                    importErrors.add("Fila " + (r+1) + ": level inválido -> '" + levelRaw + "'");
+                    importErrors.add("Fila " + (r + 1) + ": level inválido -> '" + levelRaw + "'");
                     continue;
                 }
+
+                Grade grade = null;
                 try {
                     if (!gradeRaw.isBlank()) grade = Grade.from(gradeRaw);
                 } catch (Exception ex) {
-                    importErrors.add("Fila " + (r+1) + ": grade inválido -> '" + gradeRaw + "'");
+                    importErrors.add("Fila " + (r + 1) + ": grade inválido -> '" + gradeRaw + "'");
                     continue;
                 }
 
-                databaseStudents.add(dni);
-
-                Optional<Class> classOpt = classRepository.findByClassInformation(sectionRaw, grade, level, school);
-                if (classOpt.isEmpty()) {
-                    importErrors.add("Fila " + (r+1) + ": no se encontró una clase que coincida con nivel='" + levelRaw + "', grado='" + gradeRaw + "', seccion='" + sectionRaw + "'");
+                if (parentPhone.isBlank()) {
+                    importErrors.add("Fila " + (r + 1) + ": el padre no tiene número de teléfono");
                     continue;
                 }
 
-                Student student = new Student(dni, name, firstLast, secondLast, classOpt.get());
-
-                if (parentPhone.isBlank()){
-                    importErrors.add("Fila " + (r+1) + ": el padre no tiene número de teléfono");
-                    continue;
-                }
-
-                Parent parent = parentsCache.get(parentPhone);
-                if (parent == null) {
-                    Optional<Parent> existing = parentRepository.findByPhoneNumber(parentPhone, school);
-                    parent = existing.orElseGet(() -> {
-                        Parent p = new Parent();
-                        p.setNames(parentName);
-                        p.setPhoneNumber(parentPhone);
-                        p.setSchool(school);
-                        return p;
-                    });
-                    parentsCache.put(parentPhone, parent);
-                }
-                parent.addChild(student);
+                validRows.add(new ImportRowData(r + 1, dni, level, grade, sectionRaw, firstLast, secondLast, name, parentName, parentPhone));
             }
 
-            List<Parent> listParents = new ArrayList<>(parentsCache.values());
-            parentRepository.saveAll(listParents);
-
-            if (!importErrors.isEmpty()) {
+            if(!importErrors.isEmpty()) {
                 throw new ConflictException("Errores en import: " + String.join("; ", importErrors), "EXCEL_VALIDATION_ERROR");
             }
+
+            processImportBatch(school, validRows);
         } catch (ConflictException ce) {
             throw ce;
         } catch (Exception e) {
@@ -264,6 +245,96 @@ public class ParentService {
                     "UNSUPPORTED_FILE_TYPE"
             );
         }
+    }
+
+    private void processImportBatch(School school, List<ImportRowData> rows) {
+        List<Class> allClasses = classRepository.findAllBySchool(school);
+
+        Map<String, Class> classCache = new HashMap<>();
+        for (Class classObj : allClasses) {
+            String key = buildClassKey(
+                    classObj.getSection(),
+                    classObj.getGrade(),
+                    classObj.getLevel()
+            );
+            classCache.put(key, classObj);
+        }
+
+        Set<String> missingKeys = new HashSet<>();
+        for (ImportRowData row : rows) {
+            String key = buildClassKey(row.section(), row.grade(), row.level());
+            if (!classCache.containsKey(key)) {
+                missingKeys.add(String.format(
+                        "nivel='%s', grado='%s', seccion='%s'",
+                        row.level(), row.grade(), row.section()
+                ));
+            }
+        }
+
+        if (!missingKeys.isEmpty()) {
+            throw new ConflictException(
+                    "No se encontraron las siguientes clases: " + String.join("; ", missingKeys),
+                    "EXCEL_VALIDATION_ERROR"
+            );
+        }
+
+        Set<String> uniquePhones = rows.stream()
+                .map(ImportRowData::parentPhone)
+                .collect(Collectors.toSet());
+
+        Map<String, Parent> existingParents = parentRepository.findByPhoneNumberIn(uniquePhones, school);
+
+        List<Parent> parentsToSave = new ArrayList<>();
+        Map<String, Parent> parentCache = new HashMap<>();
+        Set<String> modifiedExistingParentPhones = new HashSet<>();
+
+        for (ImportRowData row : rows) {
+            Parent parent = existingParents.get(row.parentPhone());
+            if (parent == null) {
+                parent = parentCache.get(row.parentPhone());
+                if (parent == null) {
+                    parent = new Parent();
+                    parent.setNames(row.parentName());
+                    parent.setPhoneNumber(row.parentPhone());
+                    parent.setSchool(school);
+                    parentCache.put(row.parentPhone(), parent);
+                    parentsToSave.add(parent);
+                }
+            } else {
+                modifiedExistingParentPhones.add(row.parentPhone());
+            }
+
+            String classKey = buildClassKey(row.section(), row.grade(), row.level());
+            Class assignedClass = classCache.get(classKey);
+
+            Student student = new Student(
+                    row.dni(),
+                    row.name(),
+                    row.firstLast(),
+                    row.secondLast(),
+                    assignedClass
+            );
+            parent.addChild(student);
+        }
+
+        if (!parentsToSave.isEmpty()) {
+            parentRepository.saveAll(parentsToSave);
+        }
+
+        if (!modifiedExistingParentPhones.isEmpty()) {
+            List<Parent> toUpdate = modifiedExistingParentPhones.stream()
+                    .map(existingParents::get)
+                    .filter(Objects::nonNull)
+                    .toList();
+            if (!toUpdate.isEmpty()) {
+                parentRepository.saveAll(toUpdate);
+            }
+        }
+    }
+
+    // Métodos helper
+    private String buildClassKey(String section, Grade grade, Level level) {
+        return section.toUpperCase() + "|" + (grade != null ? grade.name().toUpperCase() : "null") + "|" + (level != null ? level.name().toUpperCase() : "null");
     }
 
     @Transactional(readOnly = true)

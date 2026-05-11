@@ -16,48 +16,57 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class TokenService {
 
     private final TokenRepository tokenRepository;
-    private final AttendanceRepository attendanceRepository;
     private final SchoolPolicyRepository schoolPolicyRepository;
 
-    public TokenService(TokenRepository tokenRepository, AttendanceRepository attendanceRepository, SchoolPolicyRepository schoolPolicyRepository) {
+    public TokenService(TokenRepository tokenRepository, SchoolPolicyRepository schoolPolicyRepository) {
         this.tokenRepository = tokenRepository;
-        this.attendanceRepository = attendanceRepository;
         this.schoolPolicyRepository = schoolPolicyRepository;
     }
 
-    public Token generateToken(String attendanceId, School school) {
-        Attendance attendance = attendanceRepository.findById(attendanceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Asistencia no encontrada"));
-
-        if (attendance.getAttendanceType() != AttendanceType.AUSENTE) {
-            throw new ConflictException("Solo se pueden generar tokens para asistencias marcadas como AUSENTE", "INVALID_ATTENDANCE_TYPE");
+    public List<Token> generateTokens(List<Attendance> attendances, School school) {
+        if (attendances.isEmpty()) {
+            return Collections.emptyList();
         }
 
-        // Invalidar tokens anteriores para esta asistencia
-        //tokenRepository.markTokensAsUsedByAttendance(attendanceId);
-        Optional<SchoolPolicy> schoolPolicyOpt = schoolPolicyRepository.getBySchool(school);
-        if(schoolPolicyOpt.isEmpty()) {
-            throw new ResourceNotFoundException("Configuracion del colegio", "School", school);
-        }
-        SchoolPolicy schoolPolicy = schoolPolicyOpt.get();
+        SchoolPolicy schoolPolicy = schoolPolicyRepository.getBySchool(school)
+                .orElseThrow(() -> new ResourceNotFoundException("Configuracion del colegio", "School", school));
+
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime expiryDate = now.plus(Duration.ofDays(schoolPolicy.getJustificationExpirationDays()));
 
-        String tokenCode = UUID.randomUUID().toString();
-        Token token= new Token();
+        List<Token> tokens = attendances.stream()
+                .map(attendance -> createToken(attendance.getId(), now, expiryDate))
+                .collect(Collectors.toList());
+
+        List<Token> saved = tokenRepository.saveAll(tokens);
+
+        /*
+        List<String> attendanceIds = attendances.stream()
+                .map(Attendance::getId)
+                .collect(Collectors.toList());
+        tokenRepository.markTokensAsUsedByAttendances(attendanceIds);
+        */
+
+        return tokens;
+    }
+
+    private Token createToken(String attendanceId, LocalDateTime now, LocalDateTime expiryDate) {
+        Token token = new Token();
         token.setUsed(false);
-        token.setToken(tokenCode);
+        token.setToken(UUID.randomUUID().toString());
         token.setExpiryDate(expiryDate);
         token.setCreatedAt(now);
         token.setAttendanceId(attendanceId);
-
         return token;
     }
 

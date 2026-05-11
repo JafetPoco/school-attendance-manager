@@ -19,9 +19,8 @@ public interface StudentJpaRepository extends JpaRepository<StudentEntity, Strin
     Optional<StudentEntity> findByDniAndClassInfo_School(String id, School school);
     List<StudentEntity> findByNameContainingIgnoreCaseAndClassInfo_School(String query, School school);
 
-    // JPQL no permite JOIN ... ON en este contexto; usar NOT EXISTS para buscar estudiantes sin asistencia en una fecha
-    @Query("SELECT s FROM StudentEntity s WHERE s.classInfo.school = :school AND NOT EXISTS (SELECT a FROM AttendanceEntity a WHERE a.student.dni = s.dni AND a.date = :date)")
-    List<StudentEntity> findAllByClassInfo_SchoolAndWithoutAttendanceOnDate(@Param("school") School school, @Param("date") LocalDate date);
+    @Query("SELECT s.dni FROM StudentEntity s WHERE s.classInfo.school = :school AND NOT EXISTS (SELECT a FROM AttendanceEntity a WHERE a.student.dni = s.dni AND a.date = :date)")
+    List<String> findAllByClassInfo_SchoolAndWithoutAttendanceOnDate(@Param("school") School school, @Param("date") LocalDate date);
 
     List<StudentEntity> findAllByClassInfo_IdOrderByFirstLastNameAsc(Long classId);
 
@@ -29,4 +28,7 @@ public interface StudentJpaRepository extends JpaRepository<StudentEntity, Strin
 
     @Query("SELECT s.dni FROM StudentEntity s WHERE s.classInfo.school = :school")
     Set<String> findExistingDnis(@Param("school") School school);
+
+    @Override
+    StudentEntity getReferenceById(String dni);
 }

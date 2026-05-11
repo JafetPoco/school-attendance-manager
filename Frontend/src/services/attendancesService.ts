@@ -70,7 +70,7 @@ export async function createMissedAttendance(): Promise<ServiceResult<MissedAtte
   try {
     const data = await http<MissedAttendance>(`/attendances/missed`, {
       method: 'GET',
-    }, 20000)
+    }, 600000)
 
     return { success: true, data }
   } catch (error) {
