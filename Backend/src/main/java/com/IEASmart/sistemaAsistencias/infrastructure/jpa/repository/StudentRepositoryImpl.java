@@ -90,6 +90,6 @@ public class StudentRepositoryImpl implements StudentRepository {
 
     @Override
     public Student getReferenceById(String dni){
-        return studentMapper.toDomain(jpaRepository.getReferenceBy(dni));
+        return studentMapper.toDomain(jpaRepository.getReferenceById(dni));
     }
 }

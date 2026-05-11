@@ -29,5 +29,6 @@ public interface StudentJpaRepository extends JpaRepository<StudentEntity, Strin
     @Query("SELECT s.dni FROM StudentEntity s WHERE s.classInfo.school = :school")
     Set<String> findExistingDnis(@Param("school") School school);
 
-    StudentEntity getReferenceBy(String dni);
+    @Override
+    StudentEntity getReferenceById(String dni);
 }
