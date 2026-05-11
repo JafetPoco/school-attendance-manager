@@ -2,6 +2,7 @@ package com.IEASmart.sistemaAsistencias.api.controller;
 
 import com.IEASmart.sistemaAsistencias.api.dto.request.ParentWithChildRequest;
 import com.IEASmart.sistemaAsistencias.api.dto.request.StudentRequest;
+import com.IEASmart.sistemaAsistencias.api.dto.response.ImportResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.ParentResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.ParentWithChildResponse;
 import com.IEASmart.sistemaAsistencias.api.dto.response.StudentResponse;
@@ -58,10 +59,11 @@ public class ParentController {
     }
 
     @PostMapping("/import")
-    public ResponseEntity<Void> importExcel(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<ImportResponse> importExcel(@RequestParam("file") MultipartFile file) {
         School school = authorizationService.getUserSchool();
         parentService.importFromExcel(file, school);
-        return ResponseEntity.ok().build();
+        ImportResponse response = new ImportResponse("Exito", "Archivo importado correctamente");
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/template")

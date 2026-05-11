@@ -286,11 +286,12 @@ public class ParentService {
 
         List<Parent> parentsToSave = new ArrayList<>();
         Map<String, Parent> parentCache = new HashMap<>();
+        Set<String> modifiedExistingParentPhones = new HashSet<>();
 
         for (ImportRowData row : rows) {
             Parent parent = existingParents.get(row.parentPhone());
             if (parent == null) {
-                 parent = parentCache.get(row.parentPhone());
+                parent = parentCache.get(row.parentPhone());
                 if (parent == null) {
                     parent = new Parent();
                     parent.setNames(row.parentName());
@@ -299,6 +300,8 @@ public class ParentService {
                     parentCache.put(row.parentPhone(), parent);
                     parentsToSave.add(parent);
                 }
+            } else {
+                modifiedExistingParentPhones.add(row.parentPhone());
             }
 
             String classKey = buildClassKey(row.section(), row.grade(), row.level());
@@ -316,6 +319,16 @@ public class ParentService {
 
         if (!parentsToSave.isEmpty()) {
             parentRepository.saveAll(parentsToSave);
+        }
+
+        if (!modifiedExistingParentPhones.isEmpty()) {
+            List<Parent> toUpdate = modifiedExistingParentPhones.stream()
+                    .map(existingParents::get)
+                    .filter(Objects::nonNull)
+                    .toList();
+            if (!toUpdate.isEmpty()) {
+                parentRepository.saveAll(toUpdate);
+            }
         }
     }
 

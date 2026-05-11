@@ -385,8 +385,6 @@ const uploadFile = async () => {
   if (!validateFile(selectedFile.value)) {
     return
   }
-
-  const fileName = selectedFile.value.name
   
   uploading.value = true
   uploadProgress.value = 0
@@ -416,12 +414,7 @@ const uploadFile = async () => {
       return
     }
 
-    successMessage.value = {
-      title: '¡Importación exitosa!',
-      message: `Se importó correctamente el archivo ${fileName}`
-    }
-
-    toast.showSuccess('Importación exitosa', `${fileName} importado correctamente`)
+    toast.showSuccess(result.data.status, result.data.message)
 
     setTimeout(() => {
       successMessage.value = null

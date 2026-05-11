@@ -2,13 +2,14 @@ import { http } from '@/api/http'
 import { mapApiError } from '@/utils/apiErrorMapper'
 import type { ServiceResult } from '@/types/ServiceResult'
 import type { ApiHttpError } from '@/api/ApiHttpError'
+import type { ImportResponse } from '@/types/Import'
 
-export async function importStudentsExcel(file: File): Promise<ServiceResult<null, ApiHttpError>> {
+export async function importStudentsExcel(file: File): Promise<ServiceResult<ImportResponse, ApiHttpError>> {
   try {
     const formData = new FormData()
     formData.append('file', file)
 
-    const data = await http<null>('/parents/import', {
+    const data = await http<ImportResponse>('/parents/import', {
       method: 'POST',
       body: formData
     }, 600000)
