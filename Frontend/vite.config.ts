@@ -8,16 +8,12 @@ import path from 'node:path'
 export default defineConfig(({ command }) => {
   const plugins = [
     vue(),
-    tailwindcss()
-  ]
-
-  // Solo agregar VueDevTools en modo desarrollo
-  if (command === 'serve') {
-    plugins.push(VueDevTools())
-  }
+    tailwindcss(),
+    command === 'serve' ? VueDevTools() : null
+  ].filter(Boolean) // Esto elimina los valores null/undefined
 
   return {
-    plugins,
+    plugins: plugins as any, // O usa 'as Plugin[]' si quieres tipado correcto
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src')
