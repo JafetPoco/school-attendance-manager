@@ -63,7 +63,7 @@
       <!-- Contenedor de la vista con animación de transición -->
       <transition name="view-transition" mode="out-in">
         <div :key="monthView ? 'month' : 'day'" class="animate-fade-in-up">
-          <AttendanceViewMensual v-if="monthView" />
+          <AttendanceViewMensual v-if="monthView" @month-change="handleMonthChange" />
           <AttendanceViewDay v-else/>
         </div>
       </transition>
@@ -71,9 +71,10 @@
       <!-- Footer con acciones rápidas (opcional) -->
       <div class="mt-6 flex justify-end space-x-3">
         <button class="flex items-center space-x-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-all duration-300 transform hover:scale-105 shadow-md"
-                @click="exportReport">
+                @click="exportReport"
+                :disabled="exportLoading">
           <Download class="w-4 h-4" />
-          <span>Exportar reporte</span>
+          <span>{{ exportLoading ? 'Generando...' : 'Exportar reporte' }}</span>
         </button>
       </div>
     </div>
@@ -169,6 +170,33 @@
       </div>
     </div>
   </transition>
+
+  <!-- Modal de generación de reporte -->
+  <transition name="fade">
+    <div v-if="exportLoading"
+         class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+         @click.self="false">
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 animate-slide-up">
+        <div class="text-center">
+          <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Loader2 class="w-8 h-8 animate-spin text-slate-800" />
+          </div>
+
+          <h3 class="text-lg font-semibold text-slate-800 mb-2">
+            {{ exportLoadingStatus.title }}
+          </h3>
+
+          <p class="text-sm text-slate-600">
+            {{ exportLoadingStatus.message }}
+          </p>
+
+          <div class="mt-4 text-xs text-slate-400">
+            No cierres esta ventana hasta que finalice la descarga.
+          </div>
+        </div>
+      </div>
+    </div>
+  </transition>
 </template>
 
 <script setup lang="ts">
@@ -198,6 +226,13 @@ const loadingProgress = ref(0)
 const elapsedTime = ref(0)
 const showTimeWarning = ref(false)
 const confirmClose = ref(false)
+const exportLoading = ref(false)
+const exportLoadingStatus = ref({
+  title: 'Generando reporte mensual',
+  message: 'Procesando la información de asistencia...'
+})
+const selectedExportMonth = ref(new Date().getMonth() + 1)
+const selectedExportYear = ref(new Date().getFullYear())
 const loadingStatus = ref({
   title: 'Cerrando registro de asistencia',
   message: 'Procesando estudiantes...'
@@ -310,11 +345,16 @@ const confirmCloseAttendance = async () => {
 
 const exportReport = async () => {
   try {
-    const now = new Date()
-    const month = now.getMonth() + 1
-    const year = now.getFullYear()
+    exportLoading.value = true
+    exportLoadingStatus.value = {
+      title: 'Generando reporte mensual',
+      message: 'Esto puede tardar unos segundos mientras se arma el Excel...'
+    }
 
-    const response = await getMonthlyExcel(month, year)
+    const month = selectedExportMonth.value
+    const year = selectedExportYear.value
+
+    const response = await getMonthlyExcel(month)
 
     if (response.success) {
       const downloadUrl = URL.createObjectURL(response.data)
@@ -325,15 +365,23 @@ const exportReport = async () => {
       link.click()
       link.remove()
       URL.revokeObjectURL(downloadUrl)
+      exportLoading.value = false
       return
     }
 
     if (!response.success) {
+      exportLoading.value = false
       toast.showError('Error', response.error.message)
     }
   } catch (error) {
+    exportLoading.value = false
     toast.showError('Error', error instanceof Error ? error.message : 'Error de conexión')
   }
+}
+
+const handleMonthChange = (payload: { month: number; year: number }) => {
+  selectedExportMonth.value = payload.month
+  selectedExportYear.value = payload.year
 }
 
 const closeAttendance = async () => {

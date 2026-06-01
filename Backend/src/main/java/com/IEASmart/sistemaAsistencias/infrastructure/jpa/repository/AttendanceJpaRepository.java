@@ -23,6 +23,16 @@ public interface AttendanceJpaRepository extends JpaRepository<AttendanceEntity,
     long countByStudent_DniAndAttendanceTypeAndDateBetween(String studentDni, AttendanceType type, LocalDate startDate, LocalDate endDate);
     List<AttendanceEntity> findAllByStudent_DniAndDateBetweenOrderByDateAsc(String studentDni, LocalDate startDate, LocalDate endDate);
 
+    @Query("SELECT a FROM AttendanceEntity a " +
+            "JOIN FETCH a.student s " +
+            "JOIN FETCH s.classInfo c " +
+            "WHERE c.school = :school " +
+            "AND a.date BETWEEN :startDate AND :endDate " +
+            "ORDER BY c.id ASC, s.firstLastName ASC, s.secondLastName ASC, s.name ASC, a.date ASC")
+    List<AttendanceEntity> findAllBySchoolAndDateBetween(@Param("school") School school,
+                                                         @Param("startDate") LocalDate startDate,
+                                                         @Param("endDate") LocalDate endDate);
+
     @Query("SELECT a.attendanceType as attendanceType, COUNT(a) as count " +
             "FROM AttendanceEntity a " +
             "WHERE a.date = :date AND a.student.classInfo.school = :school " +

@@ -71,6 +71,14 @@ public class AttendanceRepositoryImpl implements AttendanceRepository {
     }
 
     @Override
+    public List<Attendance> findBySchoolAndDateBetween(School school, LocalDate startDate, LocalDate endDate) {
+        return attendanceJpaRepository.findAllBySchoolAndDateBetween(school, startDate, endDate)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public long countByStudentDniAndAttendanceTypeAndDateBetween(String dni, AttendanceType type, LocalDate startDate, LocalDate endDate){
         return attendanceJpaRepository.countByStudent_DniAndAttendanceTypeAndDateBetween(dni, type, startDate, endDate);
     }

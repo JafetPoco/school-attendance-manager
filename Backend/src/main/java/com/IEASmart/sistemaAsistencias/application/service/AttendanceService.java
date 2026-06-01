@@ -11,7 +11,6 @@ import com.IEASmart.sistemaAsistencias.application.dto.AttendanceCriteria;
 import com.IEASmart.sistemaAsistencias.domain.exception.ConflictException;
 import com.IEASmart.sistemaAsistencias.domain.exception.ResourceNotFoundException;
 import com.IEASmart.sistemaAsistencias.domain.model.Attendance;
-import com.IEASmart.sistemaAsistencias.domain.model.Class;
 import com.IEASmart.sistemaAsistencias.domain.model.Parent;
 import com.IEASmart.sistemaAsistencias.domain.model.Student;
 import com.IEASmart.sistemaAsistencias.domain.model.Token;
@@ -131,7 +130,6 @@ public class AttendanceService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     private Map<String, List<MonthlyAttendanceResponse>> getMonthlyAttendanceAllSections(
             School school, Integer month) {
 
@@ -139,19 +137,35 @@ public class AttendanceService {
             throw new ConflictException("Mes inválido: " + month, "INVALID_MONTH_VALUE");
         }
 
-        List<Class> classes = classRepository.findAllBySchool(school);
+        LocalDate startDate = LocalDate.of(LocalDate.now().getYear(), month, 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+        List<com.IEASmart.sistemaAsistencias.domain.model.Class> classes = classRepository.findAllBySchool(school);
+        List<Student> students = studentRepository.getAllStudents(school);
+        List<Attendance> attendances = attendanceRepository.findBySchoolAndDateBetween(school, startDate, endDate);
+
         Map<Long, String> idToLabel = new LinkedHashMap<>();
-        for (Class c : classes) {
-            String section = c.getSection();
-            String label;
-            if (section != null && section.length() == 1) {
-                String grade = c.getGrade() == null ? "" : c.getGrade().name();
-                String level = c.getLevel() == null ? "" : c.getLevel().name();
-                label = String.format("%s-%s-%s", section, grade, level).trim();
-            } else {
-                label = section == null ? "" : section;
+        for (com.IEASmart.sistemaAsistencias.domain.model.Class c : classes) {
+            idToLabel.put(c.getId(), buildClassLabel(c));
+        }
+
+        Map<Long, List<Student>> studentsByClassId = students.stream()
+                .filter(student -> student.getClassSchool() != null && student.getClassSchool().getId() != null)
+                .collect(Collectors.groupingBy(
+                        student -> student.getClassSchool().getId(),
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+
+        Map<String, Map<Integer, String>> attendanceByDni = new HashMap<>();
+        for (Attendance attendance : attendances) {
+            Student student = attendance.getStudent();
+            if (student == null || student.getDni() == null || attendance.getDate() == null || attendance.getAttendanceType() == null) {
+                continue;
             }
-            idToLabel.put(c.getId(), label);
+            attendanceByDni
+                    .computeIfAbsent(student.getDni(), k -> new HashMap<>())
+                    .put(attendance.getDate().getDayOfMonth(), attendance.getAttendanceType().getFullName());
         }
 
         // Para cada clase generar la información mensual
@@ -164,8 +178,8 @@ public class AttendanceService {
             if (result.containsKey(displayLabel)) {
                 displayLabel = displayLabel + " (" + classId + ")";
             }
-            AttendanceMonthlyFilter filter = new AttendanceMonthlyFilter(month, classId);
-            List<MonthlyAttendanceResponse> sectionData = getMonthlyAttendance(filter);
+            List<Student> classStudents = studentsByClassId.getOrDefault(classId, List.of());
+            List<MonthlyAttendanceResponse> sectionData = buildMonthlySectionData(classStudents, attendanceByDni);
             result.put(displayLabel, sectionData);
         }
 
@@ -178,6 +192,27 @@ public class AttendanceService {
 
         // Usar el exportador con múltiples hojas
         return excelExportPort.exportToExcelMultiSheet(dataBySection);
+    }
+
+    private List<MonthlyAttendanceResponse> buildMonthlySectionData(List<Student> students,
+                                                                    Map<String, Map<Integer, String>> attendanceByDni) {
+        return students.stream()
+                .map(student -> {
+                    MonthlyAttendanceResponse response = monthlyAttendanceApiMapper.toResponse(student);
+                    response.setDailyAttendance(attendanceByDni.getOrDefault(student.getDni(), Map.of()));
+                    return response;
+                })
+                .toList();
+    }
+
+    private String buildClassLabel(com.IEASmart.sistemaAsistencias.domain.model.Class classData) {
+        String section = classData.getSection();
+        if (section != null && section.length() == 1) {
+            String grade = classData.getGrade() == null ? "" : classData.getGrade().name();
+            String level = classData.getLevel() == null ? "" : classData.getLevel().name();
+            return String.format("%s-%s-%s", section, grade, level).trim();
+        }
+        return section == null ? "" : section;
     }
 
     public InformationAttendanceResponse getAttendanceByStudentId(String id, School school) {
@@ -203,7 +238,7 @@ public class AttendanceService {
         response.setTotalExcusedAbsences(totalJustifiedAbsences);
         response.setTotal(totalAttendances + totalAbsences + totalTardies + totalJustifiedAbsences);
 
-        LocalDate fistDayOfWeek = today.minusDays(today.getDayOfWeek().getValue() - 1);
+        LocalDate fistDayOfWeek = today.minusDays(today.getDayOfWeek().getValue() - 1L);
         LocalDate lastDayOfWeek = fistDayOfWeek.plusDays(6);
 
         List<Attendance> attendances = attendanceRepository.findByStudentAndDateBetween(id, fistDayOfWeek, lastDayOfWeek);
@@ -240,7 +275,6 @@ public class AttendanceService {
 
         List<Attendance> saved = attendanceRepository.saveAll(attendances);
         List<Token> tokens = tokenService.generateTokens(saved, school);
-        // tokenRepository.saveAll(tokens);
         return tokens.size();
     }
 
