@@ -14,7 +14,8 @@ import java.util.Set;
 
 public interface StudentJpaRepository extends JpaRepository<StudentEntity, String>, JpaSpecificationExecutor<StudentEntity> {
     // Obtener todos los estudiantes de una escuela (la escuela está en classInfo.school)
-    List<StudentEntity> findAllByClassInfo_School(School school);
+    @Query("SELECT s FROM StudentEntity s JOIN FETCH s.classInfo c WHERE c.school = :school ORDER BY c.id ASC, s.firstLastName ASC, s.secondLastName ASC, s.name ASC")
+    List<StudentEntity> findAllByClassInfo_School(@Param("school") School school);
 
     Optional<StudentEntity> findByDniAndClassInfo_School(String id, School school);
     List<StudentEntity> findByNameContainingIgnoreCaseAndClassInfo_School(String query, School school);
@@ -22,7 +23,8 @@ public interface StudentJpaRepository extends JpaRepository<StudentEntity, Strin
     @Query("SELECT s.dni FROM StudentEntity s WHERE s.classInfo.school = :school AND NOT EXISTS (SELECT a FROM AttendanceEntity a WHERE a.student.dni = s.dni AND a.date = :date)")
     List<String> findAllByClassInfo_SchoolAndWithoutAttendanceOnDate(@Param("school") School school, @Param("date") LocalDate date);
 
-    List<StudentEntity> findAllByClassInfo_IdOrderByFirstLastNameAsc(Long classId);
+    @Query("SELECT s FROM StudentEntity s JOIN FETCH s.classInfo WHERE s.classInfo.id = :classId ORDER BY s.firstLastName ASC, s.secondLastName ASC, s.name ASC")
+    List<StudentEntity> findAllByClassInfo_IdOrderByFirstLastNameAsc(@Param("classId") Long classId);
 
     long countByClassInfo_School(School school);
 

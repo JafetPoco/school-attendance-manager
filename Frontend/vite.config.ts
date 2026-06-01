@@ -6,14 +6,18 @@ import path from 'node:path'
 
 // https://vite.dev/config/
 export default defineConfig(({ command }) => {
-  const devToolsPlugin = command === 'serve' ? VueDevTools() : undefined
+  const plugins = [
+    vue(),
+    tailwindcss()
+  ]
+
+  // Solo agregar VueDevTools en modo desarrollo
+  if (command === 'serve') {
+    plugins.push(VueDevTools())
+  }
 
   return {
-    plugins: [
-    vue(),
-    tailwindcss(),
-    ...(devToolsPlugin ? [devToolsPlugin] : [])
-  ],
+    plugins,
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src')

@@ -49,7 +49,7 @@ public class ExcelAdapter implements ExcelExportPort {
                 }
 
                 // Configurar hoja
-                autoSizeColumns(sheet, headers.length);
+                configureColumnWidths(sheet, headers.length);
                 sheet.createFreezePane(0, 1);
             }
 
@@ -182,7 +182,7 @@ public class ExcelAdapter implements ExcelExportPort {
             row.createCell(5).setCellValue(attendancePercent + "%");
         }
 
-        autoSizeColumns(summarySheet, headers.length);
+        configureSummaryColumnWidths(summarySheet, headers.length);
     }
 
     // Helper: Nombre de la hoja
@@ -240,12 +240,26 @@ public class ExcelAdapter implements ExcelExportPort {
         }
     }
 
-    private void autoSizeColumns(Sheet sheet, int columnCount) {
-        for (int i = 0; i < columnCount; i++) {
-            sheet.autoSizeColumn(i);
-            if (sheet.getColumnWidth(i) > 8000) {
-                sheet.setColumnWidth(i, 8000);
-            }
+    private void configureColumnWidths(Sheet sheet, int columnCount) {
+        if (columnCount <= 0) {
+            return;
+        }
+
+        sheet.setColumnWidth(0, 9000);
+        for (int i = 1; i < columnCount; i++) {
+            sheet.setColumnWidth(i, 1800);
+        }
+    }
+
+    private void configureSummaryColumnWidths(Sheet sheet, int columnCount) {
+        if (columnCount <= 0) {
+            return;
+        }
+
+        sheet.setColumnWidth(0, 9000);
+        sheet.setColumnWidth(1, 5000);
+        for (int i = 2; i < columnCount; i++) {
+            sheet.setColumnWidth(i, 4200);
         }
     }
 

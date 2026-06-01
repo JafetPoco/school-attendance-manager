@@ -180,6 +180,10 @@ import {
 } from 'lucide-vue-next'
 import { useSectionStore } from '@/stores/sectionStore'
 
+const emit = defineEmits<{
+  (e: 'month-change', payload: { month: number; year: number }): void
+}>()
+
 // Estado
 const loading = ref(false)
 const errorMessage = ref('')
@@ -266,6 +270,13 @@ const currentMonth = () => {
   selectedDate.value = new Date()
 }
 
+const notifyMonthChange = () => {
+  emit('month-change', {
+    month: monthNumber.value,
+    year: selectedDate.value.getFullYear()
+  })
+}
+
 // Carga de datos
 const loadAttendances = async () => {
   loading.value = true
@@ -292,6 +303,10 @@ watch(monthNumber, (newMonth) => {
   loadAttendances()
 })
 
+watch(selectedDate, () => {
+  notifyMonthChange()
+})
+
 watch(() => filter.value.classId, () => {
   loadAttendances()
 })
@@ -299,6 +314,7 @@ watch(() => filter.value.classId, () => {
 // Lifecycle
 onMounted(() => {
   filter.value.month = monthNumber.value
+  notifyMonthChange()
   loadAttendances()
 })
 
