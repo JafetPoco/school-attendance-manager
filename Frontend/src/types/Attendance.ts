@@ -80,3 +80,7 @@ export interface DashboardResponse {
     totalStudents: number
     
 }
+
+export interface DeletedAttendance {
+    count: number
+}

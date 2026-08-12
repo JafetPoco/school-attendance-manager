@@ -4,7 +4,6 @@ import com.IEASmart.sistemaAsistencias.application.dto.AttendanceCriteria;
 import com.IEASmart.sistemaAsistencias.domain.model.Attendance;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.AttendanceType;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
-import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
 import com.IEASmart.sistemaAsistencias.domain.repository.AttendanceRepository;
 import com.IEASmart.sistemaAsistencias.infrastructure.jpa.entity.AttendanceEntity;
 import com.IEASmart.sistemaAsistencias.infrastructure.jpa.projection.AttendanceStats;
@@ -106,5 +105,10 @@ public class AttendanceRepositoryImpl implements AttendanceRepository {
     @Override
     public List<TopLateInfo> getTopLateStudents(School school, LocalDate startDate, LocalDate endDate){
         return attendanceJpaRepository.getTopLateStudents(school, startDate, endDate, Pageable.ofSize(4));
+    }
+
+    @Override
+    public long deleteMonthlyAttendances(School school, LocalDate startDate, LocalDate endDate){
+        return attendanceJpaRepository.deleteBySchoolAndDateRange(school, startDate, endDate);
     }
 }

@@ -4,7 +4,7 @@ import { mapApiError } from '@/utils/apiErrorMapper'
 import type { ServiceResult } from '@/types/ServiceResult'
 import type { ApiHttpError } from '@/api/ApiHttpError'
 import type { PageRequest, PageResponse, Sort } from '@/types/Pages'
-import type { AttendanceFilter, AttendanceResponse, ContactResponse, MissedAttendance, StudentAttendanceDetailsResponse } from '@/types/Attendance'
+import type { AttendanceFilter, AttendanceResponse, ContactResponse, DeletedAttendance, MissedAttendance, StudentAttendanceDetailsResponse } from '@/types/Attendance'
 
 function buildStudentsQuery(filter: AttendanceFilter, page: PageRequest, sort?: Sort): string {
   const queryParams = new URLSearchParams()
@@ -105,6 +105,20 @@ export async function getMonthlyExcel(month: number): Promise<ServiceResult<Blob
       method: 'GET',
       responseType: 'blob',
     }, 600000)
+    return { success: true, data }
+  } catch (error) {
+    return {
+      success: false,
+      error: mapApiError(error)
+    }
+  }
+}
+
+export async function deleteMonthlyAttendances(month: number): Promise<ServiceResult<DeletedAttendance, ApiHttpError>> {
+  try {
+    const data = await http<DeletedAttendance>(`/attendances/${month}`, {
+      method: 'DELETE',
+    })  
     return { success: true, data }
   } catch (error) {
     return {

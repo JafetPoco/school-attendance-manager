@@ -4,7 +4,6 @@ import com.IEASmart.sistemaAsistencias.application.dto.AttendanceCriteria;
 import com.IEASmart.sistemaAsistencias.domain.model.Attendance;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.AttendanceType;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
-import com.IEASmart.sistemaAsistencias.domain.model.valueObject.Section;
 import com.IEASmart.sistemaAsistencias.infrastructure.jpa.projection.AttendanceStats;
 import com.IEASmart.sistemaAsistencias.infrastructure.jpa.projection.TopLateInfo;
 import com.IEASmart.sistemaAsistencias.infrastructure.jpa.projection.WeekAttendanceStats;
@@ -29,4 +28,6 @@ public interface AttendanceRepository {
     List<AttendanceStats> getAttendanceStats(School school, LocalDate date);
     List<WeekAttendanceStats> getWeekAttendanceStats(School school, LocalDate startDate, LocalDate endDate);
     List<TopLateInfo> getTopLateStudents(School school, LocalDate startDate, LocalDate endDate);
+
+    long deleteMonthlyAttendances(School school, LocalDate startDate, LocalDate endDate);
 }

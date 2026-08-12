@@ -104,4 +104,11 @@ public class AttendanceController {
         ContactResponse response = attendanceService.getContactInfo(attendanceId);
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/{month}")
+    public ResponseEntity<CountResponse> deleteMonthlyAttendances(@PathVariable Integer month) {
+        School school = authorizationService.getUserSchool();
+        long count = attendanceService.deleteMonthlyAttendances(school, month);
+        return ResponseEntity.ok(new CountResponse(count));
+    }
 }
