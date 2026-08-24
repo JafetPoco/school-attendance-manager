@@ -70,8 +70,12 @@
       <!-- Contenedor de la vista con animación de transición -->
       <transition name="view-transition" mode="out-in">
         <div :key="monthView ? 'month' : 'day'" class="animate-fade-in-up">
-          <AttendanceViewMensual v-if="monthView" @month-change="handleMonthChange" />
-          <AttendanceViewDay v-else/>
+          <AttendanceViewMensual
+            v-if="monthView"
+            ref="monthlyViewRef"
+            @month-change="handleMonthChange"
+          />
+          <AttendanceViewDay v-else ref="dayViewRef" />
         </div>
       </transition>
 
@@ -277,6 +281,8 @@ import { useToast } from '@/composables/useToast'
 import { useAuthStore } from '@/stores/authStore'
 
 const monthView = ref(true)
+const dayViewRef = ref<{ refreshTable: () => Promise<void> } | null>(null)
+const monthlyViewRef = ref<{ refreshTable: () => Promise<void> } | null>(null)
 const loading = ref(false)
 const loadingProgress = ref(0)
 const elapsedTime = ref(0)
@@ -402,6 +408,14 @@ const confirmCloseAttendance = async () => {
   await closeAttendance()
 }
 
+const refreshCurrentView = async () => {
+  if (monthView.value) {
+    await monthlyViewRef.value?.refreshTable()
+  } else {
+    await dayViewRef.value?.refreshTable()
+  }
+}
+
 const exportReport = async () => {
   try {
     exportLoading.value = true
@@ -467,6 +481,7 @@ const closeAttendance = async () => {
     }
 
     if (response.success) {
+      await refreshCurrentView()
       loadingProgress.value = 100
       loadingStatus.value = {
         title: '¡Proceso completado!',

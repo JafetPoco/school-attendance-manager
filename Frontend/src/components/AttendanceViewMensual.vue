@@ -318,9 +318,11 @@ onMounted(() => {
   loadAttendances()
 })
 
-const refreshTable = () => {
-  loadAttendances()
+const refreshTable = async () => {
+  await loadAttendances()
 }
+
+defineExpose({ refreshTable })
 </script>
 
 <style scoped>

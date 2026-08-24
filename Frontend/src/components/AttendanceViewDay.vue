@@ -435,8 +435,8 @@ const clearAllFilters = () => {
   toast.showInfo('Filtros limpiados', 'Todos los filtros han sido restablecidos', 3000)
 }
 
-const refreshTable = () => {
-  loadAttendances()
+const refreshTable = async () => {
+  await loadAttendances()
   toast.showInfo('Actualizando', 'Recargando datos de la tabla...', 2000)
 }
 
@@ -585,6 +585,8 @@ Agradecemos su apoyo para mantener actualizada la asistencia del estudiante ✅.
 }
 
 onMounted(loadAttendances)
+
+defineExpose({ refreshTable })
 
 </script>
 
