@@ -34,6 +34,28 @@
         </div>
       </transition>
 
+      <div v-if="!loading && !errorMessage && auth.user?.userType == 'ADMIN'" class="mb-8 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+          <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center">
+              <Trash2 class="w-4 h-4 text-rose-600" />
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-slate-800">Eliminar Tokens</h3>
+              <p class="text-xs text-slate-500">Limpieza de sesiones expiradas</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6">
+          <button @click="deleteTokens"
+                  class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-[1.02] shadow-md shadow-red-200">
+            <Trash2 class="w-4 h-4" />
+            Eliminar Tokens Expirados
+          </button>
+        </div>
+      </div>
+
       <!-- Vista previa de la configuración actual -->
       <div v-if="!loading && !errorMessage" class="mb-8 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
@@ -185,6 +207,7 @@
 import { ref, computed, onMounted } from 'vue'
 import Header from '@/components/Header.vue'
 import { updateSchoolPolicies, getSchoolPolicy, addSchoolPolicies } from '@/services/schoolPolicyService'
+import { deleteExpiredTokens } from '@/services/tokensService'
 import type { SchoolPolicyRequest, SchoolPolicyResponse } from '@/types/SchoolPolicy'
 import {
   Settings,
@@ -196,14 +219,18 @@ import {
   Info,
   Save,
   Building,
-  Eye
+  Eye,
+  Trash2
 } from 'lucide-vue-next'
 import { useToast } from '@/composables/useToast'
+import { useAuthStore } from '@/stores/authStore'
 
 // Estado
 const loading = ref(false)
 const errorMessage = ref('')
 const isEditing = ref(false)
+
+const auth = useAuthStore()
 
 const currentConfig = ref<SchoolPolicyResponse>({
   justificationExpirationDays: 0,
@@ -331,6 +358,24 @@ const loadCurrentConfig = async () => {
     errorMessage.value = response.error.message
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : 'Error de conexión'
+  } finally {
+    loading.value = false
+  }
+}
+
+const deleteTokens = async () => {
+  loading.value = true
+
+  try {
+    const response = await deleteExpiredTokens()
+
+    if (response.success) {
+      toast.showSuccess('Tokens eliminados', `Se eliminaron ${response.data.count} tokens expirados`)
+    } else {
+      toast.showError('Error al eliminar tokens', response.error.message)
+    }
+  } catch (error) {
+    toast.showError('Error de conexión', error instanceof Error ? error.message : 'Error desconocido')
   } finally {
     loading.value = false
   }

@@ -5,6 +5,7 @@ import com.IEASmart.sistemaAsistencias.domain.repository.TokenRepository;
 import com.IEASmart.sistemaAsistencias.infrastructure.mapper.TokenMapper;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,5 +43,10 @@ public class TokenRepositoryImpl implements TokenRepository {
     @Override
     public Optional<Token> findByAttendanceIdAndUsedFalse(String attendanceId) {
         return tokenJpaRepository.findByAttendanceIdAndUsedFalse(attendanceId).map(mapper::toDomain);
+    }
+
+    @Override
+    public long deleteExpiredTokens(LocalDateTime expirationDate) {
+        return tokenJpaRepository.deleteBySchoolAndDate(expirationDate);
     }
 }

@@ -310,4 +310,21 @@ public class AttendanceService {
 
         return response;
     }
+
+    public long deleteMonthlyAttendances(School school, Integer month) {
+        if (month == null || month < 1 || month > 12) {
+            throw new ResourceNotFoundException("Mes", month);
+        }
+
+        LocalDate startDate = LocalDate.of(LocalDate.now().getYear(), month, 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+        long deletedCount = attendanceRepository.deleteMonthlyAttendances(school, startDate, endDate);
+
+        if (deletedCount == 0) {
+            throw new ConflictException("No hay asistencias registradas para el mes " + month, "NO_ATTENDANCES_FOUND");
+        }
+
+        return deletedCount;
+    }
 }

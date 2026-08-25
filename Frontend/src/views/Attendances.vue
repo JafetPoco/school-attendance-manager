@@ -17,6 +17,13 @@
           
           <!-- Selector de vista moderno -->
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <button v-if="user.user?.userType == 'ADMIN'" class="inline-flex items-center justify-center px-4 py-2.5 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 transition-all duration-300 border border-red-200 shadow-sm group"
+                    @click="showDeleteModal = true"
+                    :disabled="loading">
+              <Trash class="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+              <span class="text-sm font-medium">{{ loading ? 'Procesando...' : 'Borrar Asistencias' }}</span>
+            </button>
+
             <button class="inline-flex items-center justify-center px-4 py-2.5 bg-amber-50 text-amber-700 rounded-xl hover:bg-amber-100 transition-all duration-300 border border-amber-200 shadow-sm group"
                     @click="confirmClose = true"
                     :disabled="loading">
@@ -63,8 +70,12 @@
       <!-- Contenedor de la vista con animación de transición -->
       <transition name="view-transition" mode="out-in">
         <div :key="monthView ? 'month' : 'day'" class="animate-fade-in-up">
-          <AttendanceViewMensual v-if="monthView" @month-change="handleMonthChange" />
-          <AttendanceViewDay v-else/>
+          <AttendanceViewMensual
+            v-if="monthView"
+            ref="monthlyViewRef"
+            @month-change="handleMonthChange"
+          />
+          <AttendanceViewDay v-else ref="dayViewRef" />
         </div>
       </transition>
 
@@ -197,6 +208,52 @@
       </div>
     </div>
   </transition>
+
+  <!-- Modal pregunta de cerrado -->
+  <transition name="fade">
+    <div v-if="showDeleteModal" 
+         class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+         @click.self="showDeleteModal = false">
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 animate-slide-up">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+              <Trash2Icon class="w-5 h-5 text-red-600" />
+            </div>
+            <h3 class="text-lg font-semibold text-slate-800">Borrar registros pasados</h3>
+          </div>
+          <button @click="showDeleteModal = false" 
+                  class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+            <X class="w-5 h-5 text-slate-500" />
+          </button>
+        </div>
+        
+        <p>Seleccione el mes que se desea borrar</p>
+        <form>
+          <select v-model="selectedDeleteMonth"
+                  class="mt-2 w-full border border-slate-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-slate-400">
+            <option v-for="month in 12" :key="month" :value="month">
+              {{ new Date(0, month - 1).toLocaleString('es-ES', { month: 'long' }) }}
+            </option>
+          </select>
+        </form>
+
+        <!-- Botones -->
+        <div class="flex items-center justify-end space-x-3 pt-4">
+          <button type="button"
+                  @click="showDeleteModal = false"
+                  class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+            Cancelar
+          </button>
+          <button type="button" @click="deleteAttendances"
+                  class="relative px-6 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-all duration-300 transform hover:scale-105 shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2">
+            <span>Confirmar</span>
+          </button>
+        </div>
+        
+      </div>
+    </div>
+  </transition>
 </template>
 
 <script setup lang="ts">
@@ -215,18 +272,24 @@ import {
   X,
   Loader2,
   AlertCircle,
-  TriangleAlert
+  TriangleAlert,
+  Trash,
+  Trash2Icon
 } from 'lucide-vue-next'
-import { createMissedAttendance, getMonthlyExcel } from '@/services/attendancesService'
+import { createMissedAttendance, deleteMonthlyAttendances, getMonthlyExcel } from '@/services/attendancesService'
 import { useToast } from '@/composables/useToast'
+import { useAuthStore } from '@/stores/authStore'
 
 const monthView = ref(true)
+const dayViewRef = ref<{ refreshTable: () => Promise<void> } | null>(null)
+const monthlyViewRef = ref<{ refreshTable: () => Promise<void> } | null>(null)
 const loading = ref(false)
 const loadingProgress = ref(0)
 const elapsedTime = ref(0)
 const showTimeWarning = ref(false)
 const confirmClose = ref(false)
 const exportLoading = ref(false)
+const showDeleteModal = ref(false)
 const exportLoadingStatus = ref({
   title: 'Generando reporte mensual',
   message: 'Procesando la información de asistencia...'
@@ -237,9 +300,11 @@ const loadingStatus = ref({
   title: 'Cerrando registro de asistencia',
   message: 'Procesando estudiantes...'
 })
+const selectedDeleteMonth = ref(new Date().getMonth() + 1)
 
 //Toast
 const toast = useToast()
+const user = useAuthStore()
 
 // Timers
 let progressInterval: number | null = null
@@ -343,6 +408,14 @@ const confirmCloseAttendance = async () => {
   await closeAttendance()
 }
 
+const refreshCurrentView = async () => {
+  if (monthView.value) {
+    await monthlyViewRef.value?.refreshTable()
+  } else {
+    await dayViewRef.value?.refreshTable()
+  }
+}
+
 const exportReport = async () => {
   try {
     exportLoading.value = true
@@ -408,6 +481,7 @@ const closeAttendance = async () => {
     }
 
     if (response.success) {
+      await refreshCurrentView()
       loadingProgress.value = 100
       loadingStatus.value = {
         title: '¡Proceso completado!',
@@ -435,6 +509,25 @@ const closeAttendance = async () => {
     }
     
     toast.showError('Error', errorMsg)
+  }
+}
+
+const deleteAttendances = async () => {
+  loading.value = true
+  
+  try {
+    const response = await deleteMonthlyAttendances(selectedDeleteMonth.value)
+
+    if (response.success) {
+      toast.showSuccess('Éxito', `Se han borrado ${response.data.count} registros de asistencia del mes seleccionado.`)
+    } else {
+      toast.showError('Error', response.error.message)
+    }
+    showDeleteModal.value = false
+  } catch (error) {
+    toast.showError('Error', error instanceof Error ? error.message : 'Error de conexión')
+  } finally {
+    loading.value = false
   }
 }
 

@@ -5,16 +5,12 @@ import com.IEASmart.sistemaAsistencias.domain.exception.ResourceNotFoundExceptio
 import com.IEASmart.sistemaAsistencias.domain.model.Attendance;
 import com.IEASmart.sistemaAsistencias.domain.model.SchoolPolicy;
 import com.IEASmart.sistemaAsistencias.domain.model.Token;
-import com.IEASmart.sistemaAsistencias.domain.model.valueObject.AttendanceType;
 import com.IEASmart.sistemaAsistencias.domain.model.valueObject.School;
-import com.IEASmart.sistemaAsistencias.domain.repository.AttendanceRepository;
 import com.IEASmart.sistemaAsistencias.domain.repository.SchoolPolicyRepository;
 import com.IEASmart.sistemaAsistencias.domain.repository.TokenRepository;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -90,10 +86,13 @@ public class TokenService {
         t.setUsed(true);
         tokenRepository.save(t);
     }
-/*
-    @Scheduled(cron = "0 0 2 * * ?") // Cada día a las 2 AM
-    public void cleanExpiredTokens() {
-        tokenRepository.deleteByExpiryDateBefore(LocalDateTime.now());
+
+    public long deleteExpiredTokens(School school) {
+        LocalDateTime now = LocalDateTime.now();
+        long count = tokenRepository.deleteExpiredTokens(now);
+        if(count == 0){
+            throw new ResourceNotFoundException("Tokens expirados");
+        }
+        return count;
     }
-    */
 }
